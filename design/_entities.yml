@@ -1,0 +1,45 @@
+# _entities.yml - 프로젝트 전체 엔티티 정의
+# AI에게 컨텍스트로 전달된다
+
+customer:
+  table: tb_customer
+  label: 거래처
+  pk: cust_cd
+  fields:
+    cust_cd:   { type: string, label: 거래처코드, len: 20 }
+    cust_nm:   { type: string, label: 거래처명, len: 100, required: true }
+    cust_type: { type: code,   label: 거래처유형, code: CUST_TYPE }
+    tel:       { type: string, label: 전화번호, len: 20 }
+    addr:      { type: string, label: 주소, len: 500 }
+  audit: true
+
+sales_order:
+  table: tb_sales_order
+  label: 수주
+  pk: order_no
+  fields:
+    order_no:   { type: string,  label: 수주번호, len: 20, gen: PREFIX_SEQ:ORD }
+    order_date: { type: date,    label: 수주일자, required: true }
+    cust_cd:    { type: string,  label: 거래처코드, len: 20, ref: customer.cust_cd }
+    cust_nm:    { type: string,  label: 거래처명, len: 100, from: "cust_cd→customer.cust_nm" }
+    status:     { type: code,    label: 상태, code: ORD_STATUS, default: DRAFT }
+    total_amt:  { type: decimal, label: 합계금액, p: 15, s: 2 }
+    remark:     { type: text,    label: 비고 }
+  children:
+    - entity: sales_order_item
+      fk: order_no
+  audit: true
+
+sales_order_item:
+  table: tb_sales_order_item
+  label: 수주품목
+  pk: [order_no, seq]
+  fields:
+    order_no:   { type: string,  label: 수주번호, len: 20 }
+    seq:        { type: number,  label: 순번 }
+    item_cd:    { type: string,  label: 품목코드, len: 20 }
+    item_nm:    { type: string,  label: 품목명, len: 200 }
+    qty:        { type: number,  label: 수량, required: true }
+    unit_price: { type: decimal, label: 단가, p: 15, s: 2 }
+    amount:     { type: decimal, label: 금액, p: 15, s: 2, calc: "qty * unit_price" }
+  audit: true

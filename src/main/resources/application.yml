@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:forma;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+  h2:
+    console:
+      enabled: true
+      path: /h2
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.forma: DEBUG

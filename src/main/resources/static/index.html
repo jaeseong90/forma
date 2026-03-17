@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FORMA Demo</title>
+    <link rel="stylesheet" href="/forma/forma.css">
+    <style>
+        body { background: #eee; }
+        .app-header { background: #2c3e50; color: #fff; padding: 0 20px; display: flex; align-items: center; height: 48px; }
+        .app-header h1 { font-size: 16px; font-weight: 600; margin: 0; }
+        .app-header .subtitle { font-size: 12px; color: #95a5a6; margin-left: 12px; }
+        .app-nav { background: #34495e; padding: 0 20px; display: flex; gap: 0; }
+        .app-nav a { color: #bdc3c7; text-decoration: none; padding: 10px 16px; font-size: 13px; display: block; }
+        .app-nav a:hover { background: #2c3e50; color: #fff; }
+        .app-content { padding: 0; }
+        .app-content iframe { width: 100%; height: calc(100vh - 88px); border: none; }
+        .home-content { padding: 40px; text-align: center; color: #666; }
+        .home-content h2 { font-size: 20px; margin-bottom: 12px; color: #333; }
+        .home-cards { display: flex; gap: 16px; justify-content: center; margin-top: 24px; }
+        .home-card { background: #fff; border-radius: 8px; padding: 24px; width: 240px; border: 1px solid #e0e0e0; cursor: pointer; transition: box-shadow 0.2s; }
+        .home-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .home-card h3 { font-size: 15px; margin: 0 0 8px; color: #2c3e50; }
+        .home-card p { font-size: 12px; color: #999; margin: 0; }
+        .home-card .tag { display: inline-block; background: #e8f4fd; color: #378ADD; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>FORMA</h1>
+        <span class="subtitle">AI-Amplified Development Framework Demo</span>
+    </div>
+    <div class="app-nav">
+        <a href="#" onclick="goHome()">Home</a>
+        <a href="#" onclick="navigate('/pages/base/CUS-001.html')">거래처 관리</a>
+        <a href="#" onclick="navigate('/pages/sales/ORD-001.html')">수주 관리</a>
+        <a href="/h2" target="_blank">H2 Console</a>
+    </div>
+    <div class="app-content" id="content">
+        <div class="home-content">
+            <h2>FORMA Framework Demo</h2>
+            <p>설계서(YAML) → AI 코드 생성 → 동작하는 업무 화면</p>
+            <div class="home-cards">
+                <div class="home-card" onclick="navigate('/pages/base/CUS-001.html')">
+                    <h3>거래처 관리</h3>
+                    <p>검색 + 목록 + 인라인 편집</p>
+                    <span class="tag">list 유형</span>
+                </div>
+                <div class="home-card" onclick="navigate('/pages/sales/ORD-001.html')">
+                    <h3>수주 관리</h3>
+                    <p>마스터 그리드 + 디테일 그리드</p>
+                    <span class="tag">master-detail 유형</span>
+                </div>
+            </div>
+            <p style="margin-top:32px;font-size:12px;color:#aaa">
+                Backend: Spring Boot 3 + JdbcTemplate &nbsp;|&nbsp;
+                Frontend: Vanilla JS &nbsp;|&nbsp;
+                DB: H2 (in-memory)
+            </p>
+        </div>
+    </div>
+    <script>
+        function navigate(url) {
+            document.getElementById('content').innerHTML =
+                '<iframe src="' + url + '"></iframe>';
+        }
+        function goHome() { location.reload(); }
+    </script>
+</body>
+</html>

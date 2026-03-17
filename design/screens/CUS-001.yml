@@ -1,0 +1,46 @@
+# 거래처 관리 - list 유형 화면 예시
+# 이 파일이 AI에게 전달되면 코드가 생성된다
+
+screen:
+  id: CUS-001
+  name: 거래처 관리
+  type: list
+  entity: customer
+  menu: 기준정보 > 거래처관리
+  roles: [ROLE_USER]
+
+search:
+  - field: cust_cd
+    widget: text
+  - field: cust_nm
+    widget: text
+  - field: cust_type
+    widget: combo
+    code: CUST_TYPE
+
+master:
+  columns:
+    - field: cust_cd
+      width: 120
+      frozen: true
+    - field: cust_nm
+      width: 200
+    - field: cust_type
+      format: badge
+      code: CUST_TYPE
+    - field: tel
+      width: 130
+    - field: addr
+      width: 300
+  defaultSort: cust_cd ASC
+  features: [export]
+
+actions:
+  - type: SEARCH
+  - type: SAVE
+  - type: DELETE
+    confirm: true
+
+notes: |
+  - 그리드에서 직접 수정 가능 (inline edit)
+  - 신규 등록은 행 추가로 처리

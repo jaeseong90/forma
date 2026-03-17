@@ -1,0 +1,20 @@
+{
+  "ORD_STATUS": {
+    "label": "수주상태",
+    "items": [
+      {"value": "DRAFT", "label": "작성중", "color": "#888"},
+      {"value": "CONFIRMED", "label": "확정", "color": "#378ADD"},
+      {"value": "APPROVED", "label": "승인", "color": "#639922"},
+      {"value": "REJECTED", "label": "반려", "color": "#E24B4A"},
+      {"value": "CLOSED", "label": "마감", "color": "#888"}
+    ]
+  },
+  "CUST_TYPE": {
+    "label": "거래처유형",
+    "items": [
+      {"value": "DOMESTIC", "label": "국내"},
+      {"value": "OVERSEAS", "label": "해외"},
+      {"value": "INTERNAL", "label": "내부"}
+    ]
+  }
+}
