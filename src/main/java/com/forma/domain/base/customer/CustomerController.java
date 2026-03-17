@@ -1,14 +1,14 @@
 package com.forma.domain.base.customer;
 
-// Generated from: design/screens/CUS-001.yml
-
-import com.forma.common.base.BaseController;
-import com.forma.common.base.BaseService;
+import com.forma.common.model.ApiResponse;
+import com.forma.common.model.PageResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customer")
-public class CustomerController extends BaseController {
+public class CustomerController {
 
     private final CustomerService service;
 
@@ -16,6 +16,24 @@ public class CustomerController extends BaseController {
         this.service = service;
     }
 
-    @Override
-    protected BaseService service() { return service; }
+    @GetMapping
+    public ApiResponse<PageResult<Map<String, Object>>> list(@RequestParam Map<String, String> params) {
+        return ApiResponse.ok(service.list(params));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Map<String, Object>> get(@PathVariable String id) {
+        return ApiResponse.ok(service.get(id));
+    }
+
+    @PostMapping
+    public ApiResponse<Map<String, Object>> save(@RequestBody Map<String, Object> body) {
+        return ApiResponse.ok(service.save(body));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable String id) {
+        service.delete(id);
+        return ApiResponse.ok();
+    }
 }

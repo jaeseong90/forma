@@ -1,52 +1,73 @@
 // Generated from: design/screens/ORD-001.yml (type: master-detail)
+// 고도화된 FORMA 프레임워크 적용
 
 const page = {
     api: '/api/sales-order',
     selectedOrderNo: null,
 
     init() {
-        // 검색바 — 설계서 search 섹션
+        // 검색바
         this.search = new FormaSearch('#search', [
             { field: 'order_date', widget: 'dateRange', label: '수주일자', default: 'THIS_MONTH' },
-            { field: 'cust_cd', widget: 'text', label: '거래처코드' },
+            { field: 'cust_cd', widget: 'codePopup', label: '거래처',
+                popupUrl: '/api/customer', popupEntity: 'customer',
+                displayField: 'cust_nm',
+                popupColumns: [
+                    { field: 'cust_cd', label: '거래처코드', width: 120 },
+                    { field: 'cust_nm', label: '거래처명', width: 200 }
+                ]
+            },
             { field: 'status', widget: 'combo', label: '상태', code: 'ORD_STATUS' },
         ], () => this.doSearch());
 
-        // 마스터 그리드 — 설계서 master 섹션
+        // 마스터 그리드
         this.masterGrid = new FormaGrid('#master-grid', {
             columns: [
-                { field: 'ORDER_NO',   label: '수주번호',  width: 160 },
-                { field: 'CUST_NM',    label: '거래처명',  width: 180 },
-                { field: 'ORDER_DATE', label: '수주일자',  width: 110, format: 'date' },
-                { field: 'TOTAL_AMT',  label: '합계금액',  width: 130, format: 'currency', align: 'right' },
-                { field: 'STATUS',     label: '상태',     width: 90,  format: 'badge', code: 'ORD_STATUS' },
+                { field: 'order_no',   label: '수주번호',  width: 160, frozen: true },
+                { field: 'cust_nm',    label: '거래처명',  width: 180 },
+                { field: 'order_date', label: '수주일자',  width: 110, format: 'date' },
+                { field: 'total_amt',  label: '합계금액',  width: 130, format: 'currency' },
+                { field: 'status',     label: '상태',     width: 90,  format: 'badge', code: 'ORD_STATUS' },
             ],
-            onSelect: (row) => this.loadDetail(row.ORDER_NO || row.order_no),
+            features: ['rowNum'],
+            defaultSort: 'order_date DESC',
+            onSelect: (row) => this.onMasterSelect(row),
+            onSort: () => this.doSearch(),
+            onPageChange: (pg) => this.doSearch(pg),
         });
 
-        // 디테일 그리드 — 설계서 detail 섹션
+        // 마스터 입력 폼 (신규/수정 시 표시)
+        this.masterForm = new FormaForm('#master-form', [
+            { field: 'order_no',   label: '수주번호', readOnly: true },
+            { field: 'order_date', label: '수주일자', type: 'date', required: true },
+            { field: 'cust_cd',    label: '거래처코드', required: true },
+            { field: 'cust_nm',    label: '거래처명', readOnly: true },
+            { field: 'status',     label: '상태', widget: 'combo', code: 'ORD_STATUS', readOnly: true },
+            { field: 'remark',     label: '비고', widget: 'textarea' },
+        ]);
+
+        // 디테일 그리드
         this.detailGrid = new FormaGrid('#detail-grid', {
             editable: true,
             columns: [
-                { field: 'SEQ',        label: '순번',  width: 60,  readOnly: true, auto: true },
-                { field: 'ITEM_CD',    label: '품목코드', width: 120 },
-                { field: 'ITEM_NM',    label: '품목명',  width: 200 },
-                { field: 'QTY',        label: '수량',   width: 80,  type: 'number', align: 'right' },
-                { field: 'UNIT_PRICE', label: '단가',   width: 110, type: 'number', format: 'currency', align: 'right' },
-                { field: 'AMOUNT',     label: '금액',   width: 130, format: 'currency', align: 'right', readOnly: true },
+                { field: 'seq',        label: '순번',  width: 60,  readOnly: true, auto: true },
+                { field: 'item_cd',    label: '품목코드', width: 120 },
+                { field: 'item_nm',    label: '품목명',  width: 200 },
+                { field: 'qty',        label: '수량',   width: 80,  type: 'number' },
+                { field: 'unit_price', label: '단가',   width: 110, type: 'number', format: 'currency' },
+                { field: 'amount',     label: '금액',   width: 130, format: 'currency', readOnly: true },
             ],
-            features: ['addRow', 'deleteRow'],
-            // 설계서 rules.calc: qty * unit_price → amount
+            features: ['addRow', 'deleteRow', 'rowNum'],
             onCellChange: (row, field) => {
-                if (field === 'QTY' || field === 'UNIT_PRICE') {
-                    const qty = Number(row.QTY) || 0;
-                    const price = Number(row.UNIT_PRICE) || 0;
-                    row.AMOUNT = qty * price;
+                if (field === 'qty' || field === 'unit_price') {
+                    const qty = Number(row.qty) || 0;
+                    const price = Number(row.unit_price) || 0;
+                    row.amount = qty * price;
                 }
             }
         });
 
-        // 액션 버튼 — 설계서 actions 섹션
+        // 액션 버튼
         FormaPage.actionBar('#actions', [
             { label: '조회', onClick: () => this.doSearch(), primary: true },
             { label: '신규', onClick: () => this.doNew() },
@@ -58,13 +79,30 @@ const page = {
         this.doSearch();
     },
 
-    async doSearch() {
+    _showForm(show) {
+        document.getElementById('master-form-section').style.display = show ? '' : 'none';
+    },
+
+    onMasterSelect(row) {
+        this.selectedOrderNo = row.order_no;
+        this.masterForm.setData(row);
+        this._showForm(true);
+        this.loadDetail(row.order_no);
+    },
+
+    async doSearch(pg) {
         try {
-            const data = await FormaApi.get(this.api, this.search.getValues());
-            this.masterGrid.setData(data.data, data.total);
+            const params = this.search.getValues();
+            params._page = pg || 1;
+            params._size = this.masterGrid.pageSize;
+            if (this.masterGrid.currentSort) params._sort = this.masterGrid.currentSort;
+
+            const data = await FormaApi.get(this.api, params);
+            this.masterGrid.setData(data.data, data.total, data.page, data.size);
             this.detailGrid.setData([]);
             this.selectedOrderNo = null;
-        } catch (e) { FormaPage.alert(e.message); }
+            this._showForm(false);
+        } catch (e) { FormaToast.error(e.message); }
     },
 
     async loadDetail(orderNo) {
@@ -72,74 +110,82 @@ const page = {
         try {
             const items = await FormaApi.get(this.api + '/' + orderNo + '/items');
             this.detailGrid.setData(items);
-        } catch (e) { FormaPage.alert(e.message); }
+        } catch (e) { FormaToast.error(e.message); }
     },
 
     doNew() {
         this.selectedOrderNo = null;
         this.masterGrid.selectedIdx = -1;
-        this.detailGrid.setData([{}]); // 빈 행 1개
+        this.masterForm.clear();
+        this.masterForm.setData({
+            order_date: new Date().toISOString().substring(0, 10),
+            status: 'DRAFT',
+        });
+        this._showForm(true);
+        this.detailGrid.setData([{}]);
     },
 
     async doSave() {
-        const master = this.masterGrid.getSelectedRow();
-        const items = this.detailGrid.getAllRows();
-
-        if (!master && !this.selectedOrderNo) {
-            // 신규 — 최소 정보
-            const newMaster = {
-                order_no: null,
-                order_date: new Date().toISOString().substring(0,10),
-                cust_cd: prompt('거래처코드를 입력하세요:'),
-                cust_nm: '',
-                status: 'DRAFT',
-            };
-            if (!newMaster.cust_cd) return;
-            await this._saveAll(newMaster, items);
-        } else {
-            // 기존 수정
-            const data = {};
-            for (const [k,v] of Object.entries(master)) data[k.toLowerCase()] = v;
-            await this._saveAll(data, items);
+        const formData = this.masterForm.getData();
+        if (!formData.cust_cd) {
+            FormaToast.error('거래처코드를 입력하세요');
+            return;
         }
-    },
+        if (!formData.order_date) {
+            FormaToast.error('수주일자를 입력하세요');
+            return;
+        }
 
-    async _saveAll(master, items) {
-        // 컬럼명 소문자 변환 (H2가 대문자로 반환하므로)
-        const cleanItems = items.map(item => {
+        const master = {
+            order_no: this.selectedOrderNo || formData.order_no || null,
+            order_date: formData.order_date,
+            cust_cd: formData.cust_cd,
+            cust_nm: formData.cust_nm || '',
+            status: formData.status || 'DRAFT',
+            remark: formData.remark || '',
+        };
+
+        const items = this.detailGrid.getAllRows().map(item => {
             const clean = {};
-            for (const [k,v] of Object.entries(item)) clean[k.toLowerCase()] = v;
+            for (const [k, v] of Object.entries(item)) {
+                if (!k.startsWith('_')) clean[k] = v;
+            }
             return clean;
         });
 
         try {
-            const result = await FormaApi.post(this.api + '/save-all', {
-                master: master,
-                items: cleanItems
-            });
-            FormaPage.alert('저장되었습니다. 수주번호: ' + result.id);
+            const result = await FormaApi.post(this.api + '/save-all', { master, items });
+            FormaToast.success('저장되었습니다. 수주번호: ' + result.id);
             this.doSearch();
-        } catch (e) { FormaPage.alert(e.message); }
+        } catch (e) { FormaToast.error(e.message); }
     },
 
     async doDelete() {
-        if (!this.selectedOrderNo) { FormaPage.alert('삭제할 수주를 선택하세요'); return; }
-        if (!FormaPage.confirm('삭제하시겠습니까?')) return;
+        if (!this.selectedOrderNo) {
+            FormaToast.info('삭제할 수주를 선택하세요');
+            return;
+        }
+        const ok = await FormaDialog.confirm('삭제하시겠습니까?');
+        if (!ok) return;
         try {
             await FormaApi.del(this.api + '/' + this.selectedOrderNo);
-            FormaPage.alert('삭제되었습니다');
+            FormaToast.success('삭제되었습니다');
             this.doSearch();
-        } catch (e) { FormaPage.alert(e.message); }
+        } catch (e) { FormaToast.error(e.message); }
     },
 
     async doApprove() {
-        if (!this.selectedOrderNo) { FormaPage.alert('승인할 수주를 선택하세요'); return; }
-        if (!FormaPage.confirm('승인하시겠습니까?')) return;
+        if (!this.selectedOrderNo) {
+            FormaToast.info('승인할 수주를 선택하세요');
+            return;
+        }
+        const ok = await FormaDialog.confirm('승인하시겠습니까?');
+        if (!ok) return;
         try {
             await FormaApi.post(this.api + '/' + this.selectedOrderNo + '/approve', {});
-            FormaPage.alert('승인되었습니다');
+            FormaToast.success('승인되었습니다');
             this.doSearch();
-        } catch (e) { FormaPage.alert(e.message); }
+        } catch (e) { FormaToast.error(e.message); }
     }
 };
 

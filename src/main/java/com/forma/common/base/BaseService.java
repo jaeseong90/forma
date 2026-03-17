@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Set;
 
 /**
  * 모든 Service의 베이스 클래스.
@@ -35,6 +36,9 @@ public abstract class BaseService {
 
     /** 기본 정렬. 서브클래스에서 오버라이드 가능. */
     protected String defaultSort() { return pk() + " DESC"; }
+
+    /** 허용된 정렬 컬럼 목록. 서브클래스에서 오버라이드. null이면 sanitize 방식 사용. */
+    protected Set<String> sortableColumns() { return null; }
 
     /** 감사 필드 자동 세팅 여부. 서브클래스에서 false로 오버라이드 가능. */
     protected boolean audit() { return true; }
@@ -68,7 +72,7 @@ public abstract class BaseService {
     public PageResult<Map<String, Object>> list(Map<String, String> search) {
         int page = Integer.parseInt(search.getOrDefault("_page", "1"));
         int size = Integer.parseInt(search.getOrDefault("_size", "50"));
-        String sort = search.getOrDefault("_sort", defaultSort());
+        String sort = validateSort(search.getOrDefault("_sort", defaultSort()));
         String from = buildFrom();
 
         // COUNT
@@ -87,7 +91,7 @@ public abstract class BaseService {
         params.add((page - 1) * size);
 
         List<Map<String, Object>> rows = jdbc().queryForList(sql.toString(), params.toArray());
-        return PageResult.of(rows, total != null ? total : 0, page, size);
+        return PageResult.of(toLowerKeys(rows), total != null ? total : 0, page, size);
     }
 
     // ==================== GET ====================
@@ -97,7 +101,7 @@ public abstract class BaseService {
         String sql = "SELECT " + selectColumns() + " FROM " + from + " WHERE t." + pk() + " = ?";
         List<Map<String, Object>> rows = jdbc().queryForList(sql, id);
         if (rows.isEmpty()) throw new BusinessException("데이터를 찾을 수 없습니다: " + id);
-        return rows.get(0);
+        return toLowerKey(rows.get(0));
     }
 
     // ==================== SAVE (Insert or Update) ====================
@@ -249,6 +253,39 @@ public abstract class BaseService {
                 "SELECT COUNT(*) FROM " + table() + " WHERE " + pk() + " = ?",
                 Integer.class, id);
         return cnt != null && cnt > 0;
+    }
+
+    /** sort 파라미터를 화이트리스트 방식으로 검증 */
+    private String validateSort(String sort) {
+        if (sort == null || sort.isBlank()) return defaultSort();
+        String sanitized = sanitize(sort).trim();
+        // "field ASC" 또는 "field DESC" 형식 파싱
+        String[] parts = sanitized.split("\\s+");
+        String field = parts[0].replace("t.", "");
+        String dir = parts.length > 1 && parts[1].equalsIgnoreCase("DESC") ? "DESC" : "ASC";
+
+        Set<String> allowed = sortableColumns();
+        if (allowed != null && !allowed.isEmpty()) {
+            if (!allowed.contains(field.toLowerCase())) return defaultSort();
+        }
+        return field + " " + dir;
+    }
+
+    /** Map 키를 전부 소문자로 변환 (H2 대문자 컬럼명 대응) */
+    private Map<String, Object> toLowerKey(Map<String, Object> map) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            result.put(e.getKey().toLowerCase(), e.getValue());
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> toLowerKeys(List<Map<String, Object>> rows) {
+        List<Map<String, Object>> result = new ArrayList<>(rows.size());
+        for (Map<String, Object> row : rows) {
+            result.add(toLowerKey(row));
+        }
+        return result;
     }
 
     private String sanitize(String sort) {

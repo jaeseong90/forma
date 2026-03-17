@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forma.domain.base.customer.CustomerMapper">
+
+    <!-- 공통 WHERE 조건 -->
+    <sql id="whereCondition">
+        <if test="search.cust_cd != null and search.cust_cd != ''">
+            AND c.cust_cd LIKE CONCAT('%', #{search.cust_cd}, '%')
+        </if>
+        <if test="search.cust_nm != null and search.cust_nm != ''">
+            AND c.cust_nm LIKE CONCAT('%', #{search.cust_nm}, '%')
+        </if>
+        <if test="search.cust_type != null and search.cust_type != ''">
+            AND c.cust_type = #{search.cust_type}
+        </if>
+    </sql>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_customer c
+        <where>
+            <include refid="whereCondition"/>
+        </where>
+    </select>
+
+    <select id="list" resultType="map">
+        SELECT c.*
+        FROM tb_customer c
+        <where>
+            <include refid="whereCondition"/>
+        </where>
+        ORDER BY c.cust_cd ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="get" resultType="map">
+        SELECT * FROM tb_customer WHERE cust_cd = #{custCd}
+    </select>
+
+    <select id="exists" resultType="int">
+        SELECT COUNT(*) FROM tb_customer WHERE cust_cd = #{custCd}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tb_customer (
+            cust_cd, cust_nm, cust_type, tel, addr,
+            created_by, created_at, updated_by, updated_at
+        ) VALUES (
+            #{cust_cd}, #{cust_nm}, #{cust_type}, #{tel}, #{addr},
+            #{created_by}, NOW(), #{updated_by}, NOW()
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE tb_customer SET
+            cust_nm = #{cust_nm},
+            cust_type = #{cust_type},
+            tel = #{tel},
+            addr = #{addr},
+            updated_by = #{updated_by},
+            updated_at = NOW()
+        WHERE cust_cd = #{cust_cd}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM tb_customer WHERE cust_cd = #{custCd}
+    </delete>
+
+</mapper>

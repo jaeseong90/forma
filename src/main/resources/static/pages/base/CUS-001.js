@@ -5,30 +5,30 @@ const page = {
     api: '/api/customer',
 
     init() {
-        // 검색바 — 설계서 search 섹션
+        // 검색바
         this.search = new FormaSearch('#search', [
             { field: 'cust_cd', widget: 'text', label: '거래처코드' },
             { field: 'cust_nm', widget: 'text', label: '거래처명' },
             { field: 'cust_type', widget: 'combo', label: '거래처유형', code: 'CUST_TYPE' },
         ], () => this.doSearch());
 
-        // 그리드 — 설계서 master 섹션 (고도화 기능 적용)
+        // 그리드
         this.grid = new FormaGrid('#grid', {
             editable: true,
             defaultSort: 'cust_cd ASC',
             columns: [
-                { field: 'CUST_CD',   label: '거래처코드', width: 120, frozen: true },
-                { field: 'CUST_NM',   label: '거래처명',  width: 200 },
-                { field: 'CUST_TYPE', label: '거래처유형', width: 100, format: 'badge', code: 'CUST_TYPE', readOnly: true },
-                { field: 'TEL',       label: '전화번호',  width: 130 },
-                { field: 'ADDR',      label: '주소',     width: 300 },
+                { field: 'cust_cd',   label: '거래처코드', width: 120, frozen: true },
+                { field: 'cust_nm',   label: '거래처명',  width: 200 },
+                { field: 'cust_type', label: '거래처유형', width: 100, format: 'badge', code: 'CUST_TYPE', readOnly: true },
+                { field: 'tel',       label: '전화번호',  width: 130 },
+                { field: 'addr',      label: '주소',     width: 300 },
             ],
             features: ['checkbox', 'rowNum', 'addRow', 'deleteRow', 'export'],
-            onSort: (sort) => this.doSearch(),
-            onPageChange: (pg, size) => this.doSearch(pg),
+            onSort: () => this.doSearch(),
+            onPageChange: (pg) => this.doSearch(pg),
         });
 
-        // 액션 버튼 — 설계서 actions 섹션
+        // 액션 버튼
         FormaPage.actionBar('#actions', [
             { label: '조회', onClick: () => this.doSearch(), primary: true },
             { label: '저장', onClick: () => this.doSave() },
@@ -53,7 +53,6 @@ const page = {
     },
 
     async doSave() {
-        // 변경된 행만 저장 (mergeChildren 패턴 활용)
         const modified = this.grid.getModifiedRows();
         if (modified.length === 0) {
             FormaToast.info('변경된 데이터가 없습니다');
@@ -62,11 +61,10 @@ const page = {
 
         try {
             for (const row of modified) {
-                // H2는 대문자 컬럼명을 반환하므로 소문자로 변환
                 const data = {};
                 for (const [k, v] of Object.entries(row)) {
                     if (k.startsWith('_')) continue;
-                    data[k.toLowerCase()] = v;
+                    data[k] = v;
                 }
                 await FormaApi.post(this.api, data);
             }
@@ -89,8 +87,7 @@ const page = {
 
         try {
             for (const row of checked) {
-                const id = row.CUST_CD || row.cust_cd;
-                if (id) await FormaApi.del(this.api + '/' + id);
+                if (row.cust_cd) await FormaApi.del(this.api + '/' + row.cust_cd);
             }
             FormaToast.success(`${checked.length}건 삭제되었습니다`);
             this.doSearch();
