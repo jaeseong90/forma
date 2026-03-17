@@ -1,9 +1,9 @@
+server:
+  port: 8080
+
 spring:
-  datasource:
-    url: jdbc:h2:mem:forma;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+  profiles:
+    active: local
   sql:
     init:
       mode: always
@@ -12,15 +12,18 @@ spring:
       enabled: true
       path: /h2
 
-server:
-  port: 8081
-
-mybatis:
-  mapper-locations: classpath:mapper/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
-    default-fetch-size: 100
-    default-statement-timeout: 30
+forma:
+  primary:
+    datasource:
+      jdbc-url: jdbc:h2:mem:forma;DB_CLOSE_DELAY=-1
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+    mapper:
+      directory: classpath:mapper/**/*.xml
+  jwt:
+    secret: ${FORMA_JWT_SECRET:formaDefaultSecretKeyForDevelopmentOnly1234567890abcdef}
+    valid-seconds: 86400
 
 logging:
   level:

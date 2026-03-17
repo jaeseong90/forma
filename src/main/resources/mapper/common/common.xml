@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="common">
+
+    <select id="selectCodeList" parameterType="map" resultType="map">
+        SELECT code AS value, code_name AS label, sort_order
+        FROM tb_code
+        WHERE grp_code = #{grp_code} AND use_yn = 'Y'
+        ORDER BY sort_order, code
+    </select>
+
+    <insert id="insertLog" parameterType="map">
+        INSERT INTO tb_log (log_type, pgm_id, user_id, user_ip, log_dt)
+        VALUES (#{log_type}, #{pgm_id}, #{user_id}, #{user_ip}, NOW())
+    </insert>
+
+</mapper>

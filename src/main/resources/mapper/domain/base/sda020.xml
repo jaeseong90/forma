@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sda020">
+
+    <!-- Grid1: 마스터 목록 -->
+    <sql id="whereGrid1">
+        <where>
+            <if test="est_type != null and est_type != ''">
+                AND t.est_type = #{est_type}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectGrid1" parameterType="map" resultType="map">
+        SELECT t.egrp_code, t.ser, t.desc_nm, t.est_type,
+               t.created_by, t.created_at, t.updated_by, t.updated_at
+        FROM tb_estimate_template t
+        <include refid="whereGrid1"/>
+        ORDER BY t.egrp_code, t.ser
+    </select>
+
+    <!-- Grid2: 디테일 항목 -->
+    <select id="selectGrid2" parameterType="map" resultType="map">
+        SELECT acnt_cd, acnt_nm, parent_cd, lvl, unit_cd, use_yn,
+               remark, sort_order, created_by, created_at, updated_by, updated_at
+        FROM tb_estimate_template_item
+        WHERE egrp_code = #{egrp_code} AND ser = #{ser}
+        ORDER BY sort_order
+    </select>
+
+    <insert id="insertGrid2" parameterType="map">
+        INSERT INTO tb_estimate_template_item
+            (egrp_code, ser, acnt_cd, acnt_nm, parent_cd, lvl, unit_cd, use_yn, remark, sort_order,
+             created_by, created_at, updated_by, updated_at)
+        VALUES
+            (#{egrp_code}, #{ser}, #{acnt_cd}, #{acnt_nm}, #{parent_cd}, #{lvl},
+             #{unit_cd}, #{use_yn}, #{remark}, #{sort_order},
+             #{user_id}, NOW(), #{user_id}, NOW())
+    </insert>
+
+    <update id="updateGrid2" parameterType="map">
+        UPDATE tb_estimate_template_item
+        SET acnt_nm = #{acnt_nm}, parent_cd = #{parent_cd}, lvl = #{lvl},
+            unit_cd = #{unit_cd}, use_yn = #{use_yn}, remark = #{remark},
+            sort_order = #{sort_order},
+            updated_by = #{user_id}, updated_at = NOW()
+        WHERE egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}
+    </update>
+
+    <delete id="deleteGrid2" parameterType="map">
+        DELETE FROM tb_estimate_template_item
+        WHERE egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}
+    </delete>
+
+</mapper>

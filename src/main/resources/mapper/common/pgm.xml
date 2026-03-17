@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pgm">
+
+    <select id="selectPgmInfo" parameterType="map" resultType="map">
+        SELECT pgm_id, pgm_nm, srch_yn, new_yn, save_yn, del_yn,
+               prnt_yn, upld_yn, init_yn,
+               etc_desc1, etc_desc2, etc_desc3, etc_desc4, etc_desc5
+        FROM tb_pgm_info
+        WHERE pgm_id = #{pgm_id}
+    </select>
+
+</mapper>

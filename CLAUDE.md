@@ -1,172 +1,162 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## 프로젝트 개요
-FORMA - ERP/업무시스템 AI 활용 개발 프레임워크.
-설계서(YAML) 기반으로 AI가 코드를 생성하고, 개발자가 수정하는 구조.
+FORMA v2 - ERP/업무시스템 AI 활용 개발 프레임워크.
+백엔드(Spring Boot REST API)와 프론트(Static HTML/JS)가 완전 분리된 구조.
 
 ## 빌드 및 실행
-
 ```bash
-./gradlew build          # 빌드
-./gradlew bootRun        # 실행 (http://localhost:8081)
-./gradlew test           # 테스트
-./gradlew test --tests "com.forma.domain.sales.order.SalesOrderServiceTest"  # 단일 테스트
-# H2 콘솔: http://localhost:8081/h2 (JDBC URL: jdbc:h2:mem:forma, user: sa, 비밀번호 없음)
+./gradlew build
+./gradlew bootRun  # http://localhost:8080
+# H2 콘솔: http://localhost:8080/h2 (jdbc:h2:mem:forma, sa, 비밀번호 없음)
 ```
 
-- Gradle 8.5, Java 17, Spring Boot 3.4.3, MyBatis 3.0.4
-- DDL은 `src/main/resources/schema.sql`에 작성하면 기동 시 자동 실행
-- MyBatis 설정: `map-underscore-to-camel-case: true` (DB snake_case → 자동 camelCase)
+## 기술 스택
+- Spring Boot 3.4.3, Java 17, MyBatis 3.0.4
+- JWT (jjwt), Apache POI, Lombok
+- 프론트: Vanilla JS (자체 컴포넌트), Static HTML (빌드도구/프레임워크 없음)
+- Thymeleaf 사용하지 않음
+- JPA/Hibernate 사용하지 않음
 
-## 기술 스택 제약
-- **DB**: MyBatis (기본) + JdbcTemplate (단순 CRUD). JPA/Hibernate 사용 금지
-- **Frontend**: Vanilla JS만 사용. React/Vue/빌드도구 사용 금지
-- **Lombok 사용 금지** - getter/setter 직접 작성
-- **외부 UI 라이브러리 금지** - FormaGrid/FormaSearch/FormaForm 등 자체 컴포넌트 사용
-
-## 아키텍처
-
-### Service 패턴 선택 (중요)
-
+## 패키지 구조
 ```
-대부분의 업무 화면 (90%): MyBatis Mapper
-  → 복잡한 JOIN, 서브쿼리, 동적 조건, 집계
-  → Service + Mapper 인터페이스 + Mapper XML
-
-단순 기준정보 CRUD (10%): BaseService
-  → 단일 테이블, 검색 2-3개
-  → BaseService 상속
-```
-
-**판단 기준**: 설계서에 `sql` 섹션이 있거나, 2개 이상 JOIN, 5개 이상 검색조건, 집계/리포트 → MyBatis.
-확신이 안 서면 MyBatis를 쓴다.
-
-### MyBatis 패턴 (기본)
-
-**파일 구조:**
-```
-domain/{모듈}/{기능}/
-  ├── {Entity}Controller.java   # REST API
-  ├── {Entity}Service.java      # 비즈니스 로직 (Mapper 주입)
-  └── {Entity}Mapper.java       # @Mapper 인터페이스
-resources/mapper/{모듈}/
-  └── {Entity}Mapper.xml        # SQL (AI가 생성)
+com.forma/
+├── frame/              # 프레임워크 코어 (수정 금지)
+│   ├── annotation/     # @FormaController, @FormaService, @AddUserInfo
+│   ├── aop/            # UserInfoAspect
+│   ├── base/           # BaseController, BaseService, BaseResponse, ResultCode
+│   ├── mybatis/        # FormaSqlSession (Simple + Batch)
+│   ├── db/             # DataSource 설정
+│   ├── security/       # SecurityConfig, JWT
+│   ├── trace/          # TraceFilter, ServiceTraceAspect, SSE
+│   ├── sse/            # SseBroadcaster, SseRegistry
+│   ├── mvc/            # WebMvcConfig, GlobalExceptionAdvice
+│   ├── excel/          # ExcelUtil
+│   ├── log/            # FormaLogService
+│   ├── exception/      # FormaException
+│   └── util/           # Constants, SeqGenerator, StringUtil
+├── common/             # 공통 (PgmController, CodeController, CommonService)
+├── login/              # 로그인 (LoginController, LoginService, LoginUserVo)
+└── domain/             # 업무 코드 (AI가 생성)
+    └── {module}/{sub}/{PgmId}Controller.java, Service.java
 ```
 
-**Service 패턴:**
+## Controller 패턴
 ```java
-@Service
-public class SalesOrderService {
-    private final SalesOrderMapper mapper;
-    private final SeqGenerator seq;
-
-    public PageResult<Map<String, Object>> list(Map<String, String> search) {
-        int page = Integer.parseInt(search.getOrDefault("_page", "1"));
-        int size = Integer.parseInt(search.getOrDefault("_size", "50"));
-        int offset = (page - 1) * size;
-        int total = mapper.count(search);
-        List<Map<String, Object>> data = mapper.list(search, size, offset);
-        return PageResult.of(data, total, page, size);
-    }
-}
+@FormaController(value = "/sda010", pgmId = "SDA010", description = "거래처관리")
 ```
+- 명시적 엔드포인트 (selectGrid1, saveGrid1, deleteGrid1 등)
+- BaseResponse.Ok(data) / BaseResponse.Warn(msg) / BaseResponse.Error(msg)
+- @AddUserInfo → AOP가 Map 파라미터에 user_id, user_name 등 자동 주입
 
-**Mapper 인터페이스:**
+## Service 패턴
 ```java
-@Mapper
-public interface SalesOrderMapper {
-    int count(@Param("search") Map<String, String> search);
-    List<Map<String, Object>> list(@Param("search") Map<String, String> search,
-                                    @Param("limit") int limit, @Param("offset") int offset);
-    Map<String, Object> get(@Param("orderNo") String orderNo);
-    int exists(@Param("orderNo") String orderNo);
-    void insert(Map<String, Object> data);
-    void update(Map<String, Object> data);
-    void delete(@Param("orderNo") String orderNo);
-}
+@FormaService(pgmId = "SDA010", description = "거래처관리")
+```
+- FormaSqlSession의 namespace 기반 호출
+  `sql.selectList("sda010.selectGrid1", param)`
+- Mapper 인터페이스 없음 — XML namespace 직접 참조
+- gstat: "I"=Insert, "U"=Update (프론트 FormaGrid가 관리)
+
+## MyBatis XML
+- 경로: `resources/mapper/domain/{module}/{pgmId}.xml`
+- namespace: pgmId 소문자 (sda010, soa010)
+- 공통 WHERE: `<sql id="whereGrid1">` + `<include refid="whereGrid1"/>`
+- 동적 조건: `<if test="field != null and field != ''">`
+- parameterType="map", resultType="map"
+
+## 프론트엔드 구조
+```
+static/
+├── index.html
+├── pages/{module}/{PGMID}.html
+└── assets/
+    ├── css/forma.css
+    └── js/framework/
+        ├── forma.core.js      # Listener, platform.post/get, Callback, RESULT_CODE
+        ├── forma.grid.js      # FormaGrid (편집, 체크박스, gstat 관리, 정렬, footer 합계)
+        ├── forma.form.js      # FormaForm (검색폼/입력폼)
+        ├── forma.toolbar.js   # FormaToolbar (권한 기반 버튼바, 단축키)
+        ├── forma.tab.js       # FormaTab (탭 전환)
+        ├── forma.modal.js     # FormaModal (팝업, fetch로 HTML 로딩)
+        ├── forma.popup.js     # FormaPopup.alert/confirm/loading/toast
+        └── forma.util.js      # FormaUtil (날짜, 숫자 포맷)
 ```
 
-**Mapper XML 패턴:**
-- `<sql id="whereCondition">` 로 공통 WHERE 조건 분리, count/list에서 `<include refid="whereCondition"/>` 재사용
-- 검색조건: `<if test="search.field != null and search.field != ''">` 로 동적 분기
-- multi combo: `<foreach collection="search.status.split(',')" item="s">` 로 IN절
-- LIKE 검색: `CONCAT('%', #{search.cust_nm}, '%')`
+## 화면 JS 패턴
+```javascript
+(function() {
+    const PGM = 'SDA010';
+    const listener = platform.initListener(PGM);
+    const ctx = {};
 
-### BaseService 패턴 (단순 CRUD용)
+    listener.initPgm = function() {
+        ctx.searchForm = new FormaForm('#search-area', { search: true, elements: [...] });
+        ctx.grid1 = new FormaGrid('#grid-area', { editable: true, checkable: true, columns: [...] });
+        listener.button.search.click();
+    };
 
-`common/base/`의 BaseController/BaseService를 상속. `service()`, `jdbc()`, `table()`, `pk()`, `selectColumns()`, `appendWhere()` 구현으로 CRUD 자동 완성.
+    listener.button.search.click = function() {
+        platform.post('/' + PGM.toLowerCase() + '/selectGrid1', ctx.searchForm.getData(), new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        }));
+    };
 
-### Controller 패턴
-MyBatis 사용 시 BaseController를 상속하지 않고 직접 엔드포인트를 정의한다.
-기본 엔드포인트: GET(list), GET/{id}(get), POST(save), DELETE/{id}(delete)
+    listener.button.save.click = function() {
+        const data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post('/' + PGM.toLowerCase() + '/saveGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) { FormaPopup.toast.success('저장되었습니다.'); listener.button.search.click(); }
+            }));
+        });
+    };
 
-### 감사 필드
-INSERT 시 `created_by`, `created_at`, `updated_by`, `updated_at` 세팅.
-UPDATE 시 `updated_by`, `updated_at` 세팅.
-현재 사용자: `AuthContext.getCurrentUser()` (미인증 시 "system")
+    document.addEventListener('DOMContentLoaded', () => platform.startPage(PGM, listener));
+})();
+```
 
-### 데이터 흐름
-모든 데이터는 `Map<String, Object>`로 전달.
-- API 응답: `ApiResponse<T>` (`{ success, data, message }`)
-- 목록 응답: `PageResult<T>` (`{ data, total, page, size }`)
+## 화면 초기화 흐름
+1. 브라우저가 /pages/{module}/{PGMID}.html 접근 (정적 파일)
+2. platform.startPage(PGM, listener) 호출
+3. GET /api/pgm/{PGM}/init → { pgmInfo, pgmAuth } 획득
+4. FormaToolbar.render() — 권한 기반 버튼 표시 + 단축키 등록
+5. listener.initPgm() 실행
+6. 이후 업무 로직 (조회/저장/삭제)
 
-### Frontend 구조
-`/static/forma/forma.js` 하나에 모든 공통 컴포넌트 포함:
+## Listener 이벤트 목록
+- button: search, news, save, del, print, upload, init, etc1~etc10
+- gridRow: click(record, grid, col), dblclick(rowId, colId, record, grid)
+- gridEditor: changed(grid, state, editor), beforeEditStart(grid, record, col)
+- treeGridRow: click, dblclick
+- treeGridEditor: changed, beforeEditStart
+- tabBar: tabChange(tab)
+- editor: change(el), keydown(el, event)
 
-**FormaApi** - fetch 래퍼 (get/post/del), 로딩 인디케이터 자동 표시
-
-**FormaGrid** - ERP 수준 데이터 그리드:
-- 옵션: `columns`, `editable`, `onSelect`, `onCellChange`, `onSort`, `onPageChange`, `defaultSort`, `pageSize`
-- features: `['addRow', 'deleteRow', 'export', 'checkbox', 'rowNum']`
-- 정렬, 페이징, 체크박스, CSV 내보내기, 더블클릭 편집, 컬럼 리사이즈, frozen 컬럼
-- `getModifiedRows()`, `getCheckedRows()`, `exportCsv()`
-
-**FormaSearch** - 검색바 (text/combo/dateRange/codePopup, 접기/펼치기, 초기화)
-
-**FormaForm** - 입력 폼 빌더
-
-**FormaToast** - `FormaToast.success/error/info('메시지')`
-
-**FormaDialog** - `await FormaDialog.confirm('확인?')`, `await FormaDialog.alert('알림')`
-
-## 설계서 기반 코드 생성 워크플로
-
-### 새 화면 추가 시:
-1. `design/screens/{화면ID}.yml` 읽기
-2. `design/_entities.yml`에서 entity 정의 참조
-3. 생성 파일 (MyBatis 기준):
-   - `src/main/java/com/forma/domain/{모듈}/{기능}/{Entity}Controller.java`
-   - `src/main/java/com/forma/domain/{모듈}/{기능}/{Entity}Service.java`
-   - `src/main/java/com/forma/domain/{모듈}/{기능}/{Entity}Mapper.java`
-   - `src/main/resources/mapper/{모듈}/{Entity}Mapper.xml`
-   - `src/main/resources/static/pages/{모듈}/{화면ID}.html`
-   - `src/main/resources/static/pages/{모듈}/{화면ID}.js`
-   - `src/main/resources/schema/{entity}.sql` (DDL)
-4. 설계서 `sql` 섹션의 joins/extraColumns 참조하여 Mapper XML 생성
-5. 설계서 `notes` 섹션은 자연어 지시이므로 로직에 반영
-
-### 검색조건 → Mapper XML 변환 규칙:
-- text → `<if>` + `LIKE CONCAT('%', #{search.field}, '%')`
-- combo (단일) → `<if>` + `= #{search.field}`
-- combo (multi) → `<if>` + `<foreach>` IN절
-- dateRange → `<if>` + `>= #{search.field_from}` / `<= #{search.field_to}`
-- codePopup → `<if>` + `= #{search.field}`
-
-### Grid 컬럼 속성 규칙:
-- format: currency → align: 'right' 자동 적용
-- format: badge → code 속성 필수
-- frozen: true → 좌측 고정
-- auto: true → 자동 순번
+## FormaGrid API
+- setData(data) — 데이터 세팅 (기존 데이터 교체)
+- getData() — 전체 데이터 반환
+- getCheckedData() — 체크된 행 반환 (gstat 포함)
+- getModifiedData() — gstat이 I 또는 U인 행 반환
+- getSelectedItem() — 현재 선택된 행 반환 (없으면 null)
+- clearData() — 데이터 초기화
+- addRow(defaults) — 행 추가 (gstat="I")
+- deleteRow() — 체크된/선택된 행 삭제
+- getItem(idx) — 특정 행 데이터
+- updateItem(idx, data) — 특정 행 업데이트 (gstat 자동 "U")
+- eachRow(callback) — 전체 행 순회
+- clearSelect() — 선택 해제
+- checkGridValidation() — required 컬럼 빈 값 검증
+- addCellCss(rowIdx, field, css) / removeCellCss() — 셀별 CSS
+- addCss(rowIdx, css) / removeCss() — 행별 CSS
 
 ## 네이밍 규칙
-- **패키지**: `com.forma.domain.{모듈}.{기능}`
-- **Mapper XML**: `resources/mapper/{모듈}/{Entity}Mapper.xml`
-- **SQL 테이블**: `tb_{snake_case}` (`tb_sales_order`)
-- **SQL 컬럼**: snake_case (`order_no`)
-- **화면 ID**: `{모듈약어}-{3자리순번}` (`ORD-001`)
-- **API 경로**: `/api/{도메인-케밥}` (`/api/sales-order`)
-- **코드 그룹**: UPPER_SNAKE (`ORD_STATUS`)
-- 모든 쓰기 메서드에 `@Transactional`
-- 비즈니스 예외는 `BusinessException("사용자 메시지")`
+- 패키지: `com.forma.domain.{module}.{sub}.{PgmId소문자}`
+- Controller: `{PgmId}Controller.java`
+- Service: `{PgmId}Service.java`
+- MyBatis XML: `mapper/domain/{module}/{pgmId소문자}.xml`
+- 화면: `static/pages/{module}/{PGMID}.html`
+- SQL 테이블: `tb_{snake_case}`
+- SQL 컬럼: snake_case
+- API: `/{pgmId소문자}/{action}` (예: /sda010/selectGrid1)
+- 코드 그룹: UPPER_SNAKE

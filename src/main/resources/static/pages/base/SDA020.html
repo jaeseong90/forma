@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>견적템플릿관리</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">견적템플릿관리 (SDA020)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div class="forma-split-h" id="split-area" style="min-height:500px">
+            <div class="forma-split-panel" style="width:400px">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">템플릿 목록</div>
+                    <div id="grid1-area"></div>
+                </div>
+            </div>
+            <div class="forma-split-handle"></div>
+            <div class="forma-split-panel" style="flex:1">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">템플릿별 항목</div>
+                    <div id="grid2-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    const PGM = 'SDA020';
+    const listener = platform.initListener(PGM);
+    const ctx = { selectedMaster: null };
+
+    listener.initPgm = function() {
+        FormaUtil.initSplit('#split-area');
+
+        ctx.searchForm = new FormaForm('#search-area', {
+            search: true,
+            elements: [
+                { field: 'est_type', label: '견적유형', widget: 'combo', options: [
+                    { value: 'S', label: '조선' },
+                    { value: 'P', label: '플랜트' },
+                    { value: 'E', label: '기전' }
+                ]}
+            ]
+        });
+
+        ctx.grid1 = new FormaGrid('#grid1-area', {
+            columns: [
+                { field: 'EGRP_CODE', label: '제품그룹코드', width: 120 },
+                { field: 'SER', label: '순번', width: 60 },
+                { field: 'DESC_NM', label: '템플릿명', width: 180 },
+                { field: 'EST_TYPE', label: '견적유형', width: 80 }
+            ],
+            onRowClick: function(row) {
+                ctx.selectedMaster = row;
+                loadGrid2(row.EGRP_CODE, row.SER);
+            }
+        });
+
+        ctx.grid2 = new FormaGrid('#grid2-area', {
+            editable: true,
+            checkable: true,
+            rowNum: true,
+            columns: [
+                { field: 'ACNT_CD', label: '코드', width: 120, frozen: true, footer: 'count' },
+                { field: 'ACNT_NM', label: '항목명', width: 200 },
+                { field: 'UNIT_CD', label: '단위', width: 100, editor: 'select', code: 'UNIT' },
+                { field: 'USE_YN', label: '사용', width: 80, editor: 'check' },
+                { field: 'REMARK', label: '비고', width: 300 }
+            ]
+        });
+
+        listener.button.search.click();
+    };
+
+    function loadGrid2(egrpCode, ser) {
+        platform.post('/sda020/selectGrid2', { egrp_code: egrpCode, ser: ser }, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) ctx.grid2.setData(r.resultData);
+        }));
+    }
+
+    listener.button.search.click = function() {
+        const param = ctx.searchForm.getData();
+        platform.post('/sda020/selectGrid1', param, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) {
+                ctx.grid1.setData(r.resultData);
+                ctx.grid2.clearData();
+                ctx.selectedMaster = null;
+            }
+        }));
+    };
+
+    listener.button.save.click = function() {
+        if (!ctx.selectedMaster) { FormaPopup.alert.show('좌측에서 템플릿을 선택하세요.'); return; }
+        const data = ctx.grid2.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        data.forEach(function(item) {
+            item.egrp_code = ctx.selectedMaster.EGRP_CODE;
+            item.ser = ctx.selectedMaster.SER;
+            item.acnt_cd = item.ACNT_CD;
+            item.acnt_nm = item.ACNT_NM;
+            item.unit_cd = item.UNIT_CD;
+            item.use_yn = item.USE_YN;
+            item.remark = item.REMARK;
+            item.sort_order = item.SORT_ORDER;
+        });
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sda020/saveGrid2', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('저장되었습니다.');
+                    loadGrid2(ctx.selectedMaster.EGRP_CODE, ctx.selectedMaster.SER);
+                }
+            }));
+        });
+    };
+
+    listener.button.del.click = function() {
+        if (!ctx.selectedMaster) { FormaPopup.alert.show('좌측에서 템플릿을 선택하세요.'); return; }
+        const data = ctx.grid2.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
+        data.forEach(function(item) {
+            item.egrp_code = ctx.selectedMaster.EGRP_CODE;
+            item.ser = ctx.selectedMaster.SER;
+            item.acnt_cd = item.ACNT_CD;
+        });
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sda020/deleteGrid2', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('삭제되었습니다.');
+                    loadGrid2(ctx.selectedMaster.EGRP_CODE, ctx.selectedMaster.SER);
+                }
+            }));
+        });
+    };
+
+    listener.button.init.click = function() {
+        ctx.searchForm.clear();
+        ctx.grid1.clearData();
+        ctx.grid2.clearData();
+        ctx.selectedMaster = null;
+    };
+
+    document.addEventListener('DOMContentLoaded', () => platform.startPage(PGM, listener));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>거래처관리</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">거래처관리 (SDA010)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div id="grid-area"></div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    const PGM = 'SDA010';
+    const listener = platform.initListener(PGM);
+    const ctx = {};
+
+    listener.initPgm = function() {
+        ctx.searchForm = new FormaForm('#search-area', {
+            search: true,
+            elements: [
+                { field: 'cust_cd', label: '거래처코드', placeholder: '거래처코드' },
+                { field: 'cust_nm', label: '거래처명', placeholder: '거래처명' },
+                { field: 'cust_type', label: '거래처유형', widget: 'combo', options: [
+                    { value: 'DOMESTIC', label: '국내' },
+                    { value: 'OVERSEAS', label: '해외' },
+                    { value: 'INTERNAL', label: '내부' }
+                ]},
+            ]
+        });
+
+        ctx.grid1 = new FormaGrid('#grid-area', {
+            editable: true, checkable: true,
+            columns: [
+                { field: 'CUST_CD', label: '거래처코드', width: 120 },
+                { field: 'CUST_NM', label: '거래처명', width: 200 },
+                { field: 'CUST_TYPE', label: '거래처유형', width: 100 },
+                { field: 'TEL', label: '전화번호', width: 130 },
+                { field: 'ADDR', label: '주소', width: 300 },
+            ]
+        });
+
+        listener.button.search.click();
+    };
+
+    listener.button.search.click = function() {
+        platform.post('/sda010/selectGrid1', ctx.searchForm.getData(), new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        }));
+    };
+
+    listener.button.save.click = function() {
+        const data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sda010/saveGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) { FormaPopup.toast.success('저장되었습니다.'); listener.button.search.click(); }
+            }));
+        });
+    };
+
+    listener.button.del.click = function() {
+        const data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sda010/deleteGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) { FormaPopup.toast.success('삭제되었습니다.'); listener.button.search.click(); }
+            }));
+        });
+    };
+
+    listener.button.init.click = function() { ctx.searchForm.clear(); ctx.grid1.clearData(); };
+
+    document.addEventListener('DOMContentLoaded', () => platform.startPage(PGM, listener));
+})();
+</script>
+</body>
+</html>

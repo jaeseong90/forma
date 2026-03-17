@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sda010">
+
+    <select id="selectGrid1" parameterType="map" resultType="map">
+        SELECT cust_cd, cust_nm, cust_type, tel, addr,
+               created_by, created_at, updated_by, updated_at
+        FROM tb_customer
+        <where>
+            <if test="cust_cd != null and cust_cd != ''">
+                AND cust_cd LIKE '%' || #{cust_cd} || '%'
+            </if>
+            <if test="cust_nm != null and cust_nm != ''">
+                AND cust_nm LIKE '%' || #{cust_nm} || '%'
+            </if>
+            <if test="cust_type != null and cust_type != ''">
+                AND cust_type = #{cust_type}
+            </if>
+        </where>
+        ORDER BY cust_cd
+    </select>
+
+    <insert id="insertGrid1" parameterType="map">
+        INSERT INTO tb_customer (cust_cd, cust_nm, cust_type, tel, addr,
+                                 created_by, created_at, updated_by, updated_at)
+        VALUES (#{cust_cd}, #{cust_nm}, #{cust_type}, #{tel}, #{addr},
+                #{user_id}, NOW(), #{user_id}, NOW())
+    </insert>
+
+    <update id="updateGrid1" parameterType="map">
+        UPDATE tb_customer
+        SET cust_nm = #{cust_nm}, cust_type = #{cust_type},
+            tel = #{tel}, addr = #{addr},
+            updated_by = #{user_id}, updated_at = NOW()
+        WHERE cust_cd = #{cust_cd}
+    </update>
+
+    <delete id="deleteGrid1" parameterType="map">
+        DELETE FROM tb_customer WHERE cust_cd = #{cust_cd}
+    </delete>
+
+</mapper>

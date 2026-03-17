@@ -1,0 +1,146 @@
+/* FORMA v2 CSS */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 13px; color: #333; background: #f5f5f5; }
+
+/* Layout */
+.forma-page { max-width: 1400px; margin: 0 auto; padding: 16px; }
+.forma-page-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #333; }
+.forma-content { display: flex; flex-direction: column; gap: 8px; }
+.forma-section { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; }
+.forma-section-title { font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; }
+
+/* Input */
+.forma-input { height: 28px; padding: 0 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 12px; outline: none; }
+.forma-input:focus { border-color: #4a90d9; }
+select.forma-input { padding-right: 20px; }
+textarea.forma-input { height: auto; padding: 6px 8px; }
+
+/* Button */
+.forma-btn { height: 28px; padding: 0 12px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; font-size: 12px; }
+.forma-btn:hover { background: #f0f0f0; }
+.forma-btn-primary { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.forma-btn-primary:hover { background: #3a7bc8; }
+.forma-btn-sm { height: 24px; padding: 0 8px; font-size: 11px; }
+
+/* Top Button Bar */
+.forma-top-buttons { display: flex; gap: 6px; padding: 8px 0; justify-content: flex-end; }
+
+/* Search */
+.forma-search { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px 12px; }
+.forma-search-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.forma-search-group { display: flex; align-items: center; gap: 4px; }
+.forma-search-group label { font-size: 12px; font-weight: 500; color: #555; white-space: nowrap; min-width: 50px; }
+.forma-search-group .forma-input { width: 130px; }
+
+/* Grid */
+.forma-grid-wrap { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; }
+.forma-grid-toolbar { padding: 6px 8px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 4px; }
+.forma-grid-scroll { overflow-x: auto; }
+.forma-grid { width: 100%; border-collapse: collapse; }
+.forma-grid th { background: #f8f8f8; padding: 6px 8px; text-align: left; font-size: 12px; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
+.forma-grid td { padding: 4px 8px; border-bottom: 1px solid #eee; font-size: 12px; white-space: nowrap; }
+.forma-grid tbody tr:hover { background: #f0f7ff; }
+.forma-grid tbody tr.selected { background: #e3effa; }
+.forma-grid-empty { text-align: center; padding: 40px !important; color: #999; }
+.forma-grid-input { width: 100%; height: 24px; padding: 0 4px; border: 1px solid #4a90d9; background: #fff; font-size: 12px; outline: none; }
+.forma-row-modified td:first-child { border-left: 3px solid #4caf50; }
+
+/* Form */
+.forma-form { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; }
+.forma-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.forma-form-row { display: flex; align-items: center; gap: 8px; }
+.forma-form-row label { font-size: 12px; font-weight: 500; color: #555; min-width: 80px; white-space: nowrap; }
+.forma-form-row label.required::after { content: ' *'; color: #e24b4a; }
+.forma-form-row .forma-input { flex: 1; }
+
+/* Loading */
+.forma-loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.5); z-index: 9999; align-items: center; justify-content: center; }
+.forma-loading-spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #4a90d9; border-radius: 50%; animation: forma-spin 0.7s linear infinite; }
+@keyframes forma-spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.forma-toast-container { position: fixed; top: 16px; right: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+.forma-toast { padding: 10px 20px; border-radius: 4px; font-size: 13px; color: #fff; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.forma-toast-show { opacity: 1; transform: translateX(0); }
+.forma-toast-hide { opacity: 0; transform: translateX(100%); }
+.forma-toast-success { background: #4caf50; }
+.forma-toast-error { background: #e24b4a; }
+.forma-toast-info { background: #4a90d9; }
+
+/* Dialog */
+.forma-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 10001; }
+.forma-dialog { background: #fff; border-radius: 8px; min-width: 320px; max-width: 480px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.forma-dialog-body { padding: 24px 24px 16px; font-size: 14px; line-height: 1.6; }
+.forma-dialog-footer { padding: 12px 24px 16px; display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Tab */
+.forma-tab-wrap { display: flex; flex-direction: column; flex: 1; }
+.forma-tab-header { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; background: #fff; }
+.forma-tab-btn { padding: 8px 20px; border: none; background: #f5f5f5; cursor: pointer; font-size: 12px; font-weight: 500; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+.forma-tab-btn:hover { background: #eee; }
+.forma-tab-btn.active { background: #fff; color: #333; border-bottom-color: #4a90d9; }
+.forma-tab-body { flex: 1; background: #fff; }
+.forma-tab-panel { padding: 8px 0; height: 100%; }
+
+/* Modal */
+.forma-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 5000; }
+.forma-modal { background: #fff; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2); overflow: hidden; }
+.forma-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 14px; background: #f8f8f8; }
+.forma-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+.forma-modal-close:hover { color: #333; }
+.forma-modal-body { flex: 1; overflow: auto; padding: 12px; }
+
+/* Toolbar */
+.forma-toolbar { display: flex; gap: 4px; justify-content: flex-end; }
+
+/* Grid Footer */
+.forma-grid tfoot td { background: #f5f5f5; font-weight: 600; border-top: 2px solid #e0e0e0; padding: 4px 8px; font-size: 12px; }
+
+/* Grid Multi-header */
+.forma-grid thead th { text-align: center; border-bottom: 1px solid #e0e0e0; }
+.forma-grid thead tr:last-child th { border-bottom: 2px solid #e0e0e0; }
+
+/* Grid Sort Icon */
+.forma-sort-icon { font-size: 10px; color: #4a90d9; }
+
+/* Grid Select Editor */
+select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px solid #4a90d9; background: #fff; font-size: 12px; outline: none; }
+
+/* Grid Validation Error */
+.forma-cell-error { background: #fff0f0 !important; border: 1px solid #e24b4a !important; }
+
+/* Cell CSS Utilities */
+.text-red { color: #e24b4a !important; }
+.text-blue { color: #4a90d9 !important; }
+.text-navy { color: #1a3c6e !important; }
+.text-gray { color: #999 !important; }
+.text-italic { font-style: italic !important; }
+.textLeft { text-align: left !important; }
+.textCenter { text-align: center !important; }
+.textRight { text-align: right !important; }
+.cell-yel { background: #fffde7 !important; }
+.cell-pnk { background: #fce4ec !important; }
+.cell-lav { background: #f3e5f5 !important; }
+
+/* Column Resize Handle */
+.forma-resize-handle { position: absolute; right: 0; top: 0; width: 4px; height: 100%; cursor: col-resize; }
+.forma-resize-handle:hover { background: #4a90d9; }
+
+/* Frozen column */
+.forma-grid th[style*="sticky"], .forma-grid td[style*="sticky"] { z-index: 2; }
+
+/* Split Panel */
+.forma-split-h { display: flex; height: 100%; }
+.forma-split-v { display: flex; flex-direction: column; height: 100%; }
+.forma-split-panel { overflow: auto; }
+.forma-split-handle { width: 6px; background: #e0e0e0; cursor: col-resize; flex-shrink: 0; transition: background 0.15s; }
+.forma-split-handle:hover { background: #4a90d9; }
+.forma-split-v > .forma-split-handle { width: auto; height: 6px; cursor: row-resize; }
+
+/* DateRange */
+.forma-daterange { display: inline-flex; align-items: center; }
+.forma-daterange .forma-input { width: 130px; }
+
+/* CodePopup */
+.forma-codepopup { display: inline-flex; align-items: center; gap: 2px; }
+.forma-codepopup-name { font-size: 12px; color: #555; margin-left: 4px; white-space: nowrap; }
