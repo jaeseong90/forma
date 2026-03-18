@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>수주등록</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">수주등록 (SDB010)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div class="forma-split-h" id="split-area" style="min-height:500px">
+            <div class="forma-split-panel" style="width:380px">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">수주 목록</div>
+                    <div id="grid1-area"></div>
+                </div>
+            </div>
+            <div class="forma-split-handle"></div>
+            <div class="forma-split-panel" style="flex:1">
+                <div id="tab-area"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    const PGM = 'SDB010';
+    const listener = platform.initListener(PGM);
+    const ctx = { selectedOrderNo: null };
+
+    listener.initPgm = function() {
+        FormaUtil.initSplit('#split-area');
+
+        ctx.searchForm = new FormaForm('#search-area', { search: true, elements: [
+            { field: 'order_date', label: '수주일자', widget: 'dateRange', default: 'THIS_MONTH' },
+            { field: 'cust_cd', label: '거래처코드' },
+            { field: 'status', label: '상태', widget: 'combo', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'CONFIRMED', label: '확정' },
+                { value: 'APPROVED', label: '승인' }
+            ]},
+        ]});
+
+        ctx.grid1 = new FormaGrid('#grid1-area', {
+            columns: [
+                { field: 'ORDER_NO', label: '수주번호', width: 140 },
+                { field: 'CUST_NM', label: '거래처명', width: 120 },
+                { field: 'ORDER_DATE', label: '수주일자', width: 100, format: 'date' },
+                { field: 'TOTAL_AMT', label: '합계금액', width: 110, format: 'currency' },
+                { field: 'STATUS', label: '상태', width: 70 },
+            ],
+            onRowClick: function(row) {
+                ctx.selectedOrderNo = row.ORDER_NO;
+                loadMaster(row.ORDER_NO);
+            }
+        });
+
+        ctx.tab = new FormaTab('#tab-area', {
+            tabs: [
+                { id: 'tab-basic', label: '기본정보' },
+                { id: 'tab-items', label: '품목명세' },
+                { id: 'tab-history', label: '수주이력' },
+            ],
+            listener: listener,
+            onTabChange: function(tabId) {
+                if (tabId === 'tab-history' && ctx.selectedOrderNo) {
+                    loadHistory(ctx.selectedOrderNo);
+                }
+                if (tabId === 'tab-basic') listener.button.etc1.show();
+                else listener.button.etc1.hide();
+            }
+        });
+
+        ctx.masterForm = new FormaForm(ctx.tab.getContentEl('tab-basic'), { elements: [
+            { field: 'ORDER_NO', label: '수주번호', readOnly: true },
+            { field: 'ORDER_DATE', label: '수주일자', widget: 'date' },
+            { field: 'CUST_CD', label: '거래처코드' },
+            { field: 'CUST_NM', label: '거래처명', readOnly: true },
+            { field: 'STATUS', label: '상태', readOnly: true },
+            { field: 'TOTAL_AMT', label: '합계금액', type: 'number', readOnly: true },
+            { field: 'REMARK', label: '비고', widget: 'textarea' },
+        ]});
+
+        ctx.grid2 = new FormaGrid(ctx.tab.getContentEl('tab-items'), {
+            editable: true,
+            checkable: true,
+            rowNum: true,
+            columns: [
+                { field: 'ITEM_CD', label: '품목코드', width: 120 },
+                { field: 'ITEM_NM', label: '품목명', width: 200 },
+                { field: 'QTY', label: '수량', width: 80, type: 'number', footer: 'sum' },
+                { field: 'UNIT_PRICE', label: '단가', width: 110, type: 'number', format: 'currency' },
+                { field: 'AMOUNT', label: '금액', width: 130, format: 'currency', readOnly: true, footer: 'sum' },
+            ],
+            onCellChange: function(row, field, idx) {
+                if (field === 'QTY' || field === 'UNIT_PRICE') {
+                    row.AMOUNT = (Number(row.QTY) || 0) * (Number(row.UNIT_PRICE) || 0);
+                    ctx.grid2.updateItem(idx, { AMOUNT: row.AMOUNT });
+                }
+            }
+        });
+
+        ctx.grid3 = new FormaGrid(ctx.tab.getContentEl('tab-history'), {
+            columns: [
+                { field: 'ACTION_AT', label: '일시', width: 160 },
+                { field: 'ACTION', label: '액션', width: 100 },
+                { field: 'ACTION_DETAIL', label: '상세', width: 300 },
+                { field: 'ACTION_BY', label: '처리자', width: 100 },
+            ]
+        });
+
+        listener.button.search.click();
+    };
+
+    function loadMaster(orderNo) {
+        platform.post('/sdb010/selectMaster', { order_no: orderNo }, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK && r.resultData) {
+                ctx.masterForm.setData(r.resultData);
+            }
+        }));
+        platform.post('/sdb010/selectGrid2', { order_no: orderNo }, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) ctx.grid2.setData(r.resultData);
+        }));
+        ctx.grid3.clearData();
+        ctx.tab.setActiveTab('tab-basic');
+    }
+
+    function loadHistory(orderNo) {
+        platform.post('/sdb010/selectGrid3', { order_no: orderNo }, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) ctx.grid3.setData(r.resultData);
+        }));
+    }
+
+    listener.button.search.click = function() {
+        platform.post('/sdb010/selectGrid1', ctx.searchForm.getData(), new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) {
+                ctx.grid1.setData(r.resultData);
+                ctx.masterForm.clear();
+                ctx.grid2.clearData();
+                ctx.grid3.clearData();
+                ctx.selectedOrderNo = null;
+            }
+        }));
+    };
+
+    listener.button.news.click = function() {
+        ctx.selectedOrderNo = null;
+        ctx.masterForm.clear();
+        ctx.masterForm.setData({ ORDER_DATE: FormaUtil.today(), STATUS: 'DRAFT' });
+        ctx.grid2.clearData();
+        ctx.grid2.addRow();
+        ctx.grid3.clearData();
+        ctx.tab.setActiveTab('tab-basic');
+    };
+
+    listener.button.save.click = function() {
+        const master = ctx.masterForm.getData();
+        if (!master.CUST_CD) { FormaPopup.alert.show('거래처코드를 입력하세요.'); return; }
+        const param = {
+            master: {
+                order_no: ctx.selectedOrderNo || null,
+                order_date: master.ORDER_DATE,
+                cust_cd: master.CUST_CD,
+                cust_nm: master.CUST_NM || '',
+                status: master.STATUS || 'DRAFT',
+                remark: master.REMARK || ''
+            },
+            items: ctx.grid2.getData()
+        };
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sdb010/saveMaster', param, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('저장되었습니다.');
+                    if (r.resultData && r.resultData.id) {
+                        ctx.selectedOrderNo = r.resultData.id;
+                        loadMaster(ctx.selectedOrderNo);
+                    }
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    listener.button.del.click = function() {
+        if (!ctx.selectedOrderNo) { FormaPopup.alert.show('삭제할 수주를 선택하세요.'); return; }
+        FormaPopup.confirm.show('삭제하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sdb010/deleteMaster', { order_no: ctx.selectedOrderNo }, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('삭제되었습니다.');
+                    ctx.selectedOrderNo = null;
+                    ctx.masterForm.clear();
+                    ctx.grid2.clearData();
+                    ctx.grid3.clearData();
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    listener.button.etc1.click = function() {
+        if (!ctx.selectedOrderNo) { FormaPopup.alert.show('승인할 수주를 선택하세요.'); return; }
+        FormaPopup.confirm.show('승인하시겠습니까?', function(ok) {
+            if (ok) platform.post('/sdb010/approve', { order_no: ctx.selectedOrderNo }, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('승인되었습니다.');
+                    loadMaster(ctx.selectedOrderNo);
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    listener.button.init.click = function() {
+        ctx.searchForm.clear();
+        ctx.grid1.clearData();
+        ctx.masterForm.clear();
+        ctx.grid2.clearData();
+        ctx.grid3.clearData();
+        ctx.selectedOrderNo = null;
+    };
+
+    document.addEventListener('DOMContentLoaded', () => platform.startPage(PGM, listener));
+})();
+</script>
+</body>
+</html>

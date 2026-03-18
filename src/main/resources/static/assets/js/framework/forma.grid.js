@@ -11,15 +11,20 @@ class FormaGrid {
         this.checkable = options.checkable || false;
         this.sortable = options.sortable || false;
         this.rowNum = options.rowNum || false;
+        this.paging = options.paging || false;
         this.onRowClick = options.onRowClick || null;
         this.onRowDblClick = options.onRowDblClick || null;
         this.onCellChange = options.onCellChange || null;
+        this.onPageChange = options.onPageChange || null;
         this.rows = [];
         this.selectedIdx = -1;
         this._cellCss = {};
         this._rowCss = {};
         this._sortCol = null;
         this._sortDir = null;
+        this._currentPage = 1;
+        this._totalCount = 0;
+        this._pageSize = options.pageSize || 50;
         this._hasMultiHeader = this.columns.some(c => Array.isArray(c.label));
         this._hasFooter = this.columns.some(c => c.footer);
         this._hasFrozen = this.columns.some(c => c.frozen);
@@ -210,7 +215,7 @@ class FormaGrid {
 
     _attachResize(th, col, colIdx) {
         const handle = document.createElement('div');
-        handle.className = 'forma-resize-handle';
+        handle.className = 'forma-col-resize';
         handle.onmousedown = (e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -242,7 +247,7 @@ class FormaGrid {
         col._sortIcon = arrow;
 
         th.onclick = (e) => {
-            if (e.target.classList.contains('forma-resize-handle')) return;
+            if (e.target.classList.contains('forma-col-resize')) return;
             if (this._sortCol === col.field) {
                 if (this._sortDir === 'asc') this._sortDir = 'desc';
                 else { this._sortDir = null; this._sortCol = null; }
@@ -281,13 +286,15 @@ class FormaGrid {
 
     // ── Data API ──
 
-    setData(data) {
+    setData(data, totalCount) {
         this.rows = (data || []).map(r => ({ ...r }));
+        this._totalCount = (totalCount !== undefined) ? totalCount : this.rows.length;
         this.selectedIdx = -1;
         this._cellCss = {};
         this._rowCss = {};
         if (this._sortCol && this._sortDir) this._applySort();
         this._render();
+        if (this.paging) this._renderPaging();
     }
 
     getData() { return this.rows; }
@@ -299,7 +306,10 @@ class FormaGrid {
         this.selectedIdx = -1;
         this._cellCss = {};
         this._rowCss = {};
+        this._totalCount = 0;
+        this._currentPage = 1;
         this._render();
+        if (this.paging) this._renderPaging();
     }
 
     addRow(defaultData = {}) {
@@ -405,52 +415,39 @@ class FormaGrid {
     // ── CSV 내보내기 (A-3) ──
 
     exportCsv(filename) {
-        filename = filename || 'export.csv';
-        const lines = [];
-
-        // 헤더
+        const BOM = '\uFEFF';
+        // 헤더 — label이 배열이면 마지막 요소의 text 사용
         const headers = this.columns.map(c => {
             if (Array.isArray(c.label)) {
-                const parts = c.label.filter(l => l && l.text).map(l => l.text);
-                return parts.join(' ');
+                const last = c.label[c.label.length - 1];
+                return last ? (last.text || c.field) : c.field;
             }
             return c.label || c.field;
         });
-        lines.push(headers.map(h => '"' + String(h).replace(/"/g, '""') + '"').join(','));
 
-        // 데이터
-        for (const row of this.rows) {
-            const cells = this.columns.map(col => {
-                let val = row[col.field];
-                // select: label로
-                if (col.editor === 'select') {
-                    const opts = col.options || this._codeCache[col.code] || [];
-                    const opt = opts.find(o => String(o.value) === String(val));
-                    val = opt ? opt.label : (val ?? '');
+        const csvRows = this.rows.map(row => {
+            return this.columns.map(col => {
+                let val = row[col.field] ?? '';
+                if (col.format === 'currency' && val !== '') val = Number(val).toLocaleString('ko-KR');
+                if (col.editor === 'select' && col.options) {
+                    const opt = col.options.find(o => String(o.value) === String(val));
+                    if (opt) val = opt.label;
                 }
-                // check: Y/N
-                else if (col.editor === 'check') {
-                    val = (val === 'Y' || val === true || val === 1) ? 'Y' : 'N';
-                }
-                // currency
-                else if (col.format === 'currency' && val != null && val !== '') {
-                    val = Number(val).toLocaleString('ko-KR');
-                }
-                else {
-                    val = val ?? '';
-                }
+                if (col.editor === 'check') val = (val === 'Y' || val === true) ? 'Y' : 'N';
                 return '"' + String(val).replace(/"/g, '""') + '"';
-            });
-            lines.push(cells.join(','));
-        }
+            }).join(',');
+        });
 
-        const bom = '\uFEFF';
-        const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        const csv = BOM + headers.join(',') + '\n' + csvRows.join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename || 'export.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        if (typeof FormaPopup !== 'undefined') FormaPopup.toast.success('CSV 다운로드 완료');
     }
 
     // ── Render ──
@@ -739,5 +736,83 @@ class FormaGrid {
         if (this.checkable) cols++;
         if (this.rowNum) cols++;
         this.tbody.innerHTML = '<tr><td colspan="' + cols + '" class="forma-grid-empty">데이터가 없습니다</td></tr>';
+    }
+
+    // ── 페이징 ──
+
+    _renderPaging() {
+        if (!this.paging) return;
+        // 기존 페이징 바 제거
+        const old = this.container.querySelector('.forma-grid-paging');
+        if (old) old.remove();
+
+        const totalPages = Math.max(1, Math.ceil(this._totalCount / this._pageSize));
+        const page = this._currentPage;
+
+        const bar = document.createElement('div');
+        bar.className = 'forma-grid-paging';
+
+        // 왼쪽: 페이지 버튼
+        const nav = document.createElement('div');
+        nav.className = 'forma-paging-nav';
+
+        const mkBtn = (text, targetPage, disabled) => {
+            const btn = document.createElement('button');
+            btn.textContent = text;
+            btn.disabled = disabled;
+            if (targetPage === page) btn.classList.add('active');
+            if (!disabled) btn.onclick = () => this._goPage(targetPage);
+            return btn;
+        };
+
+        nav.appendChild(mkBtn('«', 1, page === 1));
+        nav.appendChild(mkBtn('‹', page - 1, page === 1));
+
+        // 페이지 번호 (최대 10개 표시)
+        let startPage = Math.max(1, page - 4);
+        let endPage = Math.min(totalPages, startPage + 9);
+        if (endPage - startPage < 9) startPage = Math.max(1, endPage - 9);
+
+        for (let p = startPage; p <= endPage; p++) {
+            nav.appendChild(mkBtn(String(p), p, false));
+        }
+
+        nav.appendChild(mkBtn('›', page + 1, page === totalPages));
+        nav.appendChild(mkBtn('»', totalPages, page === totalPages));
+        bar.appendChild(nav);
+
+        // 가운데: 페이지 크기
+        const sizeWrap = document.createElement('div');
+        sizeWrap.className = 'forma-paging-size';
+        sizeWrap.innerHTML = '페이지크기: ';
+        [20, 50, 100].forEach(size => {
+            const btn = document.createElement('button');
+            btn.textContent = size;
+            if (size === this._pageSize) btn.classList.add('active');
+            btn.onclick = () => {
+                this._pageSize = size;
+                this._currentPage = 1;
+                this._renderPaging();
+                if (this.onPageChange) this.onPageChange(1, size);
+            };
+            sizeWrap.appendChild(btn);
+        });
+        bar.appendChild(sizeWrap);
+
+        // 오른쪽: 총 건수
+        const info = document.createElement('div');
+        info.className = 'forma-paging-info';
+        info.textContent = '총 ' + this._totalCount.toLocaleString('ko-KR') + '건';
+        bar.appendChild(info);
+
+        this.container.appendChild(bar);
+    }
+
+    _goPage(page) {
+        const totalPages = Math.max(1, Math.ceil(this._totalCount / this._pageSize));
+        if (page < 1 || page > totalPages) return;
+        this._currentPage = page;
+        this._renderPaging();
+        if (this.onPageChange) this.onPageChange(page, this._pageSize);
     }
 }

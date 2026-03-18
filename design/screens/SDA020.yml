@@ -1,0 +1,73 @@
+screen:
+  id: SDA020
+  name: 견적템플릿관리
+  module: base/estimate
+  type: split-detail
+  description: 좌측 템플릿 목록 선택 → 우측 템플릿별 항목 편집
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+  init: true
+  etc:
+    - { label: CSV, key: etc1 }
+
+search:
+  - field: est_type
+    label: 견적유형
+    widget: combo
+    options:
+      - { value: S, label: 조선 }
+      - { value: P, label: 플랜트 }
+      - { value: E, label: 기전 }
+
+grids:
+  grid1:
+    editable: false
+    checkable: false
+    columns:
+      - { field: EGRP_CODE, label: 제품그룹코드, width: 120 }
+      - { field: SER, label: 순번, width: 60 }
+      - { field: DESC_NM, label: 템플릿명, width: 180 }
+      - { field: EST_TYPE, label: 견적유형, width: 80 }
+    events:
+      onRowClick: grid1 행 클릭 시 grid2에 해당 템플릿 항목 로딩
+
+  grid2:
+    editable: true
+    checkable: true
+    rowNum: true
+    columns:
+      - { field: ACNT_CD, label: 코드, width: 120, frozen: true, footer: count }
+      - { field: ACNT_NM, label: 항목명, width: 200 }
+      - { field: UNIT_CD, label: 단위, width: 100, editor: select, code: UNIT }
+      - { field: USE_YN, label: 사용, width: 80, editor: check }
+      - { field: REMARK, label: 비고, width: 300 }
+
+layout:
+  type: split-h
+  splitWidth: 400
+
+sql:
+  tables:
+    - { name: tb_estimate_template, alias: t }
+    - { name: tb_estimate_template_item }
+  selectGrid1:
+    table: tb_estimate_template t
+    columns: t.egrp_code, t.ser, t.desc_nm, t.est_type, t.created_by, t.created_at
+    orderBy: t.egrp_code, t.ser
+  selectGrid2:
+    table: tb_estimate_template_item
+    columns: acnt_cd, acnt_nm, parent_cd, lvl, unit_cd, use_yn, remark, sort_order
+    where: egrp_code = #{egrp_code} AND ser = #{ser}
+    orderBy: sort_order
+  insertGrid2:
+    table: tb_estimate_template_item
+  updateGrid2:
+    table: tb_estimate_template_item
+    where: egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}
+  deleteGrid2:
+    table: tb_estimate_template_item
+    where: egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}

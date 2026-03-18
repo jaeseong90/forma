@@ -1,0 +1,90 @@
+screen:
+  id: SOA010
+  name: 수주관리
+  module: sales/order
+  type: master-detail
+  description: 수주 목록 조회, 수주 정보 입력/수정, 수주 품목 편집
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+  init: true
+
+search:
+  - field: order_date
+    label: 수주일자
+    widget: dateRange
+    default: THIS_MONTH
+  - field: cust_cd
+    label: 거래처코드
+    widget: text
+  - field: status
+    label: 상태
+    widget: combo
+    options:
+      - { value: DRAFT, label: 작성중 }
+      - { value: CONFIRMED, label: 확정 }
+      - { value: APPROVED, label: 승인 }
+
+grids:
+  grid1:
+    editable: false
+    checkable: false
+    columns:
+      - { field: ORDER_NO, label: 수주번호, width: 160 }
+      - { field: CUST_NM, label: 거래처명, width: 180 }
+      - { field: ORDER_DATE, label: 수주일자, width: 110, format: date }
+      - { field: TOTAL_AMT, label: 합계금액, width: 130, format: currency }
+      - { field: STATUS, label: 상태, width: 90 }
+    events:
+      onRowClick: grid1 행 클릭 → masterForm에 데이터 세팅, grid2에 품목 로딩
+
+  grid2:
+    editable: true
+    checkable: false
+    columns:
+      - { field: SEQ, label: 순번, width: 60, readOnly: true }
+      - { field: ITEM_CD, label: 품목코드, width: 120 }
+      - { field: ITEM_NM, label: 품목명, width: 200 }
+      - { field: QTY, label: 수량, width: 80, type: number }
+      - { field: UNIT_PRICE, label: 단가, width: 110, type: number, format: currency }
+      - { field: AMOUNT, label: 금액, width: 130, format: currency, readOnly: true }
+    events:
+      onCellChange: QTY 또는 UNIT_PRICE 변경 시 AMOUNT = QTY * UNIT_PRICE 자동계산
+
+form:
+  masterForm:
+    elements:
+      - { field: ORDER_NO, label: 수주번호, readOnly: true }
+      - { field: ORDER_DATE, label: 수주일자, widget: date }
+      - { field: CUST_CD, label: 거래처코드 }
+      - { field: CUST_NM, label: 거래처명, readOnly: true }
+      - { field: STATUS, label: 상태, readOnly: true }
+      - { field: REMARK, label: 비고, widget: textarea }
+
+layout:
+  type: full
+
+sql:
+  tables:
+    - { name: tb_sales_order, alias: o }
+    - { name: tb_sales_order_item }
+    - { name: tb_customer, alias: c }
+  selectGrid1:
+    table: tb_sales_order o
+    joins:
+      - { table: tb_customer, alias: c, on: "o.cust_cd = c.cust_cd", type: LEFT }
+    columns: o.order_no, o.order_date, o.cust_cd, c.cust_nm, o.status, o.total_amt, o.remark
+    orderBy: o.order_date DESC, o.order_no DESC
+  selectGrid2:
+    table: tb_sales_order_item
+    where: order_no = #{order_no}
+    orderBy: seq
+  saveAll:
+    description: 마스터 upsert + 품목 전삭 후 재입력 + 합계금액 갱신
+  deleteGrid1:
+    table: tb_sales_order
+    where: order_no = #{order_no}
+    cascade: tb_sales_order_item (order_no)

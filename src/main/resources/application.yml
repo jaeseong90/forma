@@ -7,6 +7,8 @@ spring:
   sql:
     init:
       mode: always
+      schema-locations: classpath:schema/01-tables.sql
+      data-locations: classpath:schema/02-codes.sql,classpath:schema/03-samples.sql,classpath:schema/04-pgm.sql
   h2:
     console:
       enabled: true

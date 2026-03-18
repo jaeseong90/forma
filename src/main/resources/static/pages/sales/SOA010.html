@@ -43,8 +43,7 @@
 
     listener.initPgm = function() {
         ctx.searchForm = new FormaForm('#search-area', { search: true, elements: [
-            { field: 'order_date_from', label: '수주일(시작)', widget: 'date' },
-            { field: 'order_date_to', label: '수주일(종료)', widget: 'date' },
+            { field: 'order_date', label: '수주일자', widget: 'dateRange', default: 'THIS_MONTH' },
             { field: 'cust_cd', label: '거래처코드' },
             { field: 'status', label: '상태', widget: 'combo', options: [
                 { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' }, { value: 'APPROVED', label: '승인' }

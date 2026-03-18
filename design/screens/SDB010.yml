@@ -1,0 +1,129 @@
+screen:
+  id: SDB010
+  name: 수주등록
+  module: sales/registration
+  type: split-tab
+  description: 좌측 수주 목록 + 우측 탭(기본정보/품목명세/수주이력), 승인 기능
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+  init: true
+  etc:
+    - { label: 승인, key: etc1 }
+
+search:
+  - field: order_date
+    label: 수주일자
+    widget: dateRange
+    default: THIS_MONTH
+  - field: cust_cd
+    label: 거래처코드
+    widget: text
+  - field: status
+    label: 상태
+    widget: combo
+    options:
+      - { value: DRAFT, label: 작성중 }
+      - { value: CONFIRMED, label: 확정 }
+      - { value: APPROVED, label: 승인 }
+
+grids:
+  grid1:
+    editable: false
+    checkable: false
+    columns:
+      - { field: ORDER_NO, label: 수주번호, width: 140 }
+      - { field: CUST_NM, label: 거래처명, width: 120 }
+      - { field: ORDER_DATE, label: 수주일자, width: 100, format: date }
+      - { field: TOTAL_AMT, label: 합계금액, width: 110, format: currency }
+      - { field: STATUS, label: 상태, width: 70 }
+    events:
+      onRowClick: 행 클릭 → masterForm 세팅 + grid2 로딩 + grid3 초기화
+
+  grid2:
+    editable: true
+    checkable: true
+    rowNum: true
+    columns:
+      - { field: ITEM_CD, label: 품목코드, width: 120 }
+      - { field: ITEM_NM, label: 품목명, width: 200 }
+      - { field: QTY, label: 수량, width: 80, type: number, footer: sum }
+      - { field: UNIT_PRICE, label: 단가, width: 110, type: number, format: currency }
+      - { field: AMOUNT, label: 금액, width: 130, format: currency, readOnly: true, footer: sum }
+    events:
+      onCellChange: QTY/UNIT_PRICE 변경 시 AMOUNT 자동계산
+
+  grid3:
+    editable: false
+    checkable: false
+    columns:
+      - { field: ACTION_AT, label: 일시, width: 160 }
+      - { field: ACTION, label: 액션, width: 100 }
+      - { field: ACTION_DETAIL, label: 상세, width: 300 }
+      - { field: ACTION_BY, label: 처리자, width: 100 }
+
+form:
+  masterForm:
+    elements:
+      - { field: ORDER_NO, label: 수주번호, readOnly: true }
+      - { field: ORDER_DATE, label: 수주일자, widget: date }
+      - { field: CUST_CD, label: 거래처코드 }
+      - { field: CUST_NM, label: 거래처명, readOnly: true }
+      - { field: STATUS, label: 상태, readOnly: true }
+      - { field: TOTAL_AMT, label: 합계금액, type: number, readOnly: true }
+      - { field: REMARK, label: 비고, widget: textarea }
+
+tabs:
+  - { id: tab-basic, label: 기본정보, content: masterForm }
+  - { id: tab-items, label: 품목명세, content: grid2 }
+  - { id: tab-history, label: 수주이력, content: grid3 }
+
+layout:
+  type: split-h
+  splitWidth: 380
+
+sql:
+  tables:
+    - { name: tb_sales_order, alias: o }
+    - { name: tb_sales_order_item }
+    - { name: tb_order_history }
+    - { name: tb_customer, alias: c }
+  selectGrid1:
+    table: tb_sales_order o
+    joins:
+      - { table: tb_customer, alias: c, on: "o.cust_cd = c.cust_cd", type: LEFT }
+    columns: o.order_no, o.order_date, o.cust_cd, c.cust_nm, o.status, o.total_amt, o.remark
+    orderBy: o.order_date DESC, o.order_no DESC
+  selectMaster:
+    table: tb_sales_order o
+    joins:
+      - { table: tb_customer, alias: c, on: "o.cust_cd = c.cust_cd", type: LEFT }
+    where: o.order_no = #{order_no}
+  selectGrid2:
+    table: tb_sales_order_item
+    where: order_no = #{order_no}
+    orderBy: seq
+  selectGrid3:
+    table: tb_order_history
+    where: order_no = #{order_no}
+    orderBy: action_at DESC
+  saveMaster:
+    description: |
+      마스터 upsert (신규 시 SeqGenerator.next("ORD") 채번)
+      + 품목 전삭 후 재입력 (seq 순차)
+      + amount = qty * unit_price
+      + total_amt = SUM(amount)
+      + 이력 INSERT ("생성" 또는 "저장")
+  deleteMaster:
+    cascade: tb_sales_order_item, tb_order_history → tb_sales_order
+  approve:
+    description: status DRAFT→CONFIRMED + 이력 "승인" INSERT
+    condition: status가 DRAFT일 때만 가능
+
+behavior:
+  etc1_visibility: 기본정보 탭에서만 표시 (탭 전환 시 show/hide)
+  history_lazy_load: 수주이력 탭 클릭 시에만 grid3 데이터 로딩
+  new_defaults: { ORDER_DATE: today(), STATUS: DRAFT, grid2: 빈 행 1개 추가 }

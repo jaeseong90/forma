@@ -1,0 +1,60 @@
+screen:
+  id: SDA010
+  name: 거래처관리
+  module: base/customer
+  type: list
+  description: 거래처 목록 조회/등록/수정/삭제
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+  init: true
+
+search:
+  - field: cust_cd
+    label: 거래처코드
+    widget: text
+    placeholder: 거래처코드
+  - field: cust_nm
+    label: 거래처명
+    widget: text
+    placeholder: 거래처명
+  - field: cust_type
+    label: 거래처유형
+    widget: combo
+    options:
+      - { value: DOMESTIC, label: 국내 }
+      - { value: OVERSEAS, label: 해외 }
+      - { value: INTERNAL, label: 내부 }
+
+grids:
+  grid1:
+    editable: true
+    checkable: true
+    columns:
+      - { field: CUST_CD, label: 거래처코드, width: 120 }
+      - { field: CUST_NM, label: 거래처명, width: 200 }
+      - { field: CUST_TYPE, label: 거래처유형, width: 100 }
+      - { field: TEL, label: 전화번호, width: 130 }
+      - { field: ADDR, label: 주소, width: 300 }
+
+layout:
+  type: full
+
+sql:
+  tables:
+    - { name: tb_customer }
+  selectGrid1:
+    table: tb_customer
+    columns: cust_cd, cust_nm, cust_type, tel, addr, created_by, created_at, updated_by, updated_at
+    orderBy: cust_cd
+  insertGrid1:
+    table: tb_customer
+  updateGrid1:
+    table: tb_customer
+    where: cust_cd = #{cust_cd}
+  deleteGrid1:
+    table: tb_customer
+    where: cust_cd = #{cust_cd}

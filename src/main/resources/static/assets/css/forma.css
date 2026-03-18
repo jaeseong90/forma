@@ -123,8 +123,16 @@ select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px
 .cell-lav { background: #f3e5f5 !important; }
 
 /* Column Resize Handle */
-.forma-resize-handle { position: absolute; right: 0; top: 0; width: 4px; height: 100%; cursor: col-resize; }
-.forma-resize-handle:hover { background: #4a90d9; }
+.forma-col-resize { position: absolute; right: 0; top: 0; width: 4px; height: 100%; cursor: col-resize; z-index: 1; }
+.forma-col-resize:hover { background: #4a90d9; }
+
+/* Paging */
+.forma-grid-paging { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid #e0e0e0; font-size: 12px; }
+.forma-grid-paging button { min-width: 28px; height: 24px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; border-radius: 3px; margin: 0 1px; }
+.forma-grid-paging button.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.forma-grid-paging button:hover:not(.active):not(:disabled) { background: #f0f0f0; }
+.forma-grid-paging button:disabled { opacity: 0.4; cursor: default; }
+.forma-grid-paging .forma-paging-info { color: #666; }
 
 /* Frozen column */
 .forma-grid th[style*="sticky"], .forma-grid td[style*="sticky"] { z-index: 2; }

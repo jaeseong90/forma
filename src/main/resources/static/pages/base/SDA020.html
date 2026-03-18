@@ -154,6 +154,11 @@
         ctx.selectedMaster = null;
     };
 
+    listener.button.etc1.click = function() {
+        if (ctx.grid2.getData().length === 0) { FormaPopup.alert.show('내보낼 데이터가 없습니다.'); return; }
+        ctx.grid2.exportCsv('SDA020_items.csv');
+    };
+
     document.addEventListener('DOMContentLoaded', () => platform.startPage(PGM, listener));
 })();
 </script>

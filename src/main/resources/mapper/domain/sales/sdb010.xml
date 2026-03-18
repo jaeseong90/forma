@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sdb010">
+
+    <sql id="whereGrid1">
+        <if test="order_date_from != null and order_date_from != ''">
+            AND o.order_date &gt;= #{order_date_from}
+        </if>
+        <if test="order_date_to != null and order_date_to != ''">
+            AND o.order_date &lt;= #{order_date_to}
+        </if>
+        <if test="cust_cd != null and cust_cd != ''">
+            AND o.cust_cd LIKE '%' || #{cust_cd} || '%'
+        </if>
+        <if test="status != null and status != ''">
+            AND o.status = #{status}
+        </if>
+    </sql>
+
+    <select id="selectGrid1" parameterType="map" resultType="map">
+        SELECT o.order_no, o.order_date, o.cust_cd, c.cust_nm,
+               o.status, o.total_amt, o.remark,
+               o.created_by, o.created_at
+        FROM tb_sales_order o
+        LEFT JOIN tb_customer c ON o.cust_cd = c.cust_cd
+        <where>
+            <include refid="whereGrid1"/>
+        </where>
+        ORDER BY o.order_date DESC, o.order_no DESC
+    </select>
+
+    <select id="selectMaster" parameterType="map" resultType="map">
+        SELECT o.order_no, o.order_date, o.cust_cd, c.cust_nm,
+               o.status, o.total_amt, o.remark,
+               o.created_by, o.created_at
+        FROM tb_sales_order o
+        LEFT JOIN tb_customer c ON o.cust_cd = c.cust_cd
+        WHERE o.order_no = #{order_no}
+    </select>
+
+    <select id="existsMaster" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM tb_sales_order WHERE order_no = #{order_no}
+    </select>
+
+    <insert id="insertMaster" parameterType="map">
+        INSERT INTO tb_sales_order (order_no, order_date, cust_cd, cust_nm, status,
+                                    total_amt, remark, created_by, created_at, updated_by, updated_at)
+        VALUES (#{order_no}, #{order_date}, #{cust_cd}, #{cust_nm},
+                COALESCE(#{status}, 'DRAFT'), COALESCE(#{total_amt}, 0), #{remark},
+                #{user_id}, NOW(), #{user_id}, NOW())
+    </insert>
+
+    <update id="updateMaster" parameterType="map">
+        UPDATE tb_sales_order SET
+            order_date = #{order_date}, cust_cd = #{cust_cd}, cust_nm = #{cust_nm},
+            remark = #{remark}, updated_by = #{user_id}, updated_at = NOW()
+        WHERE order_no = #{order_no}
+    </update>
+
+    <delete id="deleteMaster" parameterType="map">
+        DELETE FROM tb_sales_order WHERE order_no = #{order_no}
+    </delete>
+
+    <!-- 품목 -->
+    <select id="selectGrid2" parameterType="map" resultType="map">
+        SELECT order_no, seq, item_cd, item_nm, qty, unit_price, amount
+        FROM tb_sales_order_item
+        WHERE order_no = #{order_no}
+        ORDER BY seq
+    </select>
+
+    <insert id="insertItem" parameterType="map">
+        INSERT INTO tb_sales_order_item (order_no, seq, item_cd, item_nm, qty, unit_price, amount,
+                                         created_by, created_at, updated_by, updated_at)
+        VALUES (#{order_no}, #{seq}, #{item_cd}, #{item_nm}, #{qty}, #{unit_price}, #{amount},
+                #{user_id}, NOW(), #{user_id}, NOW())
+    </insert>
+
+    <delete id="deleteItemsByOrderNo" parameterType="map">
+        DELETE FROM tb_sales_order_item WHERE order_no = #{order_no}
+    </delete>
+
+    <update id="updateTotalAmt" parameterType="map">
+        UPDATE tb_sales_order SET total_amt = (
+            SELECT COALESCE(SUM(amount), 0) FROM tb_sales_order_item WHERE order_no = #{order_no}
+        ) WHERE order_no = #{order_no}
+    </update>
+
+    <!-- 이력 -->
+    <select id="selectGrid3" parameterType="map" resultType="map">
+        SELECT hist_seq, order_no, action, action_detail, action_by, action_at
+        FROM tb_order_history
+        WHERE order_no = #{order_no}
+        ORDER BY action_at DESC
+    </select>
+
+    <insert id="insertHistory" parameterType="map">
+        INSERT INTO tb_order_history (order_no, action, action_detail, action_by, action_at)
+        VALUES (#{order_no}, #{action}, #{action_detail}, #{user_id}, NOW())
+    </insert>
+
+    <delete id="deleteHistoryByOrderNo" parameterType="map">
+        DELETE FROM tb_order_history WHERE order_no = #{order_no}
+    </delete>
+
+    <update id="updateStatus" parameterType="map">
+        UPDATE tb_sales_order SET status = #{status}, updated_at = NOW()
+        WHERE order_no = #{order_no}
+    </update>
+
+</mapper>
