@@ -24,23 +24,30 @@ com.forma/
 ├── frame/              # 프레임워크 코어 (수정 금지)
 │   ├── annotation/     # @FormaController, @FormaService, @AddUserInfo
 │   ├── aop/            # UserInfoAspect
+│   ├── auth/           # DataAuthContext, DataAuthService (데이터 권한)
+│   ├── audit/          # AuditLogAspect, AuditLogEntry, AuditLogService (감사 로그)
 │   ├── base/           # BaseController, BaseService, BaseResponse, ResultCode
-│   ├── mybatis/        # FormaSqlSession (Simple + Batch), PrimaryMybatisConfig
+│   ├── mybatis/        # FormaSqlSession (Simple + Batch + 데이터권한 자동주입)
 │   ├── db/             # PrimaryDataSourceConfig
 │   ├── security/       # SecurityConfig, JwtTokenProvider, TokenInterceptor, CookieUtil
-│   ├── trace/          # TraceFilter, ServiceTraceAspect, TraceController, TraceEvent, TraceStore, TraceToggleStore
+│   ├── screen/         # YAML 런타임 엔진 — ScreenRegistry, DynamicSqlExecutor, GenericCrudController
+│   ├── screen/model/   # ScreenDefinition (YAML 파싱 모델)
+│   ├── file/           # FileController, FileService (파일 첨부)
+│   ├── trace/          # TraceFilter, ServiceTraceAspect, TraceStore
 │   ├── sse/            # SseBroadcaster, SseRegistry
-│   ├── mvc/            # WebMvcConfig, GlobalExceptionAdvice
+│   ├── mvc/            # WebMvcConfig (인터셉터 등록), GlobalExceptionAdvice
 │   ├── excel/          # ExcelUtil
 │   ├── log/            # FormaLogService, FormaLogType
 │   ├── exception/      # FormaException
-│   └── util/           # Constants, SeqGenerator, StringUtil
+│   └── util/           # Constants, SeqGenerator, StringUtil, OptimisticLockUtil
 ├── common/             # 공통 (PgmController, CodeController, CommonService)
 ├── login/              # 로그인 (LoginController, LoginService, LoginUserVo)
-└── domain/             # 업무 코드 (AI가 생성)
+└── domain/             # 업무 코드 (AI가 생성하거나 YAML로 대체)
     ├── base/
     │   ├── customer/       # SDA010 거래처관리
     │   └── estimate/       # SDA020 견적템플릿관리
+    ├── material/
+    │   └── item/           # MMA010 품목관리
     └── sales/
         ├── order/          # SOA010 수주관리
         └── registration/   # SDB010 수주등록
@@ -49,23 +56,27 @@ com.forma/
 ## 프론트엔드 구조
 ```
 static/
-├── index.html
-├── pages/{module}/{PGMID}.html
-├── pages/dev/               # 데모 페이지 (GRID_DEMO, FORM_DEMO, COMP_DEMO, FRAMEWORK_DEMO, AI_GUIDE)
+├── login.html                # 로그인 페이지
+├── main.html                 # ERP 메인 (좌측 메뉴 + MDI 탭)
+├── index.html                # 개발자 포털
+├── pages/screen.html         # YAML 엔진 제네릭 화면
+├── pages/{module}/{PGMID}.html  # 커스텀 화면
+├── pages/dev/                # 데모 페이지 (GRID_DEMO, FORM_DEMO, COMP_DEMO, FRAMEWORK_DEMO, AI_GUIDE)
 └── assets/
-    ├── css/forma.css         # CSS 변수 기반 테마 (~450줄)
+    ├── css/forma.css          # CSS 변수 기반 테마
     └── js/framework/
-        ├── forma.core.js      # Listener, platform.post/get, Callback, RESULT_CODE
-        ├── forma.grid.js      # FormaGrid (1,950줄+ — 에디터8종, 셀병합, 멀티행, 트리, 마스터-디테일, 가상스크롤, 그룹핑, 키보드, 클립보드, Undo, 컨텍스트메뉴, 필터행, 렌더러, 드래그이동, XLSX/CSV/인쇄/임포트)
-        ├── forma.form.js      # FormaForm (1,449줄 — 21종 위젯, 위젯 패턴 아키텍처, destroy, isDirty)
+        ├── forma.core.js      # platform.post/get (Promise/async), Listener, RESULT_CODE
+        ├── forma.grid.js      # FormaGrid (에디터8종, 셀병합, 트리, 가상스크롤, 그룹핑, 키보드, 클립보드, Undo 등)
+        ├── forma.form.js      # FormaForm (21종 위젯, 위젯 패턴 아키텍처, destroy, isDirty)
         ├── forma.toolbar.js   # FormaToolbar (권한 기반 버튼바, 단축키)
         ├── forma.tab.js       # FormaTab (탭 전환, hideTab/showTab)
         ├── forma.modal.js     # FormaModal (팝업, fetch HTML, SIZE 프리셋)
         ├── forma.popup.js     # FormaPopup.alert/confirm/loading/toast
-        ├── forma.util.js      # FormaUtil (날짜, 숫자, initSplit — 접기/펼치기, minSize, saveKey)
-        ├── forma.i18n.js      # FormaI18n (다국어 ko/en/ja/zh, t(), addMessages())
-        ├── forma.theme.js     # FormaTheme (light/dark/blue, CSS 변수 기반, toggle())
-        ├── forma.menu.js      # FormaMenu (좌측 트리 메뉴 + MDI 다중 탭)
+        ├── forma.util.js      # FormaUtil (40+개 유틸 — 날짜/숫자/문자열/배열/검증/코드캐시 + Split 패널)
+        ├── forma.mdi.js       # FormaMdi (SPA MDI — iframe 없음, div 기반 탭 관리)
+        ├── forma.menu.js      # FormaMenu (좌측 트리 메뉴, FormaMdi.open 연동)
+        ├── forma.i18n.js      # FormaI18n (다국어 ko/en/ja/zh)
+        ├── forma.theme.js     # FormaTheme (light/dark/blue, CSS 변수 기반)
         └── forma.chart.js     # FormaChart (SVG 차트 5종: bar/line/pie/donut/hbar)
 ```
 
@@ -466,8 +477,14 @@ modal.show(param);
 `FormaModal.SIZE.XS(400x300)`, `S(600x400)`, `M(800x600)`, `L(1000x700)`, `XL(1200x800)`
 
 ### 팝업 내부에서
-- `modal.ok(result)` — 결과 전달 후 닫기
-- `modal.cancel(result)` — 취소 후 닫기
+```javascript
+var modal = FormaModal.current();   // 현재 모달 인스턴스
+var param = FormaModal.getParam();  // show()에 전달된 파라미터
+modal.ok({ CUST_CD: 'C001' });     // 결과 전달 후 닫기
+```
+- 중첩 팝업 지원 (z-index 자동 증가)
+- ESC는 최상위 팝업만 닫힘
+- 드래그 이동 가능
 
 ---
 
@@ -496,7 +513,7 @@ modal.show(param);
 | API | 설명 |
 |-----|------|
 | FormaPopup.alert.show(msg) | 알림 (Promise 반환) |
-| FormaPopup.confirm.show(msg, callback) | 확인/취소 (callback(true/false)) |
+| FormaPopup.confirm.show(msg) | 확인/취소 (Promise\<boolean\>, await 가능) |
 | FormaPopup.loading.show() / .hide() | 로딩 오버레이 |
 | FormaPopup.toast.success(msg) | 성공 토스트 (3초) |
 | FormaPopup.toast.error(msg) | 에러 토스트 |
@@ -504,16 +521,31 @@ modal.show(param);
 
 ---
 
-## FormaUtil
+## FormaUtil (40+개)
+
+| 카테고리 | 주요 API |
+|---------|---------|
+| 날짜 | today(), now(), addDays(), addMonths(), firstDayOfMonth(), lastDayOfMonth(), diffDays() |
+| 숫자 | formatCurrency(), formatNumber(val, 2), parseCurrency(), formatPercent(), round() |
+| 문자열 | byteLength(), cutByByte(), formatBizNo(), formatPhone(), escapeHtml() |
+| 배열 | groupBy(), sumBy(), unique(), deepCopy(), isEqual() |
+| DOM | debounce(), throttle(), copyToClipboard(), show(), hide() |
+| 코드 | getCodeItems(grpCode), getCodeLabel(), preloadCodes('A','B'), clearCodeCache() |
+| 검증 | isEmail(), isBizNo(), isNumeric(), hasKorean() |
+| Split | initSplit(selector, {minSize, maxSize, collapsible, saveKey}) |
+
+## FormaMdi (SPA MDI)
+
+iframe 없이 div 기반 탭 관리. 메모리 효율적, 화면간 직접 통신 가능.
 
 | API | 설명 |
 |-----|------|
-| FormaUtil.today() | 오늘 날짜 'YYYY-MM-DD' |
-| FormaUtil.formatCurrency(val) | 숫자 → 천단위 콤마 |
-| FormaUtil.formatDate(val) | 날짜 → 'YYYY-MM-DD' |
-| FormaUtil.isEmpty(v) / isNotEmpty(v) | null/undefined/'' 체크 |
-| FormaUtil.initSplit(selector) | Split 패널 드래그 초기화 |
-| getCodeItems(grpCode) | 코드 그룹 조회 (비동기, 캐시) |
+| FormaMdi.init(tabBarSel, contentSel) | 초기화 |
+| FormaMdi.open({id, label, url}) | 화면 열기 (이미 열려있으면 활성화) |
+| FormaMdi.close(id) | 탭 닫기 (destroy + DOM 제거) |
+| FormaMdi.closeAll() / closeOthers(id) | 전체/다른 탭 닫기 |
+| FormaMdi.getActiveId() | 현재 활성 탭 |
+| FormaMdi.isOpen(id) | 탭 열림 여부 |
 
 ---
 
@@ -580,32 +612,26 @@ resources/schema/
 
 ## AI 코드 생성 워크플로
 
-### 전체 흐름
-```
-[1] 사용자 입력 (자연어)
-     ↓ AI (design/_prompts/00-generate-design.md)
-[2] YAML 설계서 + DDL 초안 + 코드 데이터 초안
-     ↓ 사용자 검토/보완
-[3] 확정된 YAML 설계서
-     ↓ AI (design/_prompts/01-generate-code.md)
-[4] 코드 생성 (Controller + Service + Mapper XML + HTML)
-     ↓ 사용자 보완 (특히 SQL 튜닝)
-[5] 완성
-```
+### 두 가지 방식
 
-### Phase 1: 설계서 생성 (00-generate-design.md)
-- 입력: 사용자 자연어
-- 출력: design/screens/{화면ID}.yml + DDL + 코드 데이터
-- AI가 판단: 블럭 조합, 테이블 구조, 검색 조건
-- 사용자가 검토: 필드 추가/삭제, 위젯 변경, 권한 조정
+**방식 A: YAML 런타임 엔진 (코드 생성 불필요)**
+```
+사용자 요구 → YAML 설계서 (design/screens/{ID}.yml) → 끝
+```
+- 단순 CRUD 화면은 YAML 1파일로 완성
+- Controller, Service, Mapper XML, HTML 전부 불필요
+- /api/screen/{id}/* 엔드포인트가 동적 SQL 생성
+- 지원 레이아웃: list, split-detail, master-detail, split-tab
+- JOIN, 복합 WHERE, 다중 그리드 지원
 
-### Phase 2: 코드 생성 (01-generate-code.md)
-- 입력: 확정된 YAML 설계서
-- 출력: Java 백엔드 + MyBatis XML + HTML 프론트
-- AI가 생성: 보일러플레이트 + SQL 초안
-- 사용자가 보완: 복잡한 SQL, 비즈니스 로직
+**방식 B: 커스텀 코드 (복잡한 비즈니스 로직)**
+```
+사용자 요구 → YAML 설계서 → 코드 생성 (Controller + Service + Mapper + HTML)
+```
+- 복잡한 SQL, 트랜잭션, 계산 로직이 필요한 화면
+- AI가 YAML 기반으로 보일러플레이트 생성 → 개발자가 로직 보완
 
 ### 핵심 원칙
+- 단순 화면은 YAML만으로, 복잡한 화면만 코드 작성
+- YAML과 커스텀 코드가 같은 프레임워크에서 공존
 - 설계서(YAML)는 사람이 읽고 수정할 수 있는 중간 산출물
-- AI는 블럭 카탈로그(이 문서)를 보고 블럭을 자유 조합
-- 프레임워크 블럭은 서로 독립적이므로 어떤 조합이든 가능
