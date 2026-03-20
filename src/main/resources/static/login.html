@@ -181,7 +181,7 @@
                 if (saveIdEl.checked) localStorage.setItem('forma_saved_id', userId);
                 else localStorage.removeItem('forma_saved_id');
                 // 메인 페이지 이동
-                location.href = '/';
+                location.href = '/main.html';
             } else {
                 showError(data.resultMessage || '로그인에 실패했습니다.');
                 passwordEl.value = '';

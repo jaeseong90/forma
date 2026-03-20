@@ -45,6 +45,34 @@ public class GenericCrudController extends BaseController {
         return BaseResponse.Ok(param);
     }
 
+    @PostMapping("/{screenId}/selectGrid2")
+    public BaseResponse<List<Map<String, Object>>> selectGrid2(
+            @PathVariable String screenId,
+            @RequestBody Map<String, Object> param) {
+        ScreenDefinition def = getDefinitionOrThrow(screenId);
+        return BaseResponse.Ok(sqlExecutor.executeSelect(def, "selectGrid2", param));
+    }
+
+    @PostMapping("/{screenId}/saveGrid2")
+    public BaseResponse<?> saveGrid2(
+            @PathVariable String screenId,
+            @RequestBody List<Map<String, Object>> param) {
+        ScreenDefinition def = getDefinitionOrThrow(screenId);
+        checkAuth(def, "save");
+        sqlExecutor.executeSave(def, "grid2", param);
+        return BaseResponse.Ok(param);
+    }
+
+    @PostMapping("/{screenId}/deleteGrid2")
+    public BaseResponse<?> deleteGrid2(
+            @PathVariable String screenId,
+            @RequestBody List<Map<String, Object>> param) {
+        ScreenDefinition def = getDefinitionOrThrow(screenId);
+        checkAuth(def, "delete");
+        sqlExecutor.executeDelete(def, "grid2", param);
+        return BaseResponse.Ok(param);
+    }
+
     @PostMapping("/{screenId}/deleteGrid1")
     public BaseResponse<?> deleteGrid1(
             @PathVariable String screenId,
@@ -73,8 +101,11 @@ public class GenericCrudController extends BaseController {
      * YAML auth 섹션 기반 서버 사이드 권한 체크
      */
     private void checkAuth(ScreenDefinition def, String action) {
-        if (def.getAuth() != null && Boolean.FALSE.equals(def.getAuth().get(action))) {
-            throw new FormaException("이 화면에서 " + action + " 권한이 없습니다.");
+        if (def.getAuth() != null) {
+            Object val = def.getAuth().get(action);
+            if (Boolean.FALSE.equals(val)) {
+                throw new FormaException("이 화면에서 " + action + " 권한이 없습니다.");
+            }
         }
     }
 }

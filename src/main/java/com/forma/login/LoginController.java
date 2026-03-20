@@ -4,6 +4,7 @@ import com.forma.frame.base.BaseResponse;
 import com.forma.frame.security.CookieUtil;
 import com.forma.frame.security.JwtTokenProvider;
 import com.forma.frame.util.Constants;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,13 +81,19 @@ public class LoginController {
     }
 
     @GetMapping("/userInfo")
-    public BaseResponse<?> userInfo(@RequestAttribute(Constants.LOGIN_USER_ATTR) LoginUserVo user) {
+    public BaseResponse<?> userInfo(HttpServletRequest request) {
+        // /login/** 은 인터셉터 제외이므로 쿠키에서 직접 파싱
+        String token = CookieUtil.getCookieValue(request, Constants.JWT_COOKIE_NAME);
+        if (token == null || !jwtTokenProvider.validateToken(token)) {
+            return BaseResponse.Warn("로그인이 필요합니다.");
+        }
+        Map<String, Object> claims = jwtTokenProvider.parseBody(token);
         return BaseResponse.Ok(Map.of(
-                "userId", user.getUserId(),
-                "userName", user.getUserName(),
-                "deptCode", user.getUserDeptCode(),
-                "deptName", user.getUserDeptName(),
-                "admin", user.isAdmin()
+                "userId", claims.getOrDefault("userId", ""),
+                "userName", claims.getOrDefault("userName", ""),
+                "deptCode", claims.getOrDefault("userDeptCode", ""),
+                "deptName", claims.getOrDefault("userDeptName", ""),
+                "admin", Boolean.TRUE.equals(claims.get("admin"))
         ));
     }
 }

@@ -11,9 +11,10 @@ import java.util.*;
 public class ScreenDefinition {
 
     private ScreenInfo screen;
-    private Map<String, Boolean> auth;
+    private Map<String, Object> auth;
     private List<SearchField> search;
     private Map<String, GridDef> grids;
+    private Map<String, FormDef> form;
     private LayoutDef layout;
     private SqlDef sql;
 
@@ -69,6 +70,14 @@ public class ScreenDefinition {
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class FormDef {
+        private List<SearchField> elements;
+        private int columns = 2;
+        private int labelWidth = 120;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LayoutDef {
         private String type = "full";
         private int splitWidth = 400;
@@ -91,6 +100,11 @@ public class ScreenDefinition {
                 op.setColumns((String) map.get("columns"));
                 op.setOrderBy((String) map.get("orderBy"));
                 op.setWhere((String) map.get("where"));
+                if (map.get("joins") instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, String>> joins = (List<Map<String, String>>) map.get("joins");
+                    op.setJoins(joins);
+                }
                 operations.put(key, op);
             }
         }
@@ -113,6 +127,7 @@ public class ScreenDefinition {
         private String columns;
         private String orderBy;
         private String where;
+        private List<Map<String, String>> joins;
     }
 
     public Map<String, Object> toPgmInfo() {
@@ -130,6 +145,10 @@ public class ScreenDefinition {
     }
 
     private String authFlag(String key) {
-        return auth != null && Boolean.TRUE.equals(auth.get(key)) ? "Y" : "N";
+        if (auth == null) return "N";
+        Object val = auth.get(key);
+        if (val instanceof Boolean) return Boolean.TRUE.equals(val) ? "Y" : "N";
+        if (val instanceof String) return "true".equalsIgnoreCase((String) val) ? "Y" : "N";
+        return "N";
     }
 }

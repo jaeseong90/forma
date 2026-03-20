@@ -26,7 +26,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/h2/**",
                         "/api/trace/**",
                         "/index.html",
-                        "/"
+                        "/main.html",
+                        "/",
+                        "/pages/**"
                 );
     }
 

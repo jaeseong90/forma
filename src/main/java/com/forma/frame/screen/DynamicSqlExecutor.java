@@ -41,7 +41,20 @@ public class DynamicSqlExecutor {
 
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ").append(columns);
-        sb.append(" FROM ").append(validateIdentifier(table));
+        sb.append(" FROM ").append(validateTableRef(table));
+
+        // JOIN 처리
+        ScreenDefinition.SqlOp op = sql.getOperation(action);
+        if (op != null && op.getJoins() != null) {
+            for (Map<String, String> join : op.getJoins()) {
+                String joinType = join.getOrDefault("type", "INNER").toUpperCase();
+                if (!joinType.matches("^(INNER|LEFT|RIGHT|FULL)$")) joinType = "INNER";
+                sb.append(" ").append(joinType).append(" JOIN ");
+                sb.append(validateTableRef(join.get("table")));
+                if (join.get("alias") != null) sb.append(" ").append(validateIdentifier(join.get("alias")));
+                sb.append(" ON ").append(join.get("on")); // ON 절은 YAML에서 직접 정의
+            }
+        }
 
         // 검색 조건 동적 구성
         Map<String, Object> params = new HashMap<>();
@@ -313,6 +326,17 @@ public class DynamicSqlExecutor {
     /**
      * SQL 식별자 검증 (SQL injection 방지)
      */
+    /**
+     * 테이블 참조 검증 (tb_name alias 형태 지원)
+     */
+    private String validateTableRef(String tableRef) {
+        if (tableRef == null) return "unknown";
+        String[] parts = tableRef.trim().split("\\s+");
+        StringBuilder sb = new StringBuilder(validateIdentifier(parts[0]));
+        if (parts.length > 1) sb.append(" ").append(validateIdentifier(parts[1]));
+        return sb.toString();
+    }
+
     private String validateIdentifier(String identifier) {
         if (identifier == null || !SAFE_IDENTIFIER.matcher(identifier.trim()).matches()) {
             throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
