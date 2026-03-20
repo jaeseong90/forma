@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 코드 생성 가이드</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .guide-card { background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:20px; margin-bottom:16px; }
+        .guide-card h2 { font-size:16px; font-weight:700; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #4a90d9; }
+        .guide-card h3 { font-size:14px; font-weight:600; margin:16px 0 8px; color:#333; }
+        .guide-step { display:flex; gap:16px; margin-bottom:16px; }
+        .guide-step-num { width:48px; height:48px; background:#4a90d9; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; flex-shrink:0; }
+        .guide-step-body { flex:1; }
+        .guide-step-body h4 { font-size:14px; font-weight:600; margin-bottom:4px; }
+        .guide-step-body p { font-size:12px; color:#555; line-height:1.7; margin:0; }
+        .guide-flow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:16px 0; }
+        .guide-flow-item { background:#e8f0fe; padding:8px 16px; border-radius:20px; font-size:12px; font-weight:500; color:#333; }
+        .guide-flow-arrow { color:#4a90d9; font-size:18px; font-weight:700; }
+        .guide-code { background:#f5f7fa; border:1px solid #e0e0e0; border-radius:4px; padding:12px 16px; font-family:'Consolas','Courier New',monospace; font-size:12px; line-height:1.7; overflow-x:auto; white-space:pre; margin:8px 0; }
+        .guide-table { width:100%; border-collapse:collapse; font-size:12px; margin:8px 0; }
+        .guide-table th { background:#f0f4f8; padding:6px 10px; text-align:left; border:1px solid #d8dde4; font-weight:600; }
+        .guide-table td { padding:6px 10px; border:1px solid #e8ecf0; }
+        .guide-table tr:hover td { background:#f8fafc; }
+        .guide-tip { background:#fff8e1; border-left:4px solid #ffc107; padding:10px 14px; margin:10px 0; font-size:12px; border-radius:0 4px 4px 0; }
+        .guide-cmd { background:#263238; color:#e0e0e0; padding:12px 16px; border-radius:4px; font-family:monospace; font-size:12px; margin:8px 0; overflow-x:auto; }
+        .guide-cmd .prompt { color:#4caf50; }
+        .guide-cmd .comment { color:#78909c; }
+        a { color:#4a90d9; text-decoration:none; }
+        a:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+<div class="forma-page" style="max-width:1000px">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">FORMA AI 코드 생성 가이드</h1>
+        <div style="font-size:12px;color:#666;margin-top:4px">
+            <a href="/pages/dev/GRID_DEMO.html">Grid 데모</a> |
+            <a href="/pages/dev/FORM_DEMO.html">Form 데모</a> |
+            <a href="/pages/dev/COMP_DEMO.html">Tab/Modal 데모</a> |
+            <a href="/">홈</a>
+        </div>
+    </div>
+
+    <!-- 전체 흐름 -->
+    <div class="guide-card">
+        <h2>AI 코드 생성 파이프라인</h2>
+        <div class="guide-flow">
+            <div class="guide-flow-item">1. 자연어 입력</div>
+            <div class="guide-flow-arrow">&rarr;</div>
+            <div class="guide-flow-item">2. YAML 설계서 생성</div>
+            <div class="guide-flow-arrow">&rarr;</div>
+            <div class="guide-flow-item">3. 사용자 검토</div>
+            <div class="guide-flow-arrow">&rarr;</div>
+            <div class="guide-flow-item">4. 코드 자동 생성</div>
+            <div class="guide-flow-arrow">&rarr;</div>
+            <div class="guide-flow-item">5. SQL 보완 → 완성</div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">1</div>
+            <div class="guide-step-body">
+                <h4>자연어로 화면 요구사항 입력</h4>
+                <p>Claude에게 만들고 싶은 화면을 자연어로 설명합니다.</p>
+                <div class="guide-cmd">
+<span class="prompt">User &gt;</span> 품목관리 화면 만들어줘.
+       품목코드, 품목명, 규격, 단위, 단가 관리.
+       품목그룹별 검색. 단위는 코드 선택.</div>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">2</div>
+            <div class="guide-step-body">
+                <h4>AI가 YAML 설계서 + DDL 생성</h4>
+                <p>AI가 <code>design/_prompts/00-generate-design.md</code> 프롬프트를 참조하여 설계서를 생성합니다.</p>
+                <p>출력: <code>design/screens/MMA010.yml</code> + DDL + 코드 데이터</p>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">3</div>
+            <div class="guide-step-body">
+                <h4>사용자가 설계서 검토/보완</h4>
+                <p>YAML 파일을 열어 필드 추가/삭제, 위젯 변경, 권한 조정을 합니다.</p>
+                <div class="guide-tip">설계서는 사람이 읽고 수정할 수 있는 <b>중간 산출물</b>입니다. AI가 100% 완벽하게 생성하지 않아도 됩니다.</div>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">4</div>
+            <div class="guide-step-body">
+                <h4>확정된 설계서로 코드 자동 생성</h4>
+                <p>AI가 <code>design/_prompts/01-generate-code.md</code>를 참조하여 4개 파일을 생성합니다.</p>
+                <div class="guide-cmd">
+<span class="comment"># 생성되는 파일</span>
+src/main/java/com/forma/domain/material/item/Mma010Controller.java
+src/main/java/com/forma/domain/material/item/Mma010Service.java
+src/main/resources/mapper/domain/material/mma010.xml
+src/main/resources/static/pages/material/MMA010.html</div>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <div class="guide-step-num">5</div>
+            <div class="guide-step-body">
+                <h4>SQL 보완 후 완성</h4>
+                <p>생성된 SQL 초안을 검토하고, 복잡한 쿼리/비즈니스 로직을 보완합니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용법 -->
+    <div class="guide-card">
+        <h2>실행 방법</h2>
+
+        <h3>방법 1: Claude에게 직접 요청</h3>
+        <div class="guide-cmd">
+<span class="prompt">User &gt;</span> 품목관리 화면 만들어줘. 품목코드, 품목명, 규격, 단위, 단가.
+       품목그룹별 검색. 단위는 코드 선택.
+
+<span class="comment"># Claude가 자동으로:</span>
+<span class="comment"># 1) 00-generate-design.md 참조 → YAML 설계서 생성</span>
+<span class="comment"># 2) 사용자 검토 요청</span>
+<span class="comment"># 3) 확인 후 01-generate-code.md 참조 → 코드 생성</span></div>
+
+        <h3>방법 2: 설계서부터 단계별 진행</h3>
+        <div class="guide-cmd">
+<span class="comment"># Step 1: 설계서 생성</span>
+<span class="prompt">User &gt;</span> design/_prompts/00-generate-design.md 참조해서
+       재고관리 화면 설계서 만들어줘
+
+<span class="comment"># Step 2: 검토 후 코드 생성</span>
+<span class="prompt">User &gt;</span> design/screens/MMA020.yml 설계서로
+       design/_prompts/01-generate-code.md 참조해서 코드 생성해줘</div>
+
+        <h3>방법 3: 기존 화면 복제 후 수정</h3>
+        <div class="guide-cmd">
+<span class="prompt">User &gt;</span> SDA010(거래처관리)을 참고해서
+       공급사관리 화면 만들어줘. 필드는 비슷한데
+       납품 이력 탭이 추가로 필요해.</div>
+    </div>
+
+    <!-- 화면 유형별 가이드 -->
+    <div class="guide-card">
+        <h2>화면 유형별 자연어 예시</h2>
+
+        <table class="guide-table">
+            <tr>
+                <th>유형</th>
+                <th>블럭 조합</th>
+                <th>자연어 예시</th>
+                <th>참고 화면</th>
+            </tr>
+            <tr>
+                <td><b>list</b></td>
+                <td>검색폼 + 편집 그리드</td>
+                <td>"품목관리 화면. 검색+그리드로 CRUD."</td>
+                <td><a href="/pages/base/SDA010.html">SDA010</a></td>
+            </tr>
+            <tr>
+                <td><b>split-detail</b></td>
+                <td>좌우분할 (마스터↔디테일 그리드)</td>
+                <td>"견적 템플릿 관리. 좌측 템플릿 목록, 우측 품목 상세."</td>
+                <td><a href="/pages/base/SDA020.html">SDA020</a></td>
+            </tr>
+            <tr>
+                <td><b>master-detail</b></td>
+                <td>마스터그리드 + 입력폼 + 디테일그리드</td>
+                <td>"수주관리. 수주 목록 → 클릭 시 기본정보 폼 + 품목 그리드."</td>
+                <td><a href="/pages/sales/SOA010.html">SOA010</a></td>
+            </tr>
+            <tr>
+                <td><b>split-tab</b></td>
+                <td>좌우분할 + 우측 탭(폼+그리드+...)</td>
+                <td>"수주등록. 좌측 수주 목록 → 우측 탭(기본정보, 품목, 이력)."</td>
+                <td><a href="/pages/sales/SDB010.html">SDB010</a></td>
+            </tr>
+            <tr>
+                <td><b>tree</b></td>
+                <td>검색폼 + 트리그리드 + 입력폼</td>
+                <td>"조직관리. 트리 구조로 부서 계층 표시."</td>
+                <td><a href="/pages/dev/GRID_DEMO.html">Grid 15번</a></td>
+            </tr>
+            <tr>
+                <td><b>자유 조합</b></td>
+                <td>블럭 자유 배치</td>
+                <td>"상하분할로 위에 요약, 아래 상세. 셀 병합 필요."</td>
+                <td><a href="/pages/dev/GRID_DEMO.html">Grid 19-20번</a></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 프레임워크 블럭 카탈로그 -->
+    <div class="guide-card">
+        <h2>AI가 사용하는 블럭 카탈로그</h2>
+
+        <h3>그리드 블럭 (FormaGrid)</h3>
+        <table class="guide-table">
+            <tr><th>블럭</th><th>옵션</th><th>용도</th></tr>
+            <tr><td>기본 그리드</td><td>editable, checkable, rowNum</td><td>단일 테이블 CRUD</td></tr>
+            <tr><td>에디터 8종</td><td>text, select, combo, date, currency, check, switch, textarea</td><td>셀 인라인 편집</td></tr>
+            <tr><td>셀 병합</td><td>merge: true, mergeCells()</td><td>같은 값 행 병합</td></tr>
+            <tr><td>멀티행</td><td>rowDetail: function</td><td>1레코드 N행 표시+편집</td></tr>
+            <tr><td>트리</td><td>treeField, treeIdField, treeParentField</td><td>계층 데이터</td></tr>
+            <tr><td>마스터-디테일</td><td>detailGrid: function</td><td>중첩 그리드</td></tr>
+            <tr><td>그룹핑</td><td>groupBy, groupFooter</td><td>그룹 + 소계</td></tr>
+            <tr><td>가상스크롤</td><td>virtualScroll, height</td><td>대량 데이터</td></tr>
+            <tr><td>필터행</td><td>filterable: true</td><td>인라인 필터</td></tr>
+            <tr><td>정렬/페이징</td><td>sortable, paging, pageSize</td><td>헤더 정렬, 페이지 이동</td></tr>
+            <tr><td>렌더러</td><td>renderer: function</td><td>뱃지/프로그레스바/링크</td></tr>
+            <tr><td>행 이동</td><td>reorderable: true</td><td>드래그 순서 변경</td></tr>
+            <tr><td>내보내기</td><td>exportCsv(), exportXlsx()</td><td>CSV + Excel</td></tr>
+        </table>
+
+        <h3>폼 블럭 (FormaForm) — 21종 위젯</h3>
+        <table class="guide-table">
+            <tr><th>위젯</th><th>용도</th><th>특수 속성</th></tr>
+            <tr><td>text, textarea, password</td><td>텍스트 입력</td><td>maxLength, rows, placeholder</td></tr>
+            <tr><td>combo, autocomplete</td><td>선택/검색</td><td>options, code, dependsOn, fetchUrl</td></tr>
+            <tr><td>date, dateRange, time, yearMonth, year</td><td>날짜/시간</td><td>default: TODAY/THIS_MONTH</td></tr>
+            <tr><td>currency</td><td>금액</td><td>prefix, suffix, 콤마포맷</td></tr>
+            <tr><td>checkbox, radio, switch</td><td>선택</td><td>options, onLabel, offLabel</td></tr>
+            <tr><td>multiCombo</td><td>복수 선택</td><td>options, 쉼표구분 반환</td></tr>
+            <tr><td>codePopup</td><td>팝업 검색</td><td>popup: {url, codeField, nameField}</td></tr>
+            <tr><td>file</td><td>파일 업로드</td><td>accept, multiple</td></tr>
+            <tr><td>display</td><td>읽기전용/뱃지</td><td>badge, badgeColors</td></tr>
+            <tr><td>divider</td><td>구분선 (접기/펼치기)</td><td>collapsible, collapsed</td></tr>
+        </table>
+
+        <h3>레이아웃 블럭</h3>
+        <table class="guide-table">
+            <tr><th>블럭</th><th>용도</th><th>API</th></tr>
+            <tr><td>FormaTab</td><td>탭 전환</td><td>selectTab, getContentEl, hideTab/showTab</td></tr>
+            <tr><td>FormaSplit (initSplit)</td><td>좌우/상하 분할</td><td>collapse, expand, setSize, minSize, collapsible</td></tr>
+            <tr><td>FormaModal</td><td>팝업</td><td>show(param), ok(result), cancel(), SIZE 프리셋</td></tr>
+            <tr><td>FormaPopup</td><td>알림/확인/토스트</td><td>alert, confirm, toast, loading</td></tr>
+            <tr><td>FormaToolbar</td><td>버튼바</td><td>권한 기반, F3~F12 단축키</td></tr>
+        </table>
+    </div>
+
+    <!-- YAML 설계서 작성 가이드 -->
+    <div class="guide-card">
+        <h2>YAML 설계서 구조</h2>
+        <div class="guide-code">screen:
+  id: MMA010              # 화면ID
+  name: 품목관리           # 화면명
+  module: material/item   # 모듈 경로 (패키지/라우트)
+  type: list              # list | split-detail | master-detail | split-tab
+
+auth:
+  search: true            # 조회(F3)
+  new: true               # 신규(F4)
+  save: true              # 저장(F9)
+  delete: true            # 삭제(F5)
+
+search:
+  - { field: item_grp, label: 품목그룹, widget: combo, code: ITEM_GRP }
+  - { field: item_nm, label: 품목명, widget: text, placeholder: 품목명 }
+  - { field: use_yn, label: 사용여부, widget: combo, options: [{value: Y, label: 사용}, {value: N, label: 미사용}] }
+
+grids:
+  grid1:
+    editable: true
+    checkable: true
+    columns:
+      - { field: ITEM_CD, label: 품목코드, width: 120, required: true }
+      - { field: ITEM_NM, label: 품목명, width: 200, required: true }
+      - { field: ITEM_GRP, label: 품목그룹, width: 100, editor: select, code: ITEM_GRP }
+      - { field: UNIT_PRICE, label: 단가, width: 120, type: number, format: currency }
+      - { field: USE_YN, label: 사용, width: 60, editor: check }
+
+forms:
+  form1:
+    columns: 2
+    elements:
+      - { field: item_cd, label: 품목코드, required: true }
+      - { field: item_nm, label: 품목명, required: true }
+
+sql:
+  tables:
+    - { name: tb_item }
+  selectGrid1: { table: tb_item, orderBy: item_grp, item_cd }
+  insertGrid1: { table: tb_item }
+  updateGrid1: { table: tb_item, where: "item_cd = #{item_cd}" }</div>
+    </div>
+
+    <!-- 핵심 파일 구조 -->
+    <div class="guide-card">
+        <h2>핵심 파일 위치</h2>
+        <div class="guide-code">design/
+├── _prompts/
+│   ├── 00-generate-design.md    ← Phase 1: 설계서 생성 프롬프트
+│   └── 01-generate-code.md      ← Phase 2: 코드 생성 프롬프트
+├── _schema_guide.yml            ← YAML 스키마 규칙
+└── screens/
+    ├── MMA010.yml               ← 생성된 설계서
+    └── ...
+
+src/main/
+├── java/com/forma/domain/       ← Controller + Service (AI 생성)
+├── resources/mapper/domain/     ← MyBatis XML (AI 생성)
+└── resources/static/pages/      ← HTML (AI 생성)
+
+CLAUDE.md                        ← 프레임워크 전체 규칙 (AI 참조)</div>
+    </div>
+
+    <!-- 자주 쓰는 프롬프트 -->
+    <div class="guide-card">
+        <h2>자주 쓰는 프롬프트 모음</h2>
+
+        <h3>화면 생성</h3>
+        <div class="guide-cmd"><span class="prompt">User &gt;</span> {화면 설명}. 화면 설계서부터 코드까지 전부 만들어줘.</div>
+
+        <h3>기존 화면 복제</h3>
+        <div class="guide-cmd"><span class="prompt">User &gt;</span> SDA010을 참고해서 {새 화면} 만들어줘. 차이점은 {설명}.</div>
+
+        <h3>화면에 기능 추가</h3>
+        <div class="guide-cmd"><span class="prompt">User &gt;</span> {화면ID}에 {기능} 추가해줘.
+       예: SOA010에 승인 버튼 추가. 승인 시 상태를 APPROVED로 변경.</div>
+
+        <h3>테이블 추가</h3>
+        <div class="guide-cmd"><span class="prompt">User &gt;</span> {테이블 설명} 테이블 DDL 만들고 schema/01-tables.sql에 추가해줘.</div>
+
+        <h3>복잡한 레이아웃</h3>
+        <div class="guide-cmd"><span class="prompt">User &gt;</span> 좌측에 트리 조직도, 우측에 탭(기본정보 폼 + 소속 직원 그리드 + 이력 그리드).
+       스플릿으로 좌우 분할. 접기/펼치기 가능하게.</div>
+
+        <div class="guide-tip">
+            <b>핵심:</b> CLAUDE.md에 모든 패턴과 API가 정의되어 있어서, Claude는 이를 참조하여 자동으로 올바른 코드를 생성합니다.
+            사용자는 "무엇을 만들지"만 설명하면 됩니다.
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

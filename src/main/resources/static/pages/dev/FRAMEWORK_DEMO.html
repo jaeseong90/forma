@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프레임워크 기능 데모</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .demo-section { margin-bottom: 20px; }
+        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
+        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
+        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
+        .chart-row { display: flex; gap: 16px; flex-wrap: wrap; }
+        .chart-box { flex: 1; min-width: 300px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+    </style>
+</head>
+<body>
+<div class="forma-page" style="max-width:1200px">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">프레임워크 기능 데모 — 테마 / 다국어 / 차트 / 메뉴 / 임포트 / 인쇄</h1>
+        <div style="font-size:12px;color:#666;margin-top:4px">
+            <a href="/pages/dev/GRID_DEMO.html">Grid</a> |
+            <a href="/pages/dev/FORM_DEMO.html">Form</a> |
+            <a href="/pages/dev/COMP_DEMO.html">Tab/Modal</a> |
+            <a href="/pages/dev/AI_GUIDE.html">AI 가이드</a> |
+            <a href="/">홈</a>
+        </div>
+    </div>
+    <div class="forma-content">
+
+        <!-- 1. 테마 -->
+        <div class="demo-section">
+            <div class="demo-title">1. 테마 시스템 (FormaTheme)</div>
+            <div class="demo-desc">CSS 변수 기반. light/dark/blue 3종. localStorage 저장. 커스텀 테마 추가 가능.</div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="FormaTheme.set('light')">Light</button>
+                <button class="forma-btn" onclick="FormaTheme.set('dark')" style="background:#1e1e2e;color:#e0e0e0;border-color:#3a3a50">Dark</button>
+                <button class="forma-btn" onclick="FormaTheme.set('blue')" style="background:#2574b8;color:#fff;border-color:#2574b8">Blue</button>
+                <button class="forma-btn" onclick="FormaTheme.toggle()">Toggle (순환)</button>
+                <button class="forma-btn" onclick="document.getElementById('out-theme').textContent='현재 테마: '+FormaTheme.get()">현재 테마 확인</button>
+            </div>
+            <div class="demo-output" id="out-theme"></div>
+            <div style="margin-top:8px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px">
+                <span style="color:var(--text)">텍스트</span> &nbsp;
+                <span style="color:var(--primary)">Primary</span> &nbsp;
+                <span style="color:var(--danger)">Danger</span> &nbsp;
+                <span style="color:var(--success)">Success</span> &nbsp;
+                <span style="color:var(--warning)">Warning</span> &nbsp;
+                <button class="forma-btn forma-btn-sm">버튼</button>
+                <button class="forma-btn forma-btn-sm forma-btn-primary">Primary</button>
+                <input class="forma-input" style="width:120px" placeholder="입력 필드">
+            </div>
+        </div>
+
+        <!-- 2. 다국어 -->
+        <div class="demo-section">
+            <div class="demo-title">2. 다국어 시스템 (FormaI18n)</div>
+            <div class="demo-desc">ko/en/ja/zh 4개 언어. FormaI18n.t('key') 번역. addMessages()로 커스텀 메시지 추가.</div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="setLangDemo('ko')">한국어</button>
+                <button class="forma-btn" onclick="setLangDemo('en')">English</button>
+                <button class="forma-btn" onclick="setLangDemo('ja')">日本語</button>
+                <button class="forma-btn" onclick="setLangDemo('zh')">中文</button>
+            </div>
+            <div id="i18n-preview" style="margin-top:8px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;font-size:12px;line-height:2"></div>
+        </div>
+
+        <!-- 3. 차트 -->
+        <div class="demo-section">
+            <div class="demo-title">3. 차트 (FormaChart) — Bar / Line / Pie / Donut / HBar</div>
+            <div class="demo-desc">순수 SVG 차트. 외부 라이브러리 없음. 애니메이션, 툴팁, 범례 지원.</div>
+            <div class="chart-row">
+                <div class="chart-box"><div id="chart-bar"></div></div>
+                <div class="chart-box"><div id="chart-line"></div></div>
+            </div>
+            <div class="chart-row" style="margin-top:12px">
+                <div class="chart-box"><div id="chart-pie"></div></div>
+                <div class="chart-box"><div id="chart-donut"></div></div>
+            </div>
+            <div class="chart-row" style="margin-top:12px">
+                <div class="chart-box"><div id="chart-hbar"></div></div>
+                <div class="chart-box" style="display:flex;align-items:center;justify-content:center">
+                    <div class="demo-btn-row" style="flex-direction:column">
+                        <button class="forma-btn forma-btn-primary" onclick="randomChartData()">데이터 랜덤 갱신</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 메뉴 시스템 -->
+        <div class="demo-section">
+            <div class="demo-title">4. 메뉴 시스템 (FormaMenu) — 좌측 트리 + MDI 탭</div>
+            <div class="demo-desc">트리형 메뉴. 클릭 시 iframe 탭으로 열림. 다중 탭 MDI. 탭 닫기 지원.</div>
+            <div style="display:flex;height:350px;border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+                <div id="demo-menu" style="width:220px;flex-shrink:0;overflow-y:auto;"></div>
+                <div style="flex:1;display:flex;flex-direction:column;">
+                    <div id="demo-mdi-tabs"></div>
+                    <div id="demo-mdi-content" style="flex:1;position:relative;overflow:hidden;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Excel 임포트 -->
+        <div class="demo-section">
+            <div class="demo-title">5. Excel 임포트 (importExcel) + 인쇄 (print)</div>
+            <div class="demo-desc">CSV/TSV 파일 업로드 → 그리드 데이터 추가. 인쇄 버튼으로 새 창 인쇄.</div>
+            <div id="grid-import"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="grids.importGrid.importExcel()">Excel/CSV 임포트</button>
+                <button class="forma-btn" onclick="grids.importGrid.exportCsv('export.csv')">CSV 내보내기</button>
+                <button class="forma-btn" onclick="grids.importGrid.exportXlsx('export.xlsx')">XLSX 내보내기</button>
+                <button class="forma-btn" onclick="grids.importGrid.print('품목 목록')">인쇄</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script src="/assets/js/framework/forma.i18n.js"></script>
+<script src="/assets/js/framework/forma.theme.js"></script>
+<script src="/assets/js/framework/forma.menu.js"></script>
+<script src="/assets/js/framework/forma.chart.js"></script>
+<script>
+const grids = {};
+let charts = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── 2. i18n 미리보기 ──
+    setLangDemo('ko');
+
+    // ── 3. 차트 ──
+    const salesData = [
+        { label: '1월', value: 12000000 }, { label: '2월', value: 15000000 }, { label: '3월', value: 13500000 },
+        { label: '4월', value: 14000000 }, { label: '5월', value: 18000000 }, { label: '6월', value: 16500000 },
+    ];
+    charts.bar = new FormaChart('#chart-bar', { type: 'bar', data: salesData, title: '월별 매출 (Bar)', height: 250 });
+    charts.line = new FormaChart('#chart-line', { type: 'line', data: salesData, title: '매출 추이 (Line)', height: 250 });
+
+    const deptData = [
+        { label: '개발팀', value: 45 }, { label: '영업팀', value: 28 }, { label: '인사팀', value: 12 },
+        { label: '재무팀', value: 8 }, { label: '생산팀', value: 35 },
+    ];
+    charts.pie = new FormaChart('#chart-pie', { type: 'pie', data: deptData, title: '부서별 인원 (Pie)', height: 260 });
+    charts.donut = new FormaChart('#chart-donut', { type: 'donut', data: deptData, title: '부서별 예산 비중 (Donut)', height: 260 });
+
+    const regionData = [
+        { label: '서울', value: 85000000 }, { label: '경기', value: 62000000 }, { label: '부산', value: 28000000 },
+        { label: '대구', value: 18000000 }, { label: '인천', value: 32000000 }, { label: '기타', value: 45000000 },
+    ];
+    charts.hbar = new FormaChart('#chart-hbar', { type: 'hbar', data: regionData, title: '지역별 매출 (HBar)', height: 250 });
+
+    // ── 4. 메뉴 ──
+    FormaMenu.init('#demo-menu', '#demo-mdi-content', [
+        { label: '기준정보', icon: '📋', children: [
+            { id: 'SDA010', label: '거래처관리', url: '/pages/base/SDA010.html', icon: '🏢' },
+            { id: 'SDA020', label: '견적템플릿관리', url: '/pages/base/SDA020.html', icon: '📄' },
+        ]},
+        { label: '영업관리', icon: '💼', children: [
+            { id: 'SOA010', label: '수주관리', url: '/pages/sales/SOA010.html', icon: '📦' },
+            { id: 'SDB010', label: '수주등록', url: '/pages/sales/SDB010.html', icon: '✏️' },
+        ]},
+        { label: '개발도구', icon: '🔧', children: [
+            { id: 'GRID', label: 'Grid 데모', url: '/pages/dev/GRID_DEMO.html', icon: '📊' },
+            { id: 'FORM', label: 'Form 데모', url: '/pages/dev/FORM_DEMO.html', icon: '📝' },
+        ]},
+    ]);
+    // MDI 탭바 위치 조정
+    const mdiTabs = document.querySelector('.forma-mdi-tabs');
+    if (mdiTabs) {
+        document.querySelector('#demo-mdi-tabs').appendChild(mdiTabs);
+    }
+
+    // ── 5. Excel 임포트 + 인쇄 ──
+    grids.importGrid = new FormaGrid('#grid-import', {
+        editable: true, checkable: true, rowNum: true, sortable: true,
+        columns: [
+            { field: 'item_cd', label: '품목코드', width: 100 },
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'spec', label: '규격', width: 150 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'price', label: '단가', width: 120, editor: 'currency', footer: 'avg' },
+            { field: 'amount', label: '금액', width: 140, editor: 'currency', footer: 'sum' },
+        ]
+    });
+    grids.importGrid.setData([
+        { item_cd: 'ITM-001', item_nm: '철판 3.0T', spec: '1219×2438', qty: 100, price: 15000, amount: 1500000 },
+        { item_cd: 'ITM-002', item_nm: '스텐판 1.5T', spec: '1000×2000', qty: 50, price: 25000, amount: 1250000 },
+        { item_cd: 'ITM-003', item_nm: '볼트 M8', spec: 'STS304', qty: 1000, price: 150, amount: 150000 },
+    ]);
+});
+
+function setLangDemo(lang) {
+    FormaI18n.setLang(lang);
+    const keys = ['btn.search','btn.new','btn.save','btn.delete','btn.print','btn.ok','btn.cancel',
+        'grid.empty','grid.total','form.required','form.all','date.today'];
+    const el = document.getElementById('i18n-preview');
+    el.innerHTML = '<b>' + lang.toUpperCase() + '</b><br>' +
+        keys.map(k => '<code>' + k + '</code> → ' + FormaI18n.t(k, '필드명')).join('<br>');
+}
+
+function randomChartData() {
+    const months = ['1월','2월','3월','4월','5월','6월'];
+    const data = months.map(m => ({ label: m, value: Math.round(Math.random() * 20000000) }));
+    charts.bar.setData(data);
+    charts.line.setData(data);
+
+    const depts = ['개발팀','영업팀','인사팀','재무팀','생산팀'];
+    const ddata = depts.map(d => ({ label: d, value: Math.round(Math.random() * 50) + 5 }));
+    charts.pie.setData(ddata);
+    charts.donut.setData(ddata);
+
+    const regions = ['서울','경기','부산','대구','인천','기타'];
+    const rdata = regions.map(r => ({ label: r, value: Math.round(Math.random() * 100000000) }));
+    charts.hbar.setData(rdata);
+}
+</script>
+</body>
+</html>

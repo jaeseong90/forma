@@ -54,7 +54,7 @@ sql:
     table: tb_customer
   updateGrid1:
     table: tb_customer
-    where: cust_cd = #{cust_cd}
+    where: "cust_cd = #{cust_cd}"
   deleteGrid1:
     table: tb_customer
-    where: cust_cd = #{cust_cd}
+    where: "cust_cd = #{cust_cd}"

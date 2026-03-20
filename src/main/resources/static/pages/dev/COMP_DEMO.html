@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>탭 / 팝업 / 레이아웃 데모</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .demo-section { margin-bottom: 20px; }
+        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
+        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
+        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
+        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
+        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; }
+        .ref-tbl tr:hover td { background: #f8fafc; }
+        details summary { outline: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="forma-page" style="max-width:1200px">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">FormaTab / FormaModal / FormaPopup 데모</h1>
+        <div style="font-size:12px;color:#666;margin-top:4px">
+            <a href="/pages/dev/GRID_DEMO.html">Grid 데모</a> |
+            <a href="/pages/dev/FORM_DEMO.html">Form 데모</a> |
+            <a href="/">홈</a>
+        </div>
+    </div>
+    <div class="forma-content">
+
+        <!-- API 레퍼런스 -->
+        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+            <details open>
+                <summary style="font-weight:700;font-size:14px;margin-bottom:10px">FormaTab API</summary>
+                <table class="ref-tbl">
+                    <tr><th>생성자 옵션</th><th>타입</th><th>설명</th></tr>
+                    <tr><td>tabs</td><td>Array</td><td>[{ id, label }] 탭 정의</td></tr>
+                    <tr><td>listener</td><td>Object</td><td>platform listener (tabBar.tabChange 연동)</td></tr>
+                    <tr><td>onTabChange</td><td>Function</td><td>(tabId) 탭 변경 콜백</td></tr>
+                </table>
+                <table class="ref-tbl" style="margin-top:6px">
+                    <tr><th>메서드</th><th>설명</th></tr>
+                    <tr><td>selectTab(tabId) / setActiveTab(tabId)</td><td>탭 전환</td></tr>
+                    <tr><td>getActiveTab()</td><td>현재 활성 탭 ID</td></tr>
+                    <tr><td>getContentEl(tabId)</td><td>탭 패널 DOM (컴포넌트 삽입용)</td></tr>
+                    <tr><td>hideTab(tabId) / showTab(tabId)</td><td>탭 버튼 숨김/표시</td></tr>
+                </table>
+            </details>
+
+            <details style="margin-top:12px">
+                <summary style="font-weight:700;font-size:14px;margin-bottom:10px">FormaModal API</summary>
+                <table class="ref-tbl">
+                    <tr><th>생성자 옵션</th><th>타입</th><th>설명</th></tr>
+                    <tr><td>title</td><td>String</td><td>팝업 제목</td></tr>
+                    <tr><td>url</td><td>String</td><td>팝업 HTML 경로 (fetch로 로딩)</td></tr>
+                    <tr><td>width / height</td><td>Number</td><td>팝업 크기 (px)</td></tr>
+                    <tr><td>okCallback</td><td>Function</td><td>(result) 확인 콜백</td></tr>
+                    <tr><td>cancelCallback</td><td>Function</td><td>(result) 취소 콜백</td></tr>
+                </table>
+                <table class="ref-tbl" style="margin-top:6px">
+                    <tr><th>메서드</th><th>설명</th></tr>
+                    <tr><td>show(param?)</td><td>팝업 표시 (param은 팝업 내부에서 접근 가능)</td></tr>
+                    <tr><td>ok(result)</td><td>결과 전달 후 닫기 → okCallback 호출</td></tr>
+                    <tr><td>cancel(result?)</td><td>취소 후 닫기 → cancelCallback 호출</td></tr>
+                </table>
+                <table class="ref-tbl" style="margin-top:6px">
+                    <tr><th>SIZE 프리셋</th><th>크기</th></tr>
+                    <tr><td>FormaModal.SIZE.XS</td><td>400 × 300</td></tr>
+                    <tr><td>FormaModal.SIZE.S</td><td>600 × 400</td></tr>
+                    <tr><td>FormaModal.SIZE.M</td><td>800 × 600</td></tr>
+                    <tr><td>FormaModal.SIZE.L</td><td>1000 × 700</td></tr>
+                    <tr><td>FormaModal.SIZE.XL</td><td>1200 × 800</td></tr>
+                </table>
+            </details>
+
+            <details style="margin-top:12px">
+                <summary style="font-weight:700;font-size:14px;margin-bottom:10px">FormaPopup API</summary>
+                <table class="ref-tbl">
+                    <tr><th>메서드</th><th>설명</th></tr>
+                    <tr><td>FormaPopup.alert.show(msg)</td><td>알림 (Promise, 확인 버튼)</td></tr>
+                    <tr><td>FormaPopup.confirm.show(msg, callback)</td><td>확인/취소 (callback(true/false))</td></tr>
+                    <tr><td>FormaPopup.loading.show() / .hide()</td><td>로딩 오버레이</td></tr>
+                    <tr><td>FormaPopup.toast.success(msg)</td><td>성공 토스트 (3초)</td></tr>
+                    <tr><td>FormaPopup.toast.error(msg)</td><td>에러 토스트</td></tr>
+                    <tr><td>FormaPopup.toast.info(msg)</td><td>정보 토스트</td></tr>
+                </table>
+            </details>
+        </div>
+
+        <!-- 1. 기본 탭 -->
+        <div class="demo-section">
+            <div class="demo-title">1. 기본 탭 (FormaTab)</div>
+            <div class="demo-desc">탭 클릭으로 패널 전환. onTabChange 콜백. 각 탭에 폼/그리드 배치 가능.</div>
+            <div id="tab-basic" style="border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn" onclick="tabBasic.selectTab('tab-info')">기본정보 탭</button>
+                <button class="forma-btn" onclick="tabBasic.selectTab('tab-items')">품목명세 탭</button>
+                <button class="forma-btn" onclick="tabBasic.selectTab('tab-hist')">이력 탭</button>
+                <button class="forma-btn" onclick="document.getElementById('out-tab1').textContent='activeTab: '+tabBasic.getActiveTab()">getActiveTab()</button>
+            </div>
+            <div class="demo-output" id="out-tab1"></div>
+        </div>
+
+        <!-- 2. 탭 동적 제어 -->
+        <div class="demo-section">
+            <div class="demo-title">2. 탭 동적 제어 (hideTab / showTab)</div>
+            <div class="demo-desc">런타임에 탭 숨기기/표시. 권한에 따라 탭 제어 시 활용.</div>
+            <div id="tab-dynamic" style="border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn" onclick="tabDynamic.hideTab('tab-d-secret')">비밀탭 숨기기</button>
+                <button class="forma-btn" onclick="tabDynamic.showTab('tab-d-secret')">비밀탭 표시</button>
+                <button class="forma-btn" onclick="tabDynamic.hideTab('tab-d-admin')">관리탭 숨기기</button>
+                <button class="forma-btn" onclick="tabDynamic.showTab('tab-d-admin')">관리탭 표시</button>
+            </div>
+        </div>
+
+        <!-- 3. 탭 + 스플릿 복합 -->
+        <div class="demo-section">
+            <div class="demo-title">3. 좌우 스플릿 + 우측 탭 (ERP 복합 레이아웃)</div>
+            <div class="demo-desc">좌측 목록 그리드 | 우측 탭(기본정보 폼 + 품목 그리드). 행 클릭 시 우측 연동. SDB010 패턴.</div>
+            <div class="forma-split-h" id="split-tab-area" style="height:380px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="width:380px;background:#fff;">
+                    <div id="split-tab-grid"></div>
+                </div>
+                <div class="forma-split-handle"></div>
+                <div class="forma-split-panel" style="flex:1;background:#fff;">
+                    <div id="split-tab-tabs"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. FormaPopup 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">4. FormaPopup — Alert / Confirm / Toast / Loading</div>
+            <div class="demo-desc">다이얼로그, 확인/취소, 토스트 메시지, 로딩 오버레이.</div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="FormaPopup.alert.show('알림 메시지입니다.\n줄바꿈도 가능합니다.')">Alert</button>
+                <button class="forma-btn forma-btn-primary" onclick="FormaPopup.confirm.show('정말 삭제하시겠습니까?', function(ok) { document.getElementById('out-popup').textContent = 'confirm → ' + ok; })">Confirm</button>
+                <button class="forma-btn" onclick="FormaPopup.toast.success('저장되었습니다')">Toast (success)</button>
+                <button class="forma-btn" onclick="FormaPopup.toast.error('오류가 발생했습니다')">Toast (error)</button>
+                <button class="forma-btn" onclick="FormaPopup.toast.info('3건이 조회되었습니다')">Toast (info)</button>
+                <button class="forma-btn" onclick="FormaPopup.loading.show(); setTimeout(()=>FormaPopup.loading.hide(), 2000)">Loading (2초)</button>
+            </div>
+            <div class="demo-output" id="out-popup"></div>
+        </div>
+
+        <!-- 5. FormaModal 데모 (인라인) -->
+        <div class="demo-section">
+            <div class="demo-title">5. FormaModal — 모달 팝업 (인라인 HTML)</div>
+            <div class="demo-desc">FormaModal로 팝업 생성. SIZE 프리셋(XS~XL). OK/Cancel 콜백. ESC/오버레이 클릭 닫기.</div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="openInlineModal('S')">Small (600×400)</button>
+                <button class="forma-btn forma-btn-primary" onclick="openInlineModal('M')">Medium (800×600)</button>
+                <button class="forma-btn forma-btn-primary" onclick="openInlineModal('L')">Large (1000×700)</button>
+            </div>
+            <div class="demo-output" id="out-modal"></div>
+        </div>
+
+        <!-- 6. FormaModal + 그리드 연동 -->
+        <div class="demo-section">
+            <div class="demo-title">6. 모달 팝업에서 그리드 선택 → 부모 반영</div>
+            <div class="demo-desc">팝업 열기 → 그리드에서 행 선택 → OK → 부모 폼에 값 반영. codePopup 패턴.</div>
+            <div id="modal-form"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="openSearchModal()">거래처 검색 팝업</button>
+                <button class="forma-btn" onclick="document.getElementById('out-modal2').textContent=JSON.stringify(modalForm.getData(),null,2)">getData()</button>
+            </div>
+            <div class="demo-output" id="out-modal2"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 인라인 팝업 템플릿 (숨김) -->
+<template id="tpl-inline-popup">
+    <div style="padding:16px">
+        <div style="font-size:13px;margin-bottom:12px">이것은 인라인 HTML로 생성된 모달입니다.</div>
+        <div id="popup-form-area"></div>
+        <div style="margin-top:12px;text-align:right">
+            <button class="forma-btn" onclick="this.closest('.forma-modal').querySelector('.forma-modal-close').click()">취소</button>
+            <button class="forma-btn forma-btn-primary" id="popup-ok-btn">확인</button>
+        </div>
+    </div>
+</template>
+
+<!-- 거래처 검색 팝업 템플릿 -->
+<template id="tpl-cust-popup">
+    <div style="padding:8px">
+        <div id="cust-popup-grid"></div>
+        <div style="margin-top:8px;text-align:right">
+            <button class="forma-btn" id="cust-cancel-btn">취소</button>
+            <button class="forma-btn forma-btn-primary" id="cust-ok-btn">선택</button>
+        </div>
+    </div>
+</template>
+
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+let tabBasic, tabDynamic, modalForm;
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── 1. 기본 탭 ──
+    tabBasic = new FormaTab('#tab-basic', {
+        tabs: [
+            { id: 'tab-info', label: '기본정보' },
+            { id: 'tab-items', label: '품목명세' },
+            { id: 'tab-hist', label: '변경이력' },
+        ],
+        onTabChange: function(tabId) {
+            document.getElementById('out-tab1').textContent = 'onTabChange → ' + tabId;
+        }
+    });
+    // 탭1: 폼
+    new FormaForm(tabBasic.getContentEl('tab-info'), {
+        columns: 2, labelWidth: 90,
+        elements: [
+            { field: 'order_no', label: '주문번호', readOnly: true },
+            { field: 'order_dt', label: '주문일', widget: 'date', default: 'TODAY' },
+            { field: 'cust_nm', label: '거래처' },
+            { field: 'status', label: '상태', widget: 'combo', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' },
+            ]},
+            { field: 'remark', label: '비고', widget: 'textarea', colspan: 2, rows: 2 },
+        ]
+    }).setData({ order_no: 'ORD-2026-001', order_dt: '2026-03-19', cust_nm: '(주)삼성전자', status: 'CONFIRMED', remark: '긴급 발주' });
+
+    // 탭2: 그리드
+    const g2 = new FormaGrid(tabBasic.getContentEl('tab-items'), {
+        editable: true, rowNum: true, sortable: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'price', label: '단가', width: 120, editor: 'currency' },
+            { field: 'amount', label: '금액', width: 140, editor: 'currency', footer: 'sum' },
+        ]
+    });
+    g2.setData([
+        { item_nm: '철판 3.0T', qty: 100, price: 15000, amount: 1500000 },
+        { item_nm: '스텐판 1.5T', qty: 50, price: 25000, amount: 1250000 },
+    ]);
+
+    // 탭3: 이력
+    const g3 = new FormaGrid(tabBasic.getContentEl('tab-hist'), {
+        rowNum: true, sortable: true,
+        columns: [
+            { field: 'dt', label: '일시', width: 150 },
+            { field: 'user', label: '작업자', width: 100 },
+            { field: 'action', label: '내용', width: 300 },
+        ]
+    });
+    g3.setData([
+        { dt: '2026-03-19 10:30', user: '김철수', action: '주문 생성' },
+        { dt: '2026-03-19 11:15', user: '이영희', action: '거래처 변경: LG→삼성' },
+        { dt: '2026-03-19 14:00', user: '김철수', action: '상태 변경: 작성중→확정' },
+    ]);
+
+    // ── 2. 탭 동적 제어 ──
+    tabDynamic = new FormaTab('#tab-dynamic', {
+        tabs: [
+            { id: 'tab-d-basic', label: '일반' },
+            { id: 'tab-d-secret', label: '비밀정보' },
+            { id: 'tab-d-admin', label: '관리자' },
+        ]
+    });
+    tabDynamic.getContentEl('tab-d-basic').innerHTML = '<div style="padding:16px;color:#555">일반 사용자 탭입니다.</div>';
+    tabDynamic.getContentEl('tab-d-secret').innerHTML = '<div style="padding:16px;color:#e24b4a;font-weight:600">비밀 정보 탭 — 권한에 따라 숨길 수 있습니다.</div>';
+    tabDynamic.getContentEl('tab-d-admin').innerHTML = '<div style="padding:16px;color:#4a90d9;font-weight:600">관리자 전용 탭입니다.</div>';
+
+    // ── 3. 좌우 스플릿 + 우측 탭 ──
+    FormaUtil.initSplit('#split-tab-area', { minSize: 250, collapsible: true });
+
+    const stGrid = new FormaGrid('#split-tab-grid', {
+        rowNum: true, sortable: true,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 110 },
+            { field: 'cust_nm', label: '거래처', width: 120 },
+            { field: 'amount', label: '금액', width: 100, format: 'currency' },
+        ],
+        onRowClick: function(row) {
+            stForm.setData(row);
+            stItemGrid.setData(stItemData[row.order_no] || []);
+            stTab.selectTab('st-tab-info');
+        }
+    });
+    stGrid.setData([
+        { order_no: 'ORD-001', cust_nm: '(주)삼성전자', order_dt: '2026-03-01', status: 'CONFIRMED', amount: 2750000, remark: 'VIP' },
+        { order_no: 'ORD-002', cust_nm: '(주)LG전자', order_dt: '2026-03-05', status: 'DRAFT', amount: 175000, remark: '' },
+        { order_no: 'ORD-003', cust_nm: '현대자동차', order_dt: '2026-03-10', status: 'CONFIRMED', amount: 900000, remark: '긴급' },
+    ]);
+
+    const stTab = new FormaTab('#split-tab-tabs', {
+        tabs: [
+            { id: 'st-tab-info', label: '기본정보' },
+            { id: 'st-tab-items', label: '품목명세' },
+        ]
+    });
+
+    const stForm = new FormaForm(stTab.getContentEl('st-tab-info'), {
+        columns: 1, labelWidth: 80,
+        elements: [
+            { field: 'order_no', label: '주문번호', readOnly: true },
+            { field: 'cust_nm', label: '거래처' },
+            { field: 'order_dt', label: '주문일', widget: 'date' },
+            { field: 'status', label: '상태', widget: 'combo', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' },
+            ]},
+            { field: 'remark', label: '비고', widget: 'textarea', rows: 2 },
+        ]
+    });
+
+    const stItemData = {
+        'ORD-001': [
+            { item_nm: '철판 3.0T', qty: 100, price: 15000, amount: 1500000 },
+            { item_nm: '스텐판 1.5T', qty: 50, price: 25000, amount: 1250000 },
+        ],
+        'ORD-002': [
+            { item_nm: '볼트 M8', qty: 500, price: 150, amount: 75000 },
+            { item_nm: '너트 M8', qty: 500, price: 120, amount: 60000 },
+            { item_nm: '와셔 M8', qty: 500, price: 80, amount: 40000 },
+        ],
+        'ORD-003': [{ item_nm: '페인트(적)', qty: 20, price: 45000, amount: 900000 }],
+    };
+
+    const stItemGrid = new FormaGrid(stTab.getContentEl('st-tab-items'), {
+        editable: true, rowNum: true, sortable: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 160 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'price', label: '단가', width: 100, editor: 'currency' },
+            { field: 'amount', label: '금액', width: 120, editor: 'currency', footer: 'sum' },
+        ]
+    });
+
+    // ── 6. 모달 + 그리드 연동 폼 ──
+    modalForm = new FormaForm('#modal-form', {
+        columns: 3, labelWidth: 80,
+        elements: [
+            { field: 'cust_cd', label: '거래처코드', readOnly: true },
+            { field: 'cust_nm', label: '거래처명', readOnly: true },
+            { field: 'tel', label: '전화번호', readOnly: true },
+        ]
+    });
+});
+
+// ── 5. 인라인 모달 ──
+function openInlineModal(size) {
+    const s = FormaModal.SIZE[size];
+    const tpl = document.getElementById('tpl-inline-popup').content.cloneNode(true);
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(tpl);
+
+    // 모달 직접 생성 (url 대신 HTML 삽입)
+    const overlay = document.createElement('div');
+    overlay.className = 'forma-modal-overlay';
+    const modal = document.createElement('div');
+    modal.className = 'forma-modal';
+    modal.style.width = s.width + 'px'; modal.style.height = s.height + 'px';
+
+    const header = document.createElement('div');
+    header.className = 'forma-modal-header';
+    header.innerHTML = '<span>인라인 팝업 (' + size + ')</span><button class="forma-modal-close">&times;</button>';
+
+    const body = document.createElement('div');
+    body.className = 'forma-modal-body';
+    body.appendChild(wrapper);
+
+    modal.appendChild(header); modal.appendChild(body);
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+
+    // 팝업 내 폼
+    const popupForm = new FormaForm(body.querySelector('#popup-form-area'), {
+        columns: 2, labelWidth: 80,
+        elements: [
+            { field: 'name', label: '이름', required: true },
+            { field: 'email', label: '이메일', required: true },
+            { field: 'phone', label: '전화번호' },
+            { field: 'dept', label: '부서', widget: 'combo', options: [
+                { value: 'DEV', label: '개발팀' }, { value: 'SALES', label: '영업팀' },
+            ]},
+        ]
+    });
+
+    const close = () => overlay.remove();
+    header.querySelector('.forma-modal-close').onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    body.querySelector('#popup-ok-btn').onclick = () => {
+        if (!popupForm.validate()) return;
+        document.getElementById('out-modal').textContent = 'OK → ' + JSON.stringify(popupForm.getData(), null, 2);
+        close();
+    };
+    document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } });
+}
+
+// ── 6. 거래처 검색 모달 ──
+function openSearchModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'forma-modal-overlay';
+    const modal = document.createElement('div');
+    modal.className = 'forma-modal';
+    modal.style.width = '700px'; modal.style.height = '450px';
+
+    const header = document.createElement('div');
+    header.className = 'forma-modal-header';
+    header.innerHTML = '<span>거래처 검색</span><button class="forma-modal-close">&times;</button>';
+
+    const body = document.createElement('div');
+    body.className = 'forma-modal-body';
+    body.innerHTML = '<div id="cust-search-grid" style="margin-bottom:8px"></div><div style="text-align:right"><button class="forma-btn" id="cp-cancel">취소</button> <button class="forma-btn forma-btn-primary" id="cp-ok">선택</button></div>';
+
+    modal.appendChild(header); modal.appendChild(body);
+    overlay.appendChild(modal); document.body.appendChild(overlay);
+
+    const popGrid = new FormaGrid(body.querySelector('#cust-search-grid'), {
+        rowNum: true, sortable: true, filterable: true,
+        columns: [
+            { field: 'cust_cd', label: '코드', width: 80 },
+            { field: 'cust_nm', label: '거래처명', width: 180 },
+            { field: 'cust_type', label: '유형', width: 80, editor: 'select', options: [
+                { value: 'C', label: '고객' }, { value: 'V', label: '공급사' },
+            ]},
+            { field: 'tel', label: '전화번호', width: 130 },
+        ]
+    });
+    popGrid.setData([
+        { cust_cd: 'C001', cust_nm: '(주)삼성전자', cust_type: 'C', tel: '02-1234-5678' },
+        { cust_cd: 'C002', cust_nm: '(주)LG전자', cust_type: 'C', tel: '02-3456-7890' },
+        { cust_cd: 'V001', cust_nm: '포스코', cust_type: 'V', tel: '054-220-1234' },
+        { cust_cd: 'V002', cust_nm: '현대제철', cust_type: 'V', tel: '041-530-5678' },
+        { cust_cd: 'C003', cust_nm: 'SK하이닉스', cust_type: 'C', tel: '031-456-7890' },
+        { cust_cd: 'V003', cust_nm: '롯데케미칼', cust_type: 'V', tel: '02-789-0123' },
+    ]);
+
+    const close = () => overlay.remove();
+    header.querySelector('.forma-modal-close').onclick = close;
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    body.querySelector('#cp-cancel').onclick = close;
+    body.querySelector('#cp-ok').onclick = () => {
+        const sel = popGrid.getSelectedItem();
+        if (!sel) { FormaPopup.alert.show('거래처를 선택하세요.'); return; }
+        modalForm.setData(sel);
+        document.getElementById('out-modal2').textContent = '선택: ' + JSON.stringify(sel, null, 2);
+        close();
+    };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+
+    <select id="selectUserById" parameterType="map" resultType="map">
+        SELECT u.user_id, u.user_pw, u.user_nm, u.dept_code, u.admin_yn, u.use_yn,
+               COALESCE(d.dept_name, '') AS dept_name
+        FROM tb_user u
+        LEFT JOIN tb_dept d ON u.dept_code = d.dept_code
+        WHERE u.user_id = #{user_id}
+    </select>
+
+    <!-- 사용자의 역할 목록 -->
+    <select id="selectUserRoles" parameterType="map" resultType="map">
+        SELECT r.role_cd, r.role_nm
+        FROM tb_user_role ur
+        JOIN tb_role r ON ur.role_cd = r.role_cd AND r.use_yn = 'Y'
+        WHERE ur.user_id = #{user_id}
+    </select>
+
+    <!-- 역할 기반 메뉴별 권한 조회 (가장 넓은 권한 적용) -->
+    <select id="selectPgmAuthByUser" parameterType="map" resultType="map">
+        SELECT
+            MAX(CASE WHEN rm.srch_yn = 'Y' THEN 'Y' ELSE 'N' END) AS srch_yn,
+            MAX(CASE WHEN rm.new_yn  = 'Y' THEN 'Y' ELSE 'N' END) AS new_yn,
+            MAX(CASE WHEN rm.save_yn = 'Y' THEN 'Y' ELSE 'N' END) AS save_yn,
+            MAX(CASE WHEN rm.del_yn  = 'Y' THEN 'Y' ELSE 'N' END) AS del_yn,
+            MAX(CASE WHEN rm.prnt_yn = 'Y' THEN 'Y' ELSE 'N' END) AS prnt_yn,
+            MAX(CASE WHEN rm.upld_yn = 'Y' THEN 'Y' ELSE 'N' END) AS upld_yn,
+            MAX(CASE WHEN rm.init_yn = 'Y' THEN 'Y' ELSE 'N' END) AS init_yn
+        FROM tb_user_role ur
+        JOIN tb_role_menu rm ON ur.role_cd = rm.role_cd
+        JOIN tb_menu m ON rm.menu_id = m.menu_id AND m.pgm_id = #{pgm_id}
+        WHERE ur.user_id = #{user_id}
+    </select>
+
+    <!-- 사용자의 데이터 권한 -->
+    <select id="selectDataAuth" parameterType="map" resultType="map">
+        SELECT da.auth_type, da.auth_target, da.table_name
+        FROM tb_user_role ur
+        JOIN tb_data_auth da ON ur.role_cd = da.role_cd
+        WHERE ur.user_id = #{user_id}
+        ORDER BY
+            CASE da.auth_type
+                WHEN 'ALL' THEN 1
+                WHEN 'DEPT_SUB' THEN 2
+                WHEN 'DEPT' THEN 3
+                WHEN 'USER' THEN 4
+            END
+    </select>
+
+    <!-- 사용자의 접근 가능 메뉴 목록 -->
+    <select id="selectMenusByUser" parameterType="map" resultType="map">
+        SELECT DISTINCT m.menu_id, m.menu_nm, m.parent_id, m.menu_type,
+               m.pgm_id, m.url, m.icon, m.sort_order
+        FROM tb_menu m
+        LEFT JOIN tb_role_menu rm ON m.menu_id = rm.menu_id
+        LEFT JOIN tb_user_role ur ON rm.role_cd = ur.role_cd AND ur.user_id = #{user_id}
+        WHERE m.use_yn = 'Y'
+          AND (m.menu_type = 'G' OR ur.user_id IS NOT NULL)
+        ORDER BY m.sort_order
+    </select>
+
+</mapper>

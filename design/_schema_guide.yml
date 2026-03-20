@@ -23,12 +23,13 @@ auth:
 search:
   - field: String     # 검색 필드명
     label: String     # 표시명
-    widget: String    # text, combo, date, dateRange, codePopup
-    code: String      # 코드 그룹 (combo용, 서버 조회)
+    widget: String    # text, combo, date, dateRange, codePopup, multiCombo, yearMonth, year
+    code: String      # 코드 그룹 (combo/multiCombo용, 서버 조회)
     options: Array    # 직접 옵션 [{value, label}]
-    default: String   # 기본값 (dateRange: THIS_MONTH, TODAY, THIS_YEAR)
+    default: String   # 기본값 (dateRange: THIS_MONTH/TODAY/THIS_YEAR, yearMonth: THIS_MONTH/PREV_MONTH, year: THIS_YEAR)
     placeholder: String # placeholder 텍스트
     popup: Object     # codePopup용 {url, codeField, nameField, width, height}
+    dependsOn: Object # 의존 콤보 {field, paramKey}
 
 grids:
   grid1:              # 그리드 ID (grid1, grid2, grid3 ...)
@@ -56,17 +57,35 @@ grids:
 
 form:
   masterForm:         # 폼 ID (masterForm, searchForm 등)
+    columns: Number   # 컬럼 수 (기본 2)
+    labelWidth: Number # 라벨 너비 (px)
     elements:
       - field: String
         label: String
-        widget: String  # text, number, combo, date, dateRange, codePopup, textarea, checkbox
+        widget: String  # text, number, combo, date, dateRange, codePopup, textarea, checkbox,
+                        # radio, currency, multiCombo, yearMonth, year, switch, divider, display, password
         readOnly: Boolean
         required: Boolean
         type: String    # 'number' (text widget에서)
         placeholder: String
-        options: Array  # combo용 [{value, label}]
+        options: Array  # combo/multiCombo/radio/display용 [{value, label}]
         popup: Object   # codePopup용 {url, codeField, nameField}
-        default: String # dateRange용 (THIS_MONTH, TODAY, THIS_YEAR)
+        default: String # dateRange: THIS_MONTH/TODAY/THIS_YEAR, yearMonth: THIS_MONTH/PREV_MONTH, year: THIS_YEAR
+        colspan: Number # 차지할 컬럼 수
+        # === 새 속성 ===
+        prefix: String  # 입력 앞 표시 텍스트 (예: '₩', '$')
+        suffix: String  # 입력 뒤 표시 텍스트 (예: '원', 'kg', '%')
+        min: Number     # 숫자 최소값
+        max: Number     # 숫자 최대값
+        step: Number    # 숫자 증감 단위
+        helpText: String # 필드 아래 도움말 텍스트
+        dependsOn: Object # 의존 콤보 {field: '상위필드명', paramKey: 'API파라미터키'}
+        onChange: String  # 변경 시 동작 힌트 (코드 생성 시 참고)
+        onLabel: String   # switch용 ON 라벨
+        offLabel: String  # switch용 OFF 라벨
+        badge: Boolean    # display용 뱃지 스타일
+        badgeColors: Object # display용 값별 색상 맵 {DRAFT: '#4a90d9', ...}
+        checkLabel: String  # checkbox용 라벨 텍스트
 
 tabs:                 # 탭 정의 (split-tab 유형)
   - id: String        # 탭 패널 ID
@@ -104,6 +123,12 @@ sql:
     table: String
     where: String     # WHERE 조건
 
+behavior:             # 특수 동작 힌트 (코드 생성 시 참고)
+  - type: String      # autoCalc, statusChange, lazyLoad, validation, etc.
+    description: String
+    trigger: String   # 트리거 조건
+    action: String    # 실행 동작
+
 # --- 규칙 요약 ---
 #
 # 1. screen.type이 코드 구조를 결정:
@@ -122,3 +147,14 @@ sql:
 #
 # 5. sql 섹션은 MyBatis XML 생성의 힌트
 #    실제 SQL은 AI가 테이블 구조를 참고하여 생성
+#
+# 6. behavior 섹션은 선택사항
+#    특수 동작이 있을 때만 기술 (자동계산, 상태전이 등)
+#
+# 7. form widget 목록:
+#    기본: text, number, combo, date, dateRange, codePopup, textarea, checkbox, radio, hidden
+#    확장: currency, multiCombo, yearMonth, year, switch, divider, display, password
+#
+# 8. form 새 속성:
+#    prefix, suffix, min, max, step, helpText, dependsOn, onChange,
+#    onLabel, offLabel, badge, badgeColors, checkLabel

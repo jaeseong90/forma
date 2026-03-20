@@ -15,4 +15,70 @@
         VALUES (#{log_type}, #{pgm_id}, #{user_id}, #{user_ip}, NOW())
     </insert>
 
+    <!-- ═══ 데이터 권한 ═══ -->
+
+    <!-- 전체 부서 목록 (Java에서 트리 탐색) -->
+    <select id="selectAllDepts" resultType="map">
+        SELECT dept_code, parent_code FROM tb_dept WHERE use_yn = 'Y'
+    </select>
+
+    <!--
+        데이터 권한 SQL 프래그먼트.
+        업무 매퍼에서 <include refid="common.dataAuth"/> 로 삽입.
+        테이블에 created_by 또는 dept_code 컬럼이 있을 때 사용.
+    -->
+    <sql id="dataAuth">
+        <if test="_isAdmin == null or _isAdmin == false">
+            <choose>
+                <when test="_dataAuthType == 'USER'">
+                    AND created_by = #{_userId}
+                </when>
+                <when test="_dataAuthType == 'DEPT'">
+                    AND dept_code = #{_userDept}
+                </when>
+                <when test="_dataAuthType == 'DEPT_SUB'">
+                    AND dept_code IN
+                    <foreach item="dc" collection="_deptList" open="(" separator="," close=")">#{dc}</foreach>
+                </when>
+                <!-- ALL: 필터 없음 -->
+            </choose>
+        </if>
+    </sql>
+
+    <!-- ═══ 파일 첨부 ═══ -->
+
+    <insert id="insertFile" parameterType="map">
+        INSERT INTO tb_file (file_id, ref_type, ref_id, file_name, file_path,
+                             file_size, content_type, sort_order, created_by, created_at)
+        VALUES (#{file_id}, #{ref_type}, #{ref_id}, #{file_name}, #{file_path},
+                #{file_size}, #{content_type}, #{sort_order}, #{user_id}, NOW())
+    </insert>
+
+    <select id="selectFiles" parameterType="map" resultType="map">
+        SELECT file_id, ref_type, ref_id, file_name, file_path,
+               file_size, content_type, sort_order, created_by, created_at
+        FROM tb_file
+        WHERE ref_type = #{ref_type} AND ref_id = #{ref_id}
+        ORDER BY sort_order
+    </select>
+
+    <select id="selectFileById" parameterType="map" resultType="map">
+        SELECT file_id, ref_type, ref_id, file_name, file_path,
+               file_size, content_type, created_by
+        FROM tb_file WHERE file_id = #{file_id}
+    </select>
+
+    <delete id="deleteFile" parameterType="map">
+        DELETE FROM tb_file WHERE file_id = #{file_id}
+    </delete>
+
+    <!-- ═══ 감사 로그 ═══ -->
+
+    <insert id="insertAuditLog" parameterType="map">
+        INSERT INTO tb_audit_log (trace_id, pgm_id, table_name, action, row_key,
+                                  before_data, after_data, user_id, user_ip, audit_dt)
+        VALUES (#{trace_id}, #{pgm_id}, #{table_name}, #{action}, #{row_key},
+                #{before_data}, #{after_data}, #{user_id}, #{user_ip}, NOW())
+    </insert>
+
 </mapper>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>품목관리</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">품목관리 (MMA010)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div id="grid-area"></div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    const PGM = 'MMA010';
+    const listener = platform.initListener(PGM);
+    const ctx = {};
+
+    listener.initPgm = function() {
+        ctx.searchForm = new FormaForm('#search-area', {
+            search: true,
+            elements: [
+                { field: 'item_grp', label: '품목그룹', widget: 'combo', code: 'ITEM_GRP' },
+                { field: 'item_cd', label: '품목코드', placeholder: '품목코드' },
+                { field: 'item_nm', label: '품목명', placeholder: '품목명' },
+                { field: 'use_yn', label: '사용여부', widget: 'combo', options: [
+                    { value: 'Y', label: '사용' },
+                    { value: 'N', label: '미사용' }
+                ]}
+            ]
+        });
+
+        ctx.grid1 = new FormaGrid('#grid-area', {
+            editable: true,
+            checkable: true,
+            columns: [
+                { field: 'ITEM_CD', label: '품목코드', width: 120, required: true },
+                { field: 'ITEM_NM', label: '품목명', width: 200, required: true },
+                { field: 'ITEM_GRP', label: '품목그룹', width: 100, editor: 'select', code: 'ITEM_GRP' },
+                { field: 'SPEC', label: '규격', width: 200 },
+                { field: 'UNIT_CD', label: '단위', width: 80, editor: 'select', code: 'UNIT' },
+                { field: 'UNIT_PRICE', label: '단가', width: 120, type: 'number', format: 'currency', editor: 'currency' },
+                { field: 'USE_YN', label: '사용', width: 60, editor: 'check' },
+                { field: 'REMARK', label: '비고', width: 250 }
+            ]
+        });
+
+        listener.button.search.click();
+    };
+
+    listener.button.search.click = function() {
+        platform.post('/mma010/selectGrid1', ctx.searchForm.getData(), new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        }));
+    };
+
+    listener.button.save.click = function() {
+        var data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        if (!ctx.grid1.checkGridValidation()) return;
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post('/mma010/saveGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) { FormaPopup.toast.success('저장되었습니다.'); listener.button.search.click(); }
+            }));
+        });
+    };
+
+    listener.button.del.click = function() {
+        var data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?', function(ok) {
+            if (ok) platform.post('/mma010/deleteGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) { FormaPopup.toast.success('삭제되었습니다.'); listener.button.search.click(); }
+            }));
+        });
+    };
+
+    listener.button.news.click = function() {
+        ctx.grid1.addRow({ USE_YN: 'Y' });
+    };
+
+    listener.button.init.click = function() {
+        ctx.searchForm.clear();
+        ctx.grid1.clearData();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+})();
+</script>
+</body>
+</html>

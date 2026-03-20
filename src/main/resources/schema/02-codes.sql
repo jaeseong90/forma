@@ -22,3 +22,10 @@ INSERT INTO tb_code VALUES ('UNIT', 'M', 'm', 2, 'Y');
 INSERT INTO tb_code VALUES ('UNIT', 'EA', 'EA', 3, 'Y');
 INSERT INTO tb_code VALUES ('UNIT', 'SET', 'SET', 4, 'Y');
 INSERT INTO tb_code VALUES ('UNIT', 'LOT', 'LOT', 5, 'Y');
+
+INSERT INTO tb_code_group VALUES ('ITEM_GRP', '품목그룹');
+
+INSERT INTO tb_code VALUES ('ITEM_GRP', 'RAW', '원자재', 1, 'Y');
+INSERT INTO tb_code VALUES ('ITEM_GRP', 'PART', '부품', 2, 'Y');
+INSERT INTO tb_code VALUES ('ITEM_GRP', 'PROD', '완제품', 3, 'Y');
+INSERT INTO tb_code VALUES ('ITEM_GRP', 'SUB', '부자재', 4, 'Y');

@@ -80,11 +80,11 @@ sql:
     orderBy: o.order_date DESC, o.order_no DESC
   selectGrid2:
     table: tb_sales_order_item
-    where: order_no = #{order_no}
+    where: "order_no = #{order_no}"
     orderBy: seq
   saveAll:
     description: 마스터 upsert + 품목 전삭 후 재입력 + 합계금액 갱신
   deleteGrid1:
     table: tb_sales_order
-    where: order_no = #{order_no}
+    where: "order_no = #{order_no}"
     cascade: tb_sales_order_item (order_no)

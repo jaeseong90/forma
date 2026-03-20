@@ -101,14 +101,14 @@ sql:
     table: tb_sales_order o
     joins:
       - { table: tb_customer, alias: c, on: "o.cust_cd = c.cust_cd", type: LEFT }
-    where: o.order_no = #{order_no}
+    where: "o.order_no = #{order_no}"
   selectGrid2:
     table: tb_sales_order_item
-    where: order_no = #{order_no}
+    where: "order_no = #{order_no}"
     orderBy: seq
   selectGrid3:
     table: tb_order_history
-    where: order_no = #{order_no}
+    where: "order_no = #{order_no}"
     orderBy: action_at DESC
   saveMaster:
     description: |

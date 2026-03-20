@@ -1,0 +1,21 @@
+# Build
+build/
+.gradle/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads (runtime)
+uploads/
+
+# Env
+.env
+*.log

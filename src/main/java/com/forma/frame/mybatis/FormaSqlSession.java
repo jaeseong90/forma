@@ -1,14 +1,13 @@
 package com.forma.frame.mybatis;
 
+import com.forma.frame.auth.DataAuthContext;
 import org.apache.ibatis.executor.BatchResult;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class FormaSqlSession {
@@ -28,23 +27,44 @@ public class FormaSqlSession {
     // ==================== SIMPLE ====================
 
     public <T> T selectOne(String statement) {
-        return simple.selectOne(statement);
+        return simple.selectOne(statement, injectAuthParams(null));
     }
 
     public <T> T selectOne(String statement, Object param) {
-        return simple.selectOne(statement, param);
+        return simple.selectOne(statement, injectAuthParams(param));
     }
 
     public <T> Optional<T> selectOneOptional(String statement, Object param) {
-        return Optional.ofNullable(simple.selectOne(statement, param));
+        return Optional.ofNullable(simple.selectOne(statement, injectAuthParams(param)));
     }
 
     public <E> List<E> selectList(String statement) {
-        return simple.selectList(statement);
+        return simple.selectList(statement, injectAuthParams(null));
     }
 
     public <E> List<E> selectList(String statement, Object param) {
-        return simple.selectList(statement, param);
+        return simple.selectList(statement, injectAuthParams(param));
+    }
+
+    /**
+     * SELECT 파라미터에 데이터 권한 컨텍스트를 자동 주입한다.
+     * _userId, _userDept, _deptList, _dataAuthType, _isAdmin
+     */
+    @SuppressWarnings("unchecked")
+    private Object injectAuthParams(Object param) {
+        Map<String, Object> authParams = DataAuthContext.get();
+        if (authParams == null || authParams.isEmpty()) {
+            return param;
+        }
+        if (param == null) {
+            return new HashMap<>(authParams);
+        }
+        if (param instanceof Map) {
+            Map<String, Object> map = new HashMap<>((Map<String, Object>) param);
+            map.putAll(authParams);
+            return map;
+        }
+        return param;
     }
 
     public int insert(String statement, Object param) {

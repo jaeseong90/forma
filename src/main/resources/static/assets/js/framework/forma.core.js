@@ -14,6 +14,24 @@ function Callback(callbackFunc) {
 const platform = {
     listener: {},
 
+    _handleAuthError(response) {
+        const error = response.headers.get('error');
+        if (!error) return false;
+        const messages = {
+            token_missing: '로그인이 필요합니다.',
+            token_expired: '세션이 만료되었습니다. 다시 로그인해주세요.',
+            user_isvalid: '사용자 정보가 올바르지 않습니다.'
+        };
+        const msg = messages[error] || '인증 오류가 발생했습니다.';
+        if (typeof FormaPopup !== 'undefined') {
+            FormaPopup.alert.show(msg).then(function() { location.href = '/login.html'; });
+        } else {
+            alert(msg);
+            location.href = '/login.html';
+        }
+        return true;
+    },
+
     async post(url, param, callbackObj) {
         if (callbackObj?.preHook) callbackObj.preHook();
         try {
@@ -22,6 +40,11 @@ const platform = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(param)
             });
+            // 인증 에러 체크
+            if (response.status === 401) {
+                this._handleAuthError(response);
+                return;
+            }
             const data = await response.json();
             if (data.resultCode === RESULT_CODE.ERROR && data.resultMessage) FormaPopup.alert.show(data.resultMessage);
             else if (data.resultCode === RESULT_CODE.WARN && data.resultMessage) FormaPopup.alert.show(data.resultMessage);
@@ -40,6 +63,10 @@ const platform = {
         const fullUrl = qs ? url + '?' + qs : url;
         try {
             const response = await fetch(fullUrl);
+            if (response.status === 401) {
+                this._handleAuthError(response);
+                return { resultCode: 'ERROR', resultMessage: '인증 필요' };
+            }
             return await response.json();
         } catch (err) {
             console.error(err);

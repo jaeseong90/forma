@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mma010">
+
+    <sql id="whereGrid1">
+        <if test="item_grp != null and item_grp != ''">
+            AND item_grp = #{item_grp}
+        </if>
+        <if test="item_cd != null and item_cd != ''">
+            AND item_cd LIKE '%' || #{item_cd} || '%'
+        </if>
+        <if test="item_nm != null and item_nm != ''">
+            AND item_nm LIKE '%' || #{item_nm} || '%'
+        </if>
+        <if test="use_yn != null and use_yn != ''">
+            AND use_yn = #{use_yn}
+        </if>
+    </sql>
+
+    <select id="selectGrid1" parameterType="map" resultType="map">
+        SELECT item_cd, item_nm, item_grp, spec, unit_cd, unit_price,
+               use_yn, remark, created_by, created_at, updated_by, updated_at
+        FROM tb_item
+        <where>
+            <include refid="whereGrid1"/>
+        </where>
+        ORDER BY item_grp, item_cd
+    </select>
+
+    <insert id="insertGrid1" parameterType="map">
+        INSERT INTO tb_item (item_cd, item_nm, item_grp, spec, unit_cd, unit_price,
+                             use_yn, remark, created_by, created_at, updated_by, updated_at)
+        VALUES (#{item_cd}, #{item_nm}, #{item_grp}, #{spec}, #{unit_cd}, #{unit_price},
+                #{use_yn}, #{remark}, #{user_id}, NOW(), #{user_id}, NOW())
+    </insert>
+
+    <update id="updateGrid1" parameterType="map">
+        UPDATE tb_item
+        SET item_nm = #{item_nm}, item_grp = #{item_grp}, spec = #{spec},
+            unit_cd = #{unit_cd}, unit_price = #{unit_price},
+            use_yn = #{use_yn}, remark = #{remark},
+            updated_by = #{user_id}, updated_at = NOW()
+        WHERE item_cd = #{item_cd}
+    </update>
+
+    <delete id="deleteGrid1" parameterType="map">
+        DELETE FROM tb_item WHERE item_cd = #{item_cd}
+    </delete>
+
+</mapper>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FORMA</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title" id="page-title">로딩 중...</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div id="grid1-area"></div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+/**
+ * FORMA Generic Screen Engine
+ * YAML 설계서 1파일로 완전한 CRUD 화면을 런타임 생성한다.
+ * /pages/screen.html?id=MMA010
+ */
+(async function() {
+    var screenId = new URLSearchParams(location.search).get('id');
+    if (!screenId) {
+        document.getElementById('page-title').textContent = '화면 ID가 지정되지 않았습니다.';
+        return;
+    }
+
+    var PGM = screenId;
+    var listener = platform.initListener(PGM);
+    var ctx = {};
+    var apiBase = '/api/screen/' + screenId;
+
+    // 1. 화면 정의 로드
+    var defRes = await platform.get(apiBase + '/definition');
+    if (!defRes || defRes.resultCode !== RESULT_CODE.OK || !defRes.resultData) {
+        document.getElementById('page-title').textContent = '화면 정의를 찾을 수 없습니다: ' + screenId;
+        return;
+    }
+    var def = defRes.resultData;
+
+    // 2. 타이틀 설정
+    document.getElementById('page-title').textContent = def.screen.name + ' (' + def.screen.id + ')';
+    document.title = def.screen.name + ' - FORMA';
+
+    // 3. 초기화
+    listener.initPgm = function() {
+        // 검색폼 생성
+        if (def.search && def.search.length > 0) {
+            ctx.searchForm = new FormaForm('#search-area', {
+                search: true,
+                elements: def.search
+            });
+        }
+
+        // 그리드 생성
+        if (def.grids && def.grids.grid1) {
+            var gridDef = def.grids.grid1;
+            ctx.grid1 = new FormaGrid('#grid1-area', {
+                editable: gridDef.editable || false,
+                checkable: gridDef.checkable || false,
+                sortable: gridDef.sortable || false,
+                rowNum: gridDef.rowNum || false,
+                paging: gridDef.paging || false,
+                pageSize: gridDef.pageSize || 50,
+                columns: gridDef.columns || []
+            });
+        }
+
+        listener.button.search.click();
+    };
+
+    // 4. 조회
+    listener.button.search.click = function() {
+        var params = ctx.searchForm ? ctx.searchForm.getData() : {};
+        platform.post(apiBase + '/selectGrid1', params, new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK && ctx.grid1) {
+                ctx.grid1.setData(result.resultData);
+            }
+        }));
+    };
+
+    // 5. 저장
+    listener.button.save.click = function() {
+        if (!ctx.grid1) return;
+        var data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        if (!ctx.grid1.checkGridValidation()) return;
+        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
+            if (ok) platform.post(apiBase + '/saveGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('저장되었습니다.');
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    // 6. 삭제
+    listener.button.del.click = function() {
+        if (!ctx.grid1) return;
+        var data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?', function(ok) {
+            if (ok) platform.post(apiBase + '/deleteGrid1', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('삭제되었습니다.');
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    // 7. 신규
+    listener.button.news.click = function() {
+        if (!ctx.grid1) return;
+        var defaults = {};
+        // 그리드 컬럼에서 기본값 설정 (USE_YN 등)
+        if (def.grids && def.grids.grid1 && def.grids.grid1.columns) {
+            def.grids.grid1.columns.forEach(function(col) {
+                if (col.editor === 'check') defaults[col.field] = 'Y';
+            });
+        }
+        ctx.grid1.addRow(defaults);
+    };
+
+    // 8. 초기화
+    listener.button.init.click = function() {
+        if (ctx.searchForm) ctx.searchForm.clear();
+        if (ctx.grid1) ctx.grid1.clearData();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+})();
+</script>
+</body>
+</html>

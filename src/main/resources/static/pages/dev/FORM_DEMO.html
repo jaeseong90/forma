@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>폼 컨트롤 데모</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .demo-section { margin-bottom: 16px; }
+        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
+        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
+        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
+        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
+        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; }
+        .ref-tbl tr:hover td { background: #f8fafc; }
+        details summary { outline: none; }
+        details summary::-webkit-details-marker { color: #4a90d9; }
+    </style>
+</head>
+<body>
+<div class="forma-page" style="max-width:1200px">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">FormaForm API 레퍼런스 &amp; 데모</h1>
+        <div style="font-size:12px;color:#666;margin-top:4px">1,449줄 | 21개 위젯 | 19개 데모 섹션 | <a href="/pages/dev/GRID_DEMO.html">FormaGrid 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
+    </div>
+    <div class="forma-content">
+
+        <!-- API 레퍼런스 -->
+        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+            <details open>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin-bottom:10px">생성자 옵션</summary>
+                <table class="ref-tbl">
+                    <tr><th>옵션</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+                    <tr><td>search</td><td>Boolean</td><td>false</td><td>true면 검색폼 (가로 배치)</td></tr>
+                    <tr><td>columns</td><td>Number</td><td>2</td><td>form 모드 컬럼 수</td></tr>
+                    <tr><td>labelWidth</td><td>Number</td><td>80</td><td>라벨 너비 (px)</td></tr>
+                    <tr><td>elements</td><td>Array</td><td>[]</td><td>위젯 정의 배열</td></tr>
+                    <tr><td>onChange</td><td>Function</td><td>null</td><td>(field, value, oldValue)</td></tr>
+                    <tr><td>onBlur</td><td>Function</td><td>null</td><td>(field, value)</td></tr>
+                    <tr><td>onEnter</td><td>Function</td><td>null</td><td>(field, value)</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">위젯 타입 (21종)</summary>
+                <table class="ref-tbl">
+                    <tr><th>widget</th><th>설명</th><th>getValue() 반환</th><th>주요 속성</th></tr>
+                    <tr><td>text</td><td>텍스트 입력 (기본)</td><td>String / Number(type='number')</td><td>placeholder, maxLength, type, min, max, step</td></tr>
+                    <tr><td>textarea</td><td>텍스트영역</td><td>String</td><td>rows, placeholder</td></tr>
+                    <tr><td>password</td><td>비밀번호</td><td>String</td><td>placeholder, 눈 아이콘 토글</td></tr>
+                    <tr><td>hidden</td><td>숨김 필드</td><td>String</td><td>—</td></tr>
+                    <tr><td>number</td><td>숫자 (text type=number)</td><td>Number</td><td>min, max, step, suffix, prefix</td></tr>
+                    <tr><td>combo</td><td>검색 드롭다운</td><td>String (value)</td><td>options, code, dependsOn</td></tr>
+                    <tr><td>select</td><td>(combo와 동일)</td><td>String</td><td>—</td></tr>
+                    <tr><td>date</td><td>날짜 (캘린더)</td><td>'YYYY-MM-DD'</td><td>default: 'TODAY'</td></tr>
+                    <tr><td>dateRange</td><td>기간 (캘린더+프리셋)</td><td>field_from, field_to 분리</td><td>default: 'THIS_MONTH', presets</td></tr>
+                    <tr><td>time</td><td>시간</td><td>'HH:MM'</td><td>default: 'NOW', step</td></tr>
+                    <tr><td>yearMonth</td><td>년월</td><td>'YYYY-MM'</td><td>default: 'THIS_MONTH'/'PREV_MONTH'</td></tr>
+                    <tr><td>year</td><td>년도 선택</td><td>String</td><td>default: 'THIS_YEAR', range</td></tr>
+                    <tr><td>currency</td><td>금액 (콤마포맷)</td><td>Number</td><td>prefix, suffix</td></tr>
+                    <tr><td>checkbox</td><td>체크박스</td><td>'Y'/'N'</td><td>checkLabel</td></tr>
+                    <tr><td>radio</td><td>라디오</td><td>String (value)</td><td>options: [{value, label}]</td></tr>
+                    <tr><td>switch</td><td>ON/OFF 토글</td><td>'Y'/'N'</td><td>onLabel, offLabel</td></tr>
+                    <tr><td>multiCombo</td><td>복수 선택</td><td>'A,B,C' (쉼표구분)</td><td>options</td></tr>
+                    <tr><td>autocomplete</td><td>자동완성 검색</td><td>String (value)</td><td>options, fetchUrl</td></tr>
+                    <tr><td>codePopup</td><td>코드 팝업</td><td>String (code)</td><td>popup: {url, codeField, nameField}</td></tr>
+                    <tr><td>file</td><td>파일 업로드</td><td>File[]</td><td>accept, multiple, buttonLabel</td></tr>
+                    <tr><td>display</td><td>읽기전용/뱃지</td><td>String</td><td>badge, badgeColors, options</td></tr>
+                    <tr><td>divider</td><td>구분선/섹션</td><td>—</td><td>label, collapsible, collapsed</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">공통 필드 속성</summary>
+                <table class="ref-tbl">
+                    <tr><th>속성</th><th>타입</th><th>설명</th></tr>
+                    <tr><td>field</td><td>String</td><td>데이터 필드명 (필수)</td></tr>
+                    <tr><td>label</td><td>String</td><td>라벨 텍스트</td></tr>
+                    <tr><td>widget</td><td>String</td><td>위젯 타입 (기본 'text')</td></tr>
+                    <tr><td>required</td><td>Boolean</td><td>필수 여부 (* 표시, validate 대상)</td></tr>
+                    <tr><td>readOnly</td><td>Boolean</td><td>읽기 전용</td></tr>
+                    <tr><td>colspan</td><td>Number</td><td>차지할 컬럼 수</td></tr>
+                    <tr><td>prefix / suffix</td><td>String</td><td>입력 앞/뒤 텍스트 ('₩', '원', 'kg')</td></tr>
+                    <tr><td>helpText</td><td>String</td><td>필드 아래 도움말</td></tr>
+                    <tr><td>onChange</td><td>Function</td><td>(value, oldValue) 개별 필드</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">Public API 메서드</summary>
+                <table class="ref-tbl">
+                    <tr><th>메서드</th><th>설명</th></tr>
+                    <tr><td>getData()</td><td>폼 전체 데이터 반환</td></tr>
+                    <tr><td>setData(obj)</td><td>폼 데이터 세팅 + 원본 저장</td></tr>
+                    <tr><td>getField(field) / setField(field, value)</td><td>개별 필드 읽기/쓰기</td></tr>
+                    <tr><td>clear()</td><td>전체 초기화</td></tr>
+                    <tr><td>validate()</td><td>required 필드 검증</td></tr>
+                    <tr><td>formReadonly(boolean)</td><td>전체 읽기전용 토글</td></tr>
+                    <tr><td>showField(field) / hideField(field)</td><td>필드 표시/숨김</td></tr>
+                    <tr><td>setOptions(field, options)</td><td>combo/multiCombo 옵션 교체</td></tr>
+                    <tr><td>setRequired(field, boolean)</td><td>필수 여부 동적 변경</td></tr>
+                    <tr><td>setReadonly(field, boolean)</td><td>개별 readOnly</td></tr>
+                    <tr><td>setDisabled(field, boolean)</td><td>개별 disabled</td></tr>
+                    <tr><td>setLabel(field, text)</td><td>라벨 변경</td></tr>
+                    <tr><td>focus(field)</td><td>특정 필드 포커스</td></tr>
+                    <tr><td>isDirty()</td><td>원본 대비 변경 여부</td></tr>
+                    <tr><td>getChangedFields()</td><td>변경된 필드명 배열</td></tr>
+                    <tr><td>resetToOriginal()</td><td>원본 데이터로 복원</td></tr>
+                    <tr><td>destroy()</td><td>위젯 정리 (document 리스너 해제)</td></tr>
+                </table>
+            </details>
+        </div>
+
+        <!-- 1. 검색폼 (가로 배치) -->
+        <div class="demo-section">
+            <div class="demo-title">1. 검색폼 (search: true)</div>
+            <div class="demo-desc">가로 배치, 콤보/날짜범위 포함</div>
+            <div id="demo-search"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('search')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('search')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-search"></div>
+        </div>
+
+        <!-- 2. 기본 입력폼 (2컬럼) -->
+        <div class="demo-section">
+            <div class="demo-title">2. 입력폼 기본 (2컬럼, columns: 2)</div>
+            <div class="demo-desc">text, number, combo, date, textarea</div>
+            <div id="demo-form2"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('form2')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('form2')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('form2')">clear()</button>
+                <button class="forma-btn" onclick="demoValidate('form2')">validate()</button>
+                <button class="forma-btn" onclick="demoReadonly('form2', true)">readOnly</button>
+                <button class="forma-btn" onclick="demoReadonly('form2', false)">editable</button>
+            </div>
+            <div class="demo-output" id="out-form2"></div>
+        </div>
+
+        <!-- 3. 3컬럼 + colspan -->
+        <div class="demo-section">
+            <div class="demo-title">3. 3컬럼 폼 + colspan (columns: 3)</div>
+            <div class="demo-desc">비고 필드가 3칸 차지, labelWidth: 100</div>
+            <div id="demo-form3"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('form3')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('form3')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-form3"></div>
+        </div>
+
+        <!-- 4. 1컬럼 (세로 나열) -->
+        <div class="demo-section">
+            <div class="demo-title">4. 1컬럼 폼 (columns: 1)</div>
+            <div class="demo-desc">한 줄씩 세로 나열, labelWidth: 120</div>
+            <div id="demo-form1" style="max-width:500px"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('form1')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('form1')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-form1"></div>
+        </div>
+
+        <!-- 5. 위젯 전체 나열 (4컬럼) -->
+        <div class="demo-section">
+            <div class="demo-title">5. 전체 위젯 (4컬럼, columns: 4)</div>
+            <div class="demo-desc">text, number, combo, date, dateRange, checkbox, radio, textarea, codePopup, hidden</div>
+            <div id="demo-all"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('all')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('all')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('all')">clear()</button>
+                <button class="forma-btn" onclick="demoValidate('all')">validate()</button>
+                <button class="forma-btn" onclick="demoShowHide()">필드 show/hide 토글</button>
+            </div>
+            <div class="demo-output" id="out-all"></div>
+        </div>
+
+        <!-- 6. Validation 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">6. Validation 데모 (required 검증)</div>
+            <div class="demo-desc">이름, 이메일 필수. validate() 클릭 시 빈 필드 에러 표시</div>
+            <div id="demo-valid"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoValidate('valid')">validate()</button>
+                <button class="forma-btn" onclick="demoClear('valid')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-valid"></div>
+        </div>
+
+        <!-- 7. getField / setField 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">7. getField / setField 데모</div>
+            <div class="demo-desc">개별 필드 읽기/쓰기</div>
+            <div id="demo-field"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn" onclick="demoGetField()">getField('name')</button>
+                <button class="forma-btn" onclick="demoSetField()">setField('name', '홍길동')</button>
+                <button class="forma-btn" onclick="demoGetField2()">getField('type')</button>
+                <button class="forma-btn" onclick="demoSetField2()">setField('type', 'B')</button>
+            </div>
+            <div class="demo-output" id="out-field"></div>
+        </div>
+
+        <!-- 8. Currency 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">8. Currency (금액 입력, prefix/suffix)</div>
+            <div class="demo-desc">콤마 자동 포맷, 포커스 시 순수숫자, getData()에서 Number 반환. prefix/suffix 표시.</div>
+            <div id="demo-currency"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('currency')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('currency')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('currency')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-currency"></div>
+        </div>
+
+        <!-- 9. MultiCombo 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">9. MultiCombo (복수 선택)</div>
+            <div class="demo-desc">체크박스 드롭다운, pill 태그, 전체선택/해제. getData()에서 쉼표 구분 문자열.</div>
+            <div id="demo-multi"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('multi')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('multi')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('multi')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-multi"></div>
+        </div>
+
+        <!-- 10. YearMonth / Year 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">10. YearMonth / Year (년월/년도 선택)</div>
+            <div class="demo-desc">yearMonth: YYYY-MM, year: ±5년 드롭다운</div>
+            <div id="demo-ym"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('ym')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('ym')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-ym"></div>
+        </div>
+
+        <!-- 11. Switch 토글 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">11. Switch (ON/OFF 토글)</div>
+            <div class="demo-desc">슬라이드 토글, Y/N 반환. onLabel/offLabel 지원.</div>
+            <div id="demo-switch"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('sw')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('sw')">setData(샘플)</button>
+            </div>
+            <div class="demo-output" id="out-sw"></div>
+        </div>
+
+        <!-- 12. Divider + Display(Badge) 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">12. Divider + Display / Badge</div>
+            <div class="demo-desc">구분선, 읽기전용 텍스트, 상태 뱃지</div>
+            <div id="demo-divbadge"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('divbadge')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('divbadge')">setData(샘플)</button>
+            </div>
+            <div class="demo-output" id="out-divbadge"></div>
+        </div>
+
+        <!-- 13. 의존 콤보 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">13. 의존 콤보 (dependsOn)</div>
+            <div class="demo-desc">상위 콤보(품목그룹) 변경 → 하위 콤보(품목) 옵션 갱신. (데모에서는 직접 옵션 교체)</div>
+            <div id="demo-depends"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('depends')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('depends')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-depends"></div>
+        </div>
+
+        <!-- 14. 이벤트 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">14. 이벤트 (onChange, onBlur, onEnter)</div>
+            <div class="demo-desc">값 변경 시 로그 출력. 수량×단가=금액 자동 계산.</div>
+            <div id="demo-events"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('events')">getData()</button>
+                <button class="forma-btn" onclick="document.getElementById('out-events').textContent=''">로그 초기화</button>
+            </div>
+            <div class="demo-output" id="out-events" style="max-height:200px"></div>
+        </div>
+
+        <!-- 15. isDirty / getChangedFields 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">15. 변경 감지 (isDirty / getChangedFields)</div>
+            <div class="demo-desc">setData로 원본 세팅 후 값 변경하면 isDirty() = true</div>
+            <div id="demo-dirty"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn" onclick="demoSetData('dirty')">setData(원본)</button>
+                <button class="forma-btn forma-btn-primary" onclick="demoDirtyCheck()">isDirty()</button>
+                <button class="forma-btn" onclick="demoChangedFields()">getChangedFields()</button>
+                <button class="forma-btn" onclick="demoResetOriginal()">resetToOriginal()</button>
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('dirty')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-dirty"></div>
+        </div>
+
+        <!-- 16. Password + 동적제어 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">16. Password + 동적 제어 (setRequired, setReadonly, setLabel, focus)</div>
+            <div class="demo-desc">비밀번호 보기/숨기기, 동적으로 필수/읽기전용/라벨 변경</div>
+            <div id="demo-dynamic"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn" onclick="forms.dynamic.setRequired('email', true)">setRequired(email, true)</button>
+                <button class="forma-btn" onclick="forms.dynamic.setRequired('email', false)">setRequired(email, false)</button>
+                <button class="forma-btn" onclick="forms.dynamic.setReadonly('email', true)">setReadonly(email, true)</button>
+                <button class="forma-btn" onclick="forms.dynamic.setReadonly('email', false)">setReadonly(email, false)</button>
+                <button class="forma-btn" onclick="forms.dynamic.setLabel('email', '이메일 주소 (변경)')">setLabel 변경</button>
+                <button class="forma-btn" onclick="forms.dynamic.focus('email')">focus(email)</button>
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('dynamic')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-dynamic"></div>
+        </div>
+
+        <!-- 17. Time + File Upload 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">17. Time / File Upload</div>
+            <div class="demo-desc">time: 시간 선택 (HH:MM). file: 파일 업로드 (accept, multiple 지원).</div>
+            <div id="demo-timefile"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('timefile')">getData()</button>
+                <button class="forma-btn" onclick="demoClear('timefile')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-timefile"></div>
+        </div>
+
+        <!-- 18. Collapsible Divider 데모 -->
+        <div class="demo-section">
+            <div class="demo-title">18. Collapsible Divider (접기/펼치기 구분선)</div>
+            <div class="demo-desc">collapsible: true 옵션으로 섹션 접기/펼치기. 클릭 시 다음 divider 까지의 필드 숨김/표시.</div>
+            <div id="demo-collapse"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('collapse')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-collapse"></div>
+        </div>
+
+        <!-- 19. Autocomplete 데모 -->
+        <!-- (번호 기존 17→19) -->
+        <div class="demo-section">
+            <div class="demo-title">19. Autocomplete (자동완성 검색)</div>
+            <div class="demo-desc">타이핑 시 옵션 필터링. 정적 옵션 또는 fetchUrl로 서버 검색 지원. 키보드 Arrow/Enter 선택.</div>
+            <div id="demo-autocomplete"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('autocomplete')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('autocomplete')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('autocomplete')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-autocomplete"></div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+const forms = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. 검색폼
+    forms.search = new FormaForm('#demo-search', {
+        search: true,
+        elements: [
+            { field: 'keyword', label: '키워드', placeholder: '검색어 입력' },
+            { field: 'status', label: '상태', widget: 'combo', options: [
+                { value: 'ACTIVE', label: '활성' },
+                { value: 'INACTIVE', label: '비활성' },
+            ]},
+            { field: 'reg_date', label: '등록일자', widget: 'dateRange', default: 'THIS_MONTH' },
+            { field: 'type', label: '유형', widget: 'combo', options: [
+                { value: 'A', label: 'A유형' },
+                { value: 'B', label: 'B유형' },
+            ]},
+        ]
+    });
+
+    // 2. 기본 입력폼 (2컬럼)
+    forms.form2 = new FormaForm('#demo-form2', {
+        columns: 2,
+        elements: [
+            { field: 'name', label: '이름', required: true, placeholder: '이름 입력' },
+            { field: 'age', label: '나이', type: 'number' },
+            { field: 'dept', label: '부서', widget: 'combo', options: [
+                { value: 'DEV', label: '개발팀' },
+                { value: 'SALES', label: '영업팀' },
+                { value: 'HR', label: '인사팀' },
+            ]},
+            { field: 'join_date', label: '입사일', widget: 'date' },
+            { field: 'remark', label: '비고', widget: 'textarea', colspan: 2 },
+        ]
+    });
+
+    // 3. 3컬럼 + colspan
+    forms.form3 = new FormaForm('#demo-form3', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'order_no', label: '주문번호', readOnly: true },
+            { field: 'order_date', label: '주문일자', widget: 'date' },
+            { field: 'status', label: '상태', widget: 'combo', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'CONFIRMED', label: '확정' },
+            ]},
+            { field: 'cust_cd', label: '거래처코드' },
+            { field: 'cust_nm', label: '거래처명', readOnly: true },
+            { field: 'total_amt', label: '합계금액', widget: 'currency', prefix: '₩' },
+            { field: 'remark', label: '비고', widget: 'textarea', colspan: 3 },
+        ]
+    });
+
+    // 4. 1컬럼
+    forms.form1 = new FormaForm('#demo-form1', {
+        columns: 1,
+        labelWidth: 120,
+        elements: [
+            { field: 'company', label: '회사명', required: true },
+            { field: 'ceo', label: '대표이사' },
+            { field: 'biz_no', label: '사업자등록번호', placeholder: '000-00-00000', helpText: '- 포함하여 입력하세요' },
+            { field: 'addr', label: '주소', widget: 'textarea', rows: 2 },
+        ]
+    });
+
+    // 5. 전체 위젯
+    forms.all = new FormaForm('#demo-all', {
+        columns: 4,
+        labelWidth: 90,
+        elements: [
+            { field: 'f_text', label: 'text', placeholder: '텍스트 입력' },
+            { field: 'f_number', label: 'number', type: 'number', placeholder: '0' },
+            { field: 'f_combo', label: 'combo', widget: 'combo', options: [
+                { value: '1', label: '옵션1' }, { value: '2', label: '옵션2' }, { value: '3', label: '옵션3' },
+            ]},
+            { field: 'f_date', label: 'date', widget: 'date' },
+            { field: 'f_daterange', label: 'dateRange', widget: 'dateRange', default: 'THIS_MONTH', colspan: 2 },
+            { field: 'f_checkbox', label: 'checkbox', widget: 'checkbox', checkLabel: '동의합니다' },
+            { field: 'f_radio', label: 'radio', widget: 'radio', options: [
+                { value: 'M', label: '남' }, { value: 'F', label: '여' }, { value: 'O', label: '기타' },
+            ]},
+            { field: 'f_textarea', label: 'textarea', widget: 'textarea', colspan: 2, rows: 2, placeholder: '여러 줄 입력' },
+            { field: 'f_codepopup', label: 'codePopup', widget: 'codePopup', popup: {
+                url: '/pages/base/SDA010.html', codeField: 'CUST_CD', nameField: 'CUST_NM'
+            }},
+            { field: 'f_readonly', label: 'readOnly', readOnly: true },
+            { field: 'f_hidden', widget: 'hidden' },
+        ]
+    });
+
+    // 6. Validation
+    forms.valid = new FormaForm('#demo-valid', {
+        columns: 2,
+        elements: [
+            { field: 'name', label: '이름', required: true },
+            { field: 'email', label: '이메일', required: true, placeholder: 'user@example.com' },
+            { field: 'phone', label: '전화번호' },
+            { field: 'dept', label: '부서', widget: 'combo', required: true, options: [
+                { value: 'DEV', label: '개발' }, { value: 'HR', label: '인사' },
+            ]},
+        ]
+    });
+
+    // 7. getField / setField
+    forms.field = new FormaForm('#demo-field', {
+        columns: 3,
+        elements: [
+            { field: 'name', label: '이름' },
+            { field: 'type', label: '유형', widget: 'radio', options: [
+                { value: 'A', label: 'A형' }, { value: 'B', label: 'B형' }, { value: 'C', label: 'C형' },
+            ]},
+            { field: 'active', label: '활성', widget: 'checkbox', checkLabel: '사용' },
+        ]
+    });
+
+    // 8. Currency
+    forms.currency = new FormaForm('#demo-currency', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'unit_price', label: '단가', widget: 'currency', required: true },
+            { field: 'total_amt', label: '합계금액', widget: 'currency', suffix: '원' },
+            { field: 'weight', label: '중량', type: 'number', suffix: 'kg', min: 0, max: 9999, step: 0.1 },
+            { field: 'rate', label: '할인율', type: 'number', suffix: '%', prefix: '', min: 0, max: 100, step: 0.1 },
+            { field: 'budget', label: '예산', widget: 'currency', prefix: '₩' },
+        ]
+    });
+
+    // 9. MultiCombo
+    forms.multi = new FormaForm('#demo-multi', {
+        columns: 2,
+        labelWidth: 100,
+        elements: [
+            { field: 'status', label: '상태', widget: 'multiCombo', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'CONFIRMED', label: '확정' },
+                { value: 'APPROVED', label: '승인' },
+                { value: 'REJECTED', label: '반려' },
+                { value: 'CLOSED', label: '마감' },
+            ]},
+            { field: 'dept', label: '부서', widget: 'multiCombo', options: [
+                { value: 'DEV', label: '개발팀' },
+                { value: 'SALES', label: '영업팀' },
+                { value: 'HR', label: '인사팀' },
+                { value: 'FIN', label: '재무팀' },
+            ]},
+        ]
+    });
+
+    // 10. YearMonth / Year
+    forms.ym = new FormaForm('#demo-ym', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'plan_ym', label: '계획년월', widget: 'yearMonth', default: 'THIS_MONTH' },
+            { field: 'prev_ym', label: '전월', widget: 'yearMonth', default: 'PREV_MONTH' },
+            { field: 'plan_year', label: '계획년도', widget: 'year', default: 'THIS_YEAR' },
+        ]
+    });
+
+    // 11. Switch
+    forms.sw = new FormaForm('#demo-switch', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'use_yn', label: '사용여부', widget: 'switch', onLabel: '사용', offLabel: '미사용' },
+            { field: 'active', label: '활성화', widget: 'switch' },
+            { field: 'notify', label: '알림', widget: 'switch', onLabel: 'ON', offLabel: 'OFF' },
+        ]
+    });
+
+    // 12. Divider + Display/Badge
+    forms.divbadge = new FormaForm('#demo-divbadge', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'order_no', label: '주문번호', readOnly: true },
+            { field: 'order_date', label: '주문일자', widget: 'date' },
+            { field: 'status', label: '상태', widget: 'display', badge: true,
+                options: [
+                    { value: 'DRAFT', label: '작성중' },
+                    { value: 'CONFIRMED', label: '확정' },
+                    { value: 'REJECTED', label: '반려' },
+                ],
+                badgeColors: { DRAFT: '#4a90d9', CONFIRMED: '#4caf50', REJECTED: '#e24b4a' }
+            },
+            { widget: 'divider', label: '금액정보' },
+            { field: 'unit_price', label: '단가', widget: 'currency', prefix: '₩' },
+            { field: 'qty', label: '수량', type: 'number', min: 0 },
+            { field: 'total', label: '합계', widget: 'display' },
+            { widget: 'divider', label: '비고' },
+            { field: 'remark', label: '비고', widget: 'textarea', colspan: 3 },
+        ]
+    });
+
+    // 13. 의존 콤보 (dependsOn)
+    // 데모에서는 onChange로 직접 옵션 교체 (서버 없이)
+    const subItems = {
+        GRP_A: [{ value: 'A-001', label: '철판' }, { value: 'A-002', label: '스텐판' }],
+        GRP_B: [{ value: 'B-001', label: '볼트M8' }, { value: 'B-002', label: '너트M8' }, { value: 'B-003', label: '와셔M8' }],
+        GRP_C: [{ value: 'C-001', label: '페인트(적)' }, { value: 'C-002', label: '페인트(청)' }],
+    };
+    forms.depends = new FormaForm('#demo-depends', {
+        columns: 3,
+        labelWidth: 100,
+        onChange: function(field, value) {
+            if (field === 'item_grp') {
+                forms.depends.setOptions('item_cd', subItems[value] || []);
+                document.getElementById('out-depends').textContent = 'item_grp 변경 → item_cd 옵션 갱신: ' + JSON.stringify(subItems[value] || []);
+            }
+        },
+        elements: [
+            { field: 'item_grp', label: '품목그룹', widget: 'combo', options: [
+                { value: 'GRP_A', label: '판재류' },
+                { value: 'GRP_B', label: '볼트류' },
+                { value: 'GRP_C', label: '도장류' },
+            ]},
+            { field: 'item_cd', label: '품목', widget: 'combo', options: [] },
+            { field: 'item_nm', label: '품목명' },
+        ]
+    });
+
+    // 14. 이벤트 데모
+    forms.events = new FormaForm('#demo-events', {
+        columns: 3,
+        labelWidth: 100,
+        onChange: function(field, value, oldValue) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onChange] ' + field + ': ' + JSON.stringify(oldValue) + ' → ' + JSON.stringify(value) + '\n';
+            // 자동 계산: 수량 × 단가 = 금액
+            if (field === 'qty' || field === 'price') {
+                const qty = forms.events.getField('qty') || 0;
+                const price = forms.events.getField('price') || 0;
+                forms.events.setField('amount', qty * price);
+                out.textContent += '  → 금액 자동계산: ' + qty + ' × ' + price + ' = ' + (qty * price) + '\n';
+            }
+            out.scrollTop = out.scrollHeight;
+        },
+        onBlur: function(field, value) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onBlur] ' + field + ': ' + JSON.stringify(value) + '\n';
+            out.scrollTop = out.scrollHeight;
+        },
+        onEnter: function(field, value) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onEnter] ' + field + ': ' + JSON.stringify(value) + '\n';
+            out.scrollTop = out.scrollHeight;
+        },
+        elements: [
+            { field: 'qty', label: '수량', type: 'number', min: 0,
+                onChange: function(value, oldValue) {
+                    const out = document.getElementById('out-events');
+                    out.textContent += '  [필드 onChange] qty: ' + oldValue + ' → ' + value + '\n';
+                }
+            },
+            { field: 'price', label: '단가', widget: 'currency' },
+            { field: 'amount', label: '금액', widget: 'currency', readOnly: true, suffix: '원' },
+        ]
+    });
+
+    // 15. isDirty / getChangedFields
+    forms.dirty = new FormaForm('#demo-dirty', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'name', label: '이름' },
+            { field: 'dept', label: '부서', widget: 'combo', options: [
+                { value: 'DEV', label: '개발' }, { value: 'HR', label: '인사' }, { value: 'SALES', label: '영업' },
+            ]},
+            { field: 'salary', label: '급여', widget: 'currency', suffix: '원' },
+        ]
+    });
+
+    // 16. Password + 동적 제어
+    forms.dynamic = new FormaForm('#demo-dynamic', {
+        columns: 2,
+        labelWidth: 100,
+        elements: [
+            { field: 'user_id', label: '사용자ID', readOnly: true },
+            { field: 'email', label: '이메일', placeholder: 'user@example.com' },
+            { field: 'user_pw', label: '비밀번호', widget: 'password', placeholder: '비밀번호 입력' },
+            { field: 'user_pw2', label: '비밀번호 확인', widget: 'password', placeholder: '비밀번호 재입력' },
+        ]
+    });
+    forms.dynamic.setData({ user_id: 'admin' });
+
+    // 17. Time + File Upload
+    forms.timefile = new FormaForm('#demo-timefile', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'start_time', label: '시작시간', widget: 'time', default: 'NOW' },
+            { field: 'end_time', label: '종료시간', widget: 'time' },
+            { field: 'duration', label: '소요시간', widget: 'time', step: 60 },
+            { field: 'photo', label: '사진', widget: 'file', accept: 'image/*' },
+            { field: 'docs', label: '문서', widget: 'file', accept: '.pdf,.xlsx,.docx', multiple: true, buttonLabel: '문서 선택' },
+            { field: 'etc', label: '기타파일', widget: 'file' },
+        ]
+    });
+
+    // 18. Collapsible Divider
+    forms.collapse = new FormaForm('#demo-collapse', {
+        columns: 2,
+        labelWidth: 100,
+        elements: [
+            { widget: 'divider', label: '기본정보', collapsible: true },
+            { field: 'name', label: '이름', required: true },
+            { field: 'dept', label: '부서' },
+            { widget: 'divider', label: '연락처 (접기 가능)', collapsible: true },
+            { field: 'phone', label: '전화번호' },
+            { field: 'email', label: '이메일' },
+            { field: 'addr', label: '주소', colspan: 2 },
+            { widget: 'divider', label: '기타정보', collapsible: true, collapsed: true },
+            { field: 'remark', label: '비고', widget: 'textarea', colspan: 2 },
+            { field: 'tag', label: '태그' },
+        ]
+    });
+
+    // 19. Autocomplete
+    forms.autocomplete = new FormaForm('#demo-autocomplete', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'city', label: '도시', widget: 'autocomplete', placeholder: '도시명 입력',
+                options: [
+                    { value: 'SEL', label: '서울' }, { value: 'BSN', label: '부산' }, { value: 'DGU', label: '대구' },
+                    { value: 'ICN', label: '인천' }, { value: 'GWJ', label: '광주' }, { value: 'DJN', label: '대전' },
+                    { value: 'ULS', label: '울산' }, { value: 'SWN', label: '수원' }, { value: 'CJU', label: '청주' },
+                    { value: 'JNJ', label: '전주' }, { value: 'PHA', label: '포항' }, { value: 'CHN', label: '천안' },
+                ]
+            },
+            { field: 'item', label: '품목', widget: 'autocomplete', placeholder: '품목명 검색',
+                options: ['철판 3.0T', '스텐판 1.5T', '알루미늄판 2.0T', '볼트 M8×30', '너트 M8', '와셔 M8', '페인트(적)', '페인트(청)', '파이프 50A', '앵글 50×50']
+            },
+            { field: 'cust', label: '거래처', widget: 'autocomplete', placeholder: '거래처명 입력',
+                options: [
+                    { value: 'C001', label: '(주)삼성전자' }, { value: 'C002', label: '(주)LG전자' },
+                    { value: 'C003', label: '현대자동차(주)' }, { value: 'C004', label: 'SK하이닉스' },
+                    { value: 'C005', label: '포스코' }, { value: 'C006', label: '롯데케미칼' },
+                ]
+            },
+        ]
+    });
+});
+
+// 헬퍼 함수
+function demoGetData(key) {
+    const data = forms[key].getData();
+    document.getElementById('out-' + key).textContent = JSON.stringify(data, null, 2);
+}
+function demoSetData(key) {
+    if (key === 'form2') {
+        forms.form2.setData({ name: '김철수', age: 30, dept: 'DEV', join_date: '2024-01-15', remark: '테스트 데이터' });
+    } else if (key === 'all') {
+        forms.all.setData({
+            f_text: '샘플 텍스트', f_number: 12345, f_combo: '2', f_date: '2026-03-18',
+            f_checkbox: 'Y', f_radio: 'F', f_textarea: '여러 줄\n텍스트 입력',
+            f_readonly: '읽기전용 값', f_hidden: 'hidden_value'
+        });
+    } else if (key === 'currency') {
+        forms.currency.setData({ unit_price: 1234567, total_amt: 9876543, weight: 12.5, rate: 10, budget: 50000000 });
+    } else if (key === 'multi') {
+        forms.multi.setData({ status: 'DRAFT,CONFIRMED', dept: 'DEV,HR' });
+    } else if (key === 'sw') {
+        forms.sw.setData({ use_yn: 'Y', active: 'N', notify: 'Y' });
+    } else if (key === 'divbadge') {
+        forms.divbadge.setData({ order_no: 'ORD-2026-0001', order_date: '2026-03-19', status: 'CONFIRMED', unit_price: 15000, qty: 100, total: '1,500,000 원' });
+    } else if (key === 'dirty') {
+        forms.dirty.setData({ name: '홍길동', dept: 'DEV', salary: 5000000 });
+        document.getElementById('out-dirty').textContent = 'setData() 완료. 값을 변경해보세요.';
+    }
+    else if (key === 'autocomplete') {
+        forms.autocomplete.setData({ city: 'SEL', item: '철판 3.0T', cust: 'C001' });
+    }
+    if (key !== 'dirty') demoGetData(key);
+}
+function demoClear(key) {
+    forms[key].clear();
+    document.getElementById('out-' + key).textContent = '(cleared)';
+}
+function demoValidate(key) {
+    const ok = forms[key].validate();
+    document.getElementById('out-' + key).textContent = 'validate() → ' + ok;
+}
+function demoReadonly(key, readonly) {
+    forms[key].formReadonly(readonly);
+}
+function demoGetField() {
+    const val = forms.field.getField('name');
+    document.getElementById('out-field').textContent = "getField('name') → " + JSON.stringify(val);
+}
+function demoSetField() {
+    forms.field.setField('name', '홍길동');
+    document.getElementById('out-field').textContent = "setField('name', '홍길동') 완료";
+}
+function demoGetField2() {
+    const val = forms.field.getField('type');
+    document.getElementById('out-field').textContent = "getField('type') → " + JSON.stringify(val);
+}
+function demoSetField2() {
+    forms.field.setField('type', 'B');
+    document.getElementById('out-field').textContent = "setField('type', 'B') 완료";
+}
+
+let _hideToggle = false;
+function demoShowHide() {
+    _hideToggle = !_hideToggle;
+    if (_hideToggle) {
+        forms.all.hideField('f_combo');
+        forms.all.hideField('f_date');
+        document.getElementById('out-all').textContent = 'hideField: f_combo, f_date 숨김';
+    } else {
+        forms.all.showField('f_combo');
+        forms.all.showField('f_date');
+        document.getElementById('out-all').textContent = 'showField: f_combo, f_date 표시';
+    }
+}
+
+function demoDirtyCheck() {
+    const dirty = forms.dirty.isDirty();
+    document.getElementById('out-dirty').textContent = 'isDirty() → ' + dirty;
+}
+function demoChangedFields() {
+    const fields = forms.dirty.getChangedFields();
+    document.getElementById('out-dirty').textContent = 'getChangedFields() → ' + JSON.stringify(fields);
+}
+function demoResetOriginal() {
+    forms.dirty.resetToOriginal();
+    document.getElementById('out-dirty').textContent = 'resetToOriginal() — 원본으로 복원됨';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+screen:
+  id: MMA010
+  name: 품목관리
+  module: material/item
+  type: list
+  description: 품목 마스터 CRUD. 품목그룹별 검색, 단위는 코드 선택.
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+  init: true
+
+search:
+  - field: item_grp
+    label: 품목그룹
+    widget: combo
+    code: ITEM_GRP
+  - field: item_cd
+    label: 품목코드
+    widget: text
+    placeholder: 품목코드
+  - field: item_nm
+    label: 품목명
+    widget: text
+    placeholder: 품목명
+  - field: use_yn
+    label: 사용여부
+    widget: combo
+    options:
+      - { value: Y, label: 사용 }
+      - { value: N, label: 미사용 }
+
+grids:
+  grid1:
+    editable: true
+    checkable: true
+    columns:
+      - { field: ITEM_CD, label: 품목코드, width: 120, required: true }
+      - { field: ITEM_NM, label: 품목명, width: 200, required: true }
+      - { field: ITEM_GRP, label: 품목그룹, width: 100, editor: select, code: ITEM_GRP }
+      - { field: SPEC, label: 규격, width: 200 }
+      - { field: UNIT_CD, label: 단위, width: 80, editor: select, code: UNIT }
+      - { field: UNIT_PRICE, label: 단가, width: 120, type: number, format: currency }
+      - { field: USE_YN, label: 사용, width: 60, editor: check }
+      - { field: REMARK, label: 비고, width: 250 }
+
+layout:
+  type: full
+
+sql:
+  tables:
+    - { name: tb_item }
+  selectGrid1:
+    table: tb_item
+    columns: item_cd, item_nm, item_grp, spec, unit_cd, unit_price, use_yn, remark, created_by, created_at, updated_by, updated_at
+    orderBy: item_grp, item_cd
+  insertGrid1:
+    table: tb_item
+  updateGrid1:
+    table: tb_item
+    where: "item_cd = #{item_cd}"
+  deleteGrid1:
+    table: tb_item
+    where: "item_cd = #{item_cd}"

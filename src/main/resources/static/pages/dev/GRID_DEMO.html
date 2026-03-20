@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>그리드 에디터 데모</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .demo-section { margin-bottom: 20px; }
+        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
+        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
+        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
+        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
+        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; white-space: nowrap; }
+        .ref-tbl tr:hover td { background: #f8fafc; }
+        details summary { outline: none; }
+        details summary::-webkit-details-marker { color: #4a90d9; }
+    </style>
+</head>
+<body>
+<div class="forma-page" style="max-width:1400px">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">FormaGrid API 레퍼런스 &amp; 데모</h1>
+        <div style="font-size:12px;color:#666;margin-top:4px">1,838줄 | 19개 데모 섹션 | <a href="/pages/dev/FORM_DEMO.html">FormaForm 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
+    </div>
+    <div class="forma-content">
+
+        <!-- API 레퍼런스 -->
+        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+            <details open>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin-bottom:10px">생성자 옵션 (Constructor Options)</summary>
+                <table class="ref-tbl">
+                    <tr><th>옵션</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+                    <tr><td>columns</td><td>Array</td><td>[]</td><td>컬럼 정의 배열</td></tr>
+                    <tr><td>editable</td><td>Boolean</td><td>false</td><td>인라인 편집 활성화 (더블클릭/Enter/F2)</td></tr>
+                    <tr><td>checkable</td><td>Boolean</td><td>false</td><td>체크박스 컬럼 표시</td></tr>
+                    <tr><td>sortable</td><td>Boolean</td><td>false</td><td>헤더 클릭 정렬 (asc→desc→해제)</td></tr>
+                    <tr><td>rowNum</td><td>Boolean</td><td>false</td><td>행번호 컬럼</td></tr>
+                    <tr><td>reorderable</td><td>Boolean</td><td>false</td><td>드래그&amp;드롭 행 순서 변경 (≡ 핸들)</td></tr>
+                    <tr><td>filterable</td><td>Boolean</td><td>false</td><td>헤더 아래 필터 입력행 표시</td></tr>
+                    <tr><td>paging</td><td>Boolean</td><td>false</td><td>페이징 바 표시</td></tr>
+                    <tr><td>pageSize</td><td>Number</td><td>50</td><td>페이지당 행 수</td></tr>
+                    <tr><td>virtualScroll</td><td>Boolean</td><td>false</td><td>가상 스크롤 (대량 데이터 최적화)</td></tr>
+                    <tr><td>height</td><td>Number</td><td>400</td><td>virtualScroll 시 그리드 높이 (px)</td></tr>
+                    <tr><td>rowHeight</td><td>Number</td><td>30</td><td>virtualScroll 시 행 높이 (px)</td></tr>
+                    <tr><td>groupBy</td><td>String</td><td>null</td><td>그룹핑 필드명</td></tr>
+                    <tr><td>groupFooter</td><td>Boolean</td><td>false</td><td>그룹별 소계 행 표시</td></tr>
+                    <tr><td>treeField</td><td>String</td><td>null</td><td>트리 표시 컬럼 필드명</td></tr>
+                    <tr><td>treeIdField</td><td>String</td><td>'id'</td><td>트리 노드 ID 필드명</td></tr>
+                    <tr><td>treeParentField</td><td>String</td><td>'parent_id'</td><td>트리 부모 ID 필드명</td></tr>
+                    <tr><td>rowDetail</td><td>Function</td><td>null</td><td>멀티행 서브행 정의 (row, idx) → Array</td></tr>
+                    <tr><td>detailGrid</td><td>Function</td><td>null</td><td>마스터-디테일 (row, container, idx)</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">컬럼 속성 (Column Options)</summary>
+                <table class="ref-tbl">
+                    <tr><th>속성</th><th>타입</th><th>설명</th></tr>
+                    <tr><td>field</td><td>String</td><td>데이터 필드명 (필수)</td></tr>
+                    <tr><td>label</td><td>String/Array</td><td>헤더 텍스트. 멀티헤더: [{text, colspan}, ...]</td></tr>
+                    <tr><td>width</td><td>Number</td><td>컬럼 너비 (px)</td></tr>
+                    <tr><td>type</td><td>String</td><td>'number' 등</td></tr>
+                    <tr><td>format</td><td>String</td><td>'currency', 'date'</td></tr>
+                    <tr><td>editor</td><td>String</td><td>'text','select','combo','date','currency','check','switch','textarea'</td></tr>
+                    <tr><td>options</td><td>Array</td><td>select/combo용 [{value, label}]</td></tr>
+                    <tr><td>code</td><td>String</td><td>select/combo용 코드 그룹 (서버 조회)</td></tr>
+                    <tr><td>frozen</td><td>Boolean</td><td>고정 컬럼 (좌측 sticky)</td></tr>
+                    <tr><td>readOnly</td><td>Boolean</td><td>편집 불가</td></tr>
+                    <tr><td>required</td><td>Boolean</td><td>checkGridValidation 필수</td></tr>
+                    <tr><td>footer</td><td>String</td><td>'sum', 'count', 'avg'</td></tr>
+                    <tr><td>align</td><td>String</td><td>'left', 'center', 'right'</td></tr>
+                    <tr><td>merge</td><td>Boolean</td><td>같은 값 연속 행 자동 rowspan 병합</td></tr>
+                    <tr><td>renderer</td><td>Function</td><td>(val, row, col, idx) → HTML string / Element</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">Public API 메서드</summary>
+                <table class="ref-tbl">
+                    <tr><th>메서드</th><th>설명</th></tr>
+                    <tr><td>setData(data, totalCount?)</td><td>데이터 세팅</td></tr>
+                    <tr><td>getData()</td><td>전체 데이터 반환</td></tr>
+                    <tr><td>getCheckedData()</td><td>체크된 행 반환</td></tr>
+                    <tr><td>getModifiedData()</td><td>gstat='I'/'U' 행 반환</td></tr>
+                    <tr><td>getItem(idx) / getSelectedItem()</td><td>특정/선택 행 반환</td></tr>
+                    <tr><td>addRow(defaults?)</td><td>행 추가 (gstat='I')</td></tr>
+                    <tr><td>deleteRow()</td><td>체크/선택 행 삭제</td></tr>
+                    <tr><td>updateItem(idx, data)</td><td>특정 행 업데이트</td></tr>
+                    <tr><td>clearData()</td><td>전체 초기화</td></tr>
+                    <tr><td>clearSelect()</td><td>선택 해제</td></tr>
+                    <tr><td>eachRow(callback)</td><td>전체 행 순회</td></tr>
+                    <tr><td>checkGridValidation()</td><td>required 검증</td></tr>
+                    <tr><td>exportCsv(filename?)</td><td>CSV 다운로드</td></tr>
+                    <tr><td>exportXlsx(filename?)</td><td>XLSX 다운로드 (서식 포함)</td></tr>
+                    <tr><td>undo() / redo()</td><td>실행 취소 / 다시 실행</td></tr>
+                    <tr><td>moveRow(from, to)</td><td>행 이동</td></tr>
+                    <tr><td>hideColumn(field) / showColumn(field)</td><td>컬럼 숨기기/표시</td></tr>
+                    <tr><td>autoFitAllColumns()</td><td>전체 컬럼 자동 너비</td></tr>
+                    <tr><td>mergeCells(row, col, rowspan, colspan)</td><td>수동 셀 병합</td></tr>
+                    <tr><td>toggleGroup(key)</td><td>그룹 접기/펼치기</td></tr>
+                    <tr><td>expandAllGroups() / collapseAllGroups()</td><td>그룹 전체 펼치기/접기</td></tr>
+                    <tr><td>toggleTreeNode(id)</td><td>트리 노드 접기/펼치기</td></tr>
+                    <tr><td>expandAllTree() / collapseAllTree()</td><td>트리 전체 펼치기/접기</td></tr>
+                    <tr><td>toggleDetail(rowIdx)</td><td>마스터-디테일 토글</td></tr>
+                    <tr><td>addCellCss/removeCellCss(row,field,css)</td><td>셀 CSS 추가/제거</td></tr>
+                    <tr><td>addCss/removeCss(row, css)</td><td>행 CSS 추가/제거</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">콜백 이벤트</summary>
+                <table class="ref-tbl">
+                    <tr><th>이벤트</th><th>파라미터</th><th>설명</th></tr>
+                    <tr><td>onRowClick</td><td>(row, idx)</td><td>행 클릭</td></tr>
+                    <tr><td>onRowDblClick</td><td>(row, idx)</td><td>행 더블클릭</td></tr>
+                    <tr><td>onCellChange</td><td>(row, field, idx)</td><td>셀 값 변경 후</td></tr>
+                    <tr><td>onPageChange</td><td>(page, size)</td><td>페이지 변경</td></tr>
+                    <tr><td>onRowReorder</td><td>(from, to, row)</td><td>행 순서 변경 후</td></tr>
+                </table>
+            </details>
+
+            <details>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">키보드 &amp; 마우스</summary>
+                <div style="font-size:11px;color:#555;line-height:2;padding:4px 0;">
+                    <b>Arrow</b> 셀 이동 &nbsp; <b>Tab/Shift+Tab</b> 다음/이전 셀 &nbsp; <b>Enter/F2</b> 편집 시작 &nbsp; <b>Escape</b> 편집 취소 &nbsp; <b>Delete</b> 셀 지우기 &nbsp;
+                    <b>Space</b> 체크/스위치 토글 &nbsp; <b>Home/End</b> 행 처음/끝 &nbsp; <b>Ctrl+Home/End</b> 첫/마지막 행 &nbsp; <b>PageUp/Down</b> 20행 이동<br>
+                    <b>Ctrl+C</b> 행 복사(TSV) &nbsp; <b>Ctrl+V</b> 붙여넣기 &nbsp; <b>Ctrl+Z</b> 실행취소 &nbsp; <b>Ctrl+Y</b> 다시실행<br>
+                    편집 중 <b>Tab</b> 다음셀 편집 &nbsp; <b>Enter</b> 아래행 편집 &nbsp; 리사이즈 핸들 <b>더블클릭</b> 자동맞춤 &nbsp; <b>우클릭</b> 컨텍스트 메뉴 (정렬/숨기기/행추가삭제)
+                </div>
+            </details>
+        </div>
+
+        <!-- 1. 셀 병합 (merge) -->
+        <div class="demo-section">
+            <div class="demo-title">1. 셀 병합 (merge: true) — 자동 rowspan</div>
+            <div class="demo-desc">같은 값이 연속된 행의 셀을 자동으로 병합(rowspan). 거래처, 상태 컬럼에 merge: true 적용. mergeCells() API로 수동 병합도 가능.</div>
+            <div id="grid-merge"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('merge')">getData()</button>
+                <button class="forma-btn" onclick="grids.merge.mergeCells(0, 4, 2, 1); document.getElementById('out-merge').textContent='mergeCells(0,4, 2,1) — 수동 병합 적용'">수동 mergeCells()</button>
+            </div>
+            <div class="demo-output" id="out-merge"></div>
+        </div>
+
+        <!-- 2. 멀티행 레코드 (rowDetail) -->
+        <div class="demo-section">
+            <div class="demo-title">2. 멀티행 레코드 (rowDetail) — 1 레코드 = N행, 편집 가능</div>
+            <div class="demo-desc">각 레코드 아래에 서브행 표시. 배송지/연락처/비고 더블클릭으로 인라인 편집 가능. editable 기본 활성.</div>
+            <div id="grid-multirow"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('multirow')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-multirow"></div>
+        </div>
+
+        <!-- 3. 정렬 + 드래그&드롭 행 재정렬 -->
+        <div class="demo-section">
+            <div class="demo-title">3. 정렬 (기본 활성) + 행 드래그&드롭 재정렬</div>
+            <div class="demo-desc">헤더 클릭: asc→desc→해제 (정렬은 기본 활성). 좌측 ≡ 핸들 드래그로 행 순서 변경. onRowReorder 콜백 지원.</div>
+            <div id="grid-reorder"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('reorder')">getData()</button>
+                <button class="forma-btn" onclick="showData('reorder', 'modified')">getModifiedData()</button>
+                <button class="forma-btn" onclick="grids.reorder.moveRow(0, grids.reorder.rows.length-1)">moveRow(0→마지막)</button>
+            </div>
+            <div class="demo-output" id="out-reorder"></div>
+        </div>
+
+        <!-- 4. 기본 에디터 (text, number) -->
+        <div class="demo-section">
+            <div class="demo-title">4. 기본 에디터 (text / number)</div>
+            <div class="demo-desc">더블클릭 또는 Enter/F2로 편집. Tab으로 다음 셀 이동. gstat 자동 관리(I=신규, U=수정).</div>
+            <div id="grid-basic"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('basic')">getData()</button>
+                <button class="forma-btn" onclick="showData('basic', 'modified')">getModifiedData()</button>
+                <button class="forma-btn" onclick="grids.basic.addRow({item_nm:'', qty:0, price:0})">행추가</button>
+                <button class="forma-btn" onclick="grids.basic.clearData()">clearData()</button>
+            </div>
+            <div class="demo-output" id="out-basic"></div>
+        </div>
+
+        <!-- 5. select / combo 에디터 -->
+        <div class="demo-section">
+            <div class="demo-title">5. select / combo 에디터</div>
+            <div class="demo-desc">select: 기본 HTML select. combo: 검색 가능 드롭다운 (대량 옵션에 적합). 더블클릭으로 편집.</div>
+            <div id="grid-combo"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('combo')">getData()</button>
+                <button class="forma-btn" onclick="showData('combo', 'modified')">getModifiedData()</button>
+            </div>
+            <div class="demo-output" id="out-combo"></div>
+        </div>
+
+        <!-- 6. check / switch 에디터 -->
+        <div class="demo-section">
+            <div class="demo-title">6. check / switch 에디터</div>
+            <div class="demo-desc">check: 체크박스 (항상 표시). switch: 토글 스위치 (항상 표시). 클릭으로 즉시 전환. Y/N 값.</div>
+            <div id="grid-toggle"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('toggle')">getData()</button>
+                <button class="forma-btn" onclick="showData('toggle', 'modified')">getModifiedData()</button>
+            </div>
+            <div class="demo-output" id="out-toggle"></div>
+        </div>
+
+        <!-- 7. date 에디터 -->
+        <div class="demo-section">
+            <div class="demo-title">7. date 에디터</div>
+            <div class="demo-desc">더블클릭 시 커스텀 캘린더 팝업. 날짜 선택/초기화 지원. YYYY-MM-DD 형식.</div>
+            <div id="grid-date"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('date')">getData()</button>
+                <button class="forma-btn" onclick="showData('date', 'modified')">getModifiedData()</button>
+            </div>
+            <div class="demo-output" id="out-date"></div>
+        </div>
+
+        <!-- 8. currency 에디터 -->
+        <div class="demo-section">
+            <div class="demo-title">8. currency 에디터</div>
+            <div class="demo-desc">셀 표시: 천단위 콤마. 더블클릭 편집: 순수 숫자 입력. 숫자/백스페이스/마이너스/소수점만 허용. footer: sum/avg/count.</div>
+            <div id="grid-currency"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('currency')">getData()</button>
+                <button class="forma-btn" onclick="showData('currency', 'modified')">getModifiedData()</button>
+            </div>
+            <div class="demo-output" id="out-currency"></div>
+        </div>
+
+        <!-- 9. textarea 에디터 -->
+        <div class="demo-section">
+            <div class="demo-title">9. textarea 에디터</div>
+            <div class="demo-desc">더블클릭 시 멀티라인 입력 영역 표시. 긴 텍스트 편집에 적합. Esc로 취소.</div>
+            <div id="grid-textarea"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('textarea')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-textarea"></div>
+        </div>
+
+        <!-- 10. 셀 렌더러 + 필터행 -->
+        <div class="demo-section">
+            <div class="demo-title">10. 셀 렌더러 (renderer) + 필터행 (filterable)</div>
+            <div class="demo-desc">커스텀 HTML 렌더링: 뱃지, 프로그레스바, 링크, 버튼. 헤더 아래 필터 입력으로 실시간 필터링.</div>
+            <div id="grid-renderer"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('renderer')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-renderer"></div>
+        </div>
+
+        <!-- 11. 복합 에디터 (전체 에디터 타입 혼합) -->
+        <div class="demo-section">
+            <div class="demo-title">11. 복합 그리드 (모든 에디터 + 키보드 + 클립보드)</div>
+            <div class="demo-desc">모든 에디터 타입 혼합. 키보드 내비게이션(Arrow/Tab/Enter/F2). Ctrl+C 복사 / Ctrl+V 붙여넣기. filterable 필터행.</div>
+            <div id="grid-mixed"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('mixed')">getData()</button>
+                <button class="forma-btn" onclick="showData('mixed', 'modified')">getModifiedData()</button>
+                <button class="forma-btn" onclick="showData('mixed', 'checked')">getCheckedData()</button>
+                <button class="forma-btn" onclick="grids.mixed.addRow({item_nm:'',status:'DRAFT',use_yn:'N',notify:'N'})">행추가</button>
+                <button class="forma-btn" onclick="grids.mixed.deleteRow()">행삭제</button>
+                <button class="forma-btn" onclick="grids.mixed.exportCsv('mixed_export.csv')">CSV 내보내기</button>
+                <button class="forma-btn" onclick="validateMixed()">checkGridValidation()</button>
+            </div>
+            <div class="demo-output" id="out-mixed"></div>
+        </div>
+
+        <!-- 12. 정렬 + 페이징 -->
+        <div class="demo-section">
+            <div class="demo-title">12. 정렬 + 페이징 (대량 데이터)</div>
+            <div class="demo-desc">헤더 클릭으로 정렬 (asc → desc → 해제). 페이징 바 (20/50/100건). 100건 샘플 데이터.</div>
+            <div id="grid-paging"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('paging')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-paging"></div>
+        </div>
+
+        <!-- 13. 가상 스크롤 (10,000건) -->
+        <div class="demo-section">
+            <div class="demo-title">13. 가상 스크롤 (virtualScroll) — 10,000건</div>
+            <div class="demo-desc">virtualScroll: true, height: 350. DOM에 보이는 행만 렌더링하여 대량 데이터에서도 부드러운 스크롤. 스크롤 후 편집/정렬 가능.</div>
+            <div id="grid-virtual"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('virtual')">getData()</button>
+                <button class="forma-btn" onclick="document.getElementById('out-virtual').textContent='총 ' + grids.virtual.rows.length + '건'">건수 확인</button>
+            </div>
+            <div class="demo-output" id="out-virtual"></div>
+        </div>
+
+        <!-- 14. 행 그룹핑 -->
+        <div class="demo-section">
+            <div class="demo-title">14. 행 그룹핑 (groupBy) + 소계 (groupFooter)</div>
+            <div class="demo-desc">groupBy: '상태' 필드로 그룹핑. 그룹 헤더 클릭으로 접기/펼치기. 그룹별 소계 행 표시.</div>
+            <div id="grid-group"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('group')">getData()</button>
+                <button class="forma-btn" onclick="grids.group.expandAllGroups()">전체 펼치기</button>
+                <button class="forma-btn" onclick="grids.group.collapseAllGroups()">전체 접기</button>
+            </div>
+            <div class="demo-output" id="out-group"></div>
+        </div>
+
+        <!-- 15. 트리 그리드 -->
+        <div class="demo-section">
+            <div class="demo-title">15. 트리 그리드 (treeField) — 계층형 데이터</div>
+            <div class="demo-desc">treeField로 트리 표시. id/parent_id 기반 계층. ▼/▶ 접기/펼치기. 편집 가능.</div>
+            <div id="grid-tree"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('tree')">getData()</button>
+                <button class="forma-btn" onclick="grids.tree.expandAllTree()">전체 펼치기</button>
+                <button class="forma-btn" onclick="grids.tree.collapseAllTree()">전체 접기</button>
+            </div>
+            <div class="demo-output" id="out-tree"></div>
+        </div>
+
+        <!-- 16. 마스터-디테일 중첩 그리드 -->
+        <div class="demo-section">
+            <div class="demo-title">16. 마스터-디테일 중첩 그리드 (detailGrid)</div>
+            <div class="demo-desc">▶ 클릭 시 하위 그리드 펼침. 독립 편집/정렬. XLSX 내보내기 가능.</div>
+            <div id="grid-master"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('master')">getData()</button>
+                <button class="forma-btn" onclick="grids.master.exportXlsx('master_export.xlsx')">XLSX 내보내기</button>
+            </div>
+            <div class="demo-output" id="out-master"></div>
+        </div>
+
+        <!-- 17. N단 멀티헤더 (3단: 반기→분기→월) + frozen -->
+        <div class="demo-section">
+            <div class="demo-title">17. N단 멀티헤더 (3단) + frozen 컬럼</div>
+            <div class="demo-desc">3단 헤더: 반기 → 분기 → 월. 좌측 거래처 2컬럼 고정(frozen). rowspan 자동 계산. 수평 스크롤 확인.</div>
+            <div id="grid-frozen" style="max-width:1000px"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('frozen')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-frozen"></div>
+        </div>
+
+        <!-- 18. N단 멀티헤더 (4단) -->
+        <div class="demo-section">
+            <div class="demo-title">16. N단 멀티헤더 (4단) — 상용 그리드 수준</div>
+            <div class="demo-desc">4단 헤더: 전체 → 지역 → 분류 → 항목. 중간 레벨 colspan/rowspan 자동 조합. 단일 컬럼은 4행 rowspan.</div>
+            <div id="grid-multi4"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('multi4')">getData()</button>
+            </div>
+            <div class="demo-output" id="out-multi4"></div>
+        </div>
+
+        <!-- 19. 스플릿 레이아웃 (좌우 + 상하 + 탭) -->
+        <div class="demo-section">
+            <div class="demo-title">19. 스플릿 레이아웃 — 좌우 분할 (그리드 + 폼/탭)</div>
+            <div class="demo-desc">좌측 그리드 | 우측 입력폼. 핸들 드래그로 너비 조정. ◀ 버튼으로 접기/펼치기. 중첩 가능. minSize: 200px.</div>
+            <div class="forma-split-h" id="split-demo-h" style="height:350px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="width:55%;background:#fff;">
+                    <div id="split-grid-left"></div>
+                </div>
+                <div class="forma-split-handle"></div>
+                <div class="forma-split-panel" style="flex:1;background:#fff;padding:8px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #e0e0e0">상세정보 (우측 패널)</div>
+                    <div id="split-form-right"></div>
+                </div>
+            </div>
+            <div class="demo-btn-row" style="margin-top:8px">
+                <button class="forma-btn" onclick="splitH.collapse()">좌측 접기</button>
+                <button class="forma-btn" onclick="splitH.expand()">좌측 펼치기</button>
+                <button class="forma-btn" onclick="splitH.setSize(300)">300px로 설정</button>
+                <button class="forma-btn" onclick="document.getElementById('out-split').textContent='현재 크기: '+splitH.getSize()+'px'">크기 확인</button>
+            </div>
+            <div class="demo-output" id="out-split"></div>
+        </div>
+
+        <!-- 20. 상하 스플릿 -->
+        <div class="demo-section">
+            <div class="demo-title">20. 상하 분할 — 마스터 그리드 + 디테일 그리드</div>
+            <div class="demo-desc">상단 그리드 | 하단 그리드. 핸들 드래그로 높이 조정. 접기/펼치기 지원.</div>
+            <div class="forma-split-v" id="split-demo-v" style="height:450px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="height:220px;background:#fff;">
+                    <div id="split-grid-top"></div>
+                </div>
+                <div class="forma-split-handle"></div>
+                <div class="forma-split-panel" style="flex:1;background:#fff;">
+                    <div id="split-grid-bottom"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21. 이벤트 + 셀CSS -->
+        <div class="demo-section">
+            <div class="demo-title">21. 이벤트 (onRowClick, onCellChange) + 셀 CSS</div>
+            <div class="demo-desc">행 클릭 / 셀 값 변경 시 로그 출력. 수량×단가=금액 자동계산. 음수 금액은 빨간색 표시.</div>
+            <div id="grid-events"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="showData('events')">getData()</button>
+                <button class="forma-btn" onclick="document.getElementById('out-events').textContent=''">로그 초기화</button>
+            </div>
+            <div class="demo-output" id="out-events" style="max-height:200px"></div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script>
+const grids = {};
+const forms = {};
+let splitH = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ── 1. 셀 병합 (merge: true) ──
+    grids.merge = new FormaGrid('#grid-merge', {
+        editable: true,
+        rowNum: true,
+        sortable: true,
+        columns: [
+            { field: 'cust_nm', label: '거래처', width: 150, merge: true },
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right' },
+            { field: 'status', label: '상태', width: 100, merge: true, editor: 'select', options: [
+                { value: 'CONFIRMED', label: '확정' }, { value: 'SHIPPED', label: '출하' }, { value: 'CLOSED', label: '마감' },
+            ]},
+            { field: 'amount', label: '금액', width: 130, format: 'currency', footer: 'sum' },
+        ]
+    });
+    grids.merge.setData([
+        { cust_nm: '(주)삼성전자', order_no: 'ORD-001', item_nm: '철판 3.0T', qty: 100, status: 'CONFIRMED', amount: 1500000 },
+        { cust_nm: '(주)삼성전자', order_no: 'ORD-002', item_nm: '스텐판 1.5T', qty: 50, status: 'CONFIRMED', amount: 1250000 },
+        { cust_nm: '(주)삼성전자', order_no: 'ORD-003', item_nm: '볼트 M8', qty: 500, status: 'SHIPPED', amount: 75000 },
+        { cust_nm: '(주)LG전자', order_no: 'ORD-004', item_nm: '알루미늄판', qty: 200, status: 'SHIPPED', amount: 3200000 },
+        { cust_nm: '(주)LG전자', order_no: 'ORD-005', item_nm: '너트 M8', qty: 1000, status: 'SHIPPED', amount: 150000 },
+        { cust_nm: '현대자동차', order_no: 'ORD-006', item_nm: '페인트(적)', qty: 20, status: 'CLOSED', amount: 900000 },
+        { cust_nm: '현대자동차', order_no: 'ORD-007', item_nm: '페인트(청)', qty: 15, status: 'CLOSED', amount: 675000 },
+        { cust_nm: '현대자동차', order_no: 'ORD-008', item_nm: '파이프 50A', qty: 80, status: 'CLOSED', amount: 2400000 },
+    ]);
+
+    // ── 2. 멀티행 레코드 (rowDetail) ──
+    grids.multirow = new FormaGrid('#grid-multirow', {
+        editable: true,
+        rowNum: true,
+        sortable: true,
+        rowDetail: function(row, idx) {
+            // 각 레코드 아래에 2줄 — 모두 더블클릭 편집 가능
+            return [
+                [
+                    { label: '배송지', field: 'addr', colspan: 3, editable: true },
+                    { label: '연락처', field: 'tel', colspan: 2, editable: true },
+                ],
+                [
+                    { label: '비고', field: 'remark', colspan: 5, editable: true, editor: 'textarea', style: 'color:#888;font-style:italic;' },
+                ]
+            ];
+        },
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'cust_nm', label: '거래처', width: 150 },
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right' },
+            { field: 'amount', label: '금액', width: 140, format: 'currency' },
+        ]
+    });
+    grids.multirow.setData([
+        { order_no: 'ORD-001', cust_nm: '(주)삼성전자', item_nm: '철판 3.0T', qty: 100, amount: 1500000, addr: '서울시 강남구 삼성로 123', tel: '02-1234-5678', remark: '긴급 발주건 - 납기 3/15 필수' },
+        { order_no: 'ORD-002', cust_nm: '(주)LG전자', item_nm: '스텐판 1.5T', qty: 50, amount: 1250000, addr: '서울시 영등포구 여의대로 128', tel: '02-3456-7890', remark: '포장 주의 (스크래치 방지)' },
+        { order_no: 'ORD-003', cust_nm: '현대자동차', item_nm: '알루미늄판 2.0T', qty: 200, amount: 6400000, addr: '울산시 남구 테크노산업로 55', tel: '052-234-5678', remark: '' },
+        { order_no: 'ORD-004', cust_nm: 'SK하이닉스', item_nm: '볼트 M8×30', qty: 1000, amount: 150000, addr: '경기도 이천시 부발읍 경충대로', tel: '031-456-7890', remark: '검수 후 입고 요청' },
+    ]);
+
+    // ── 3. 정렬 + 드래그&드롭 행 재정렬 ──
+    grids.reorder = new FormaGrid('#grid-reorder', {
+        editable: true,
+        checkable: true,
+        rowNum: true,
+        reorderable: true,
+        columns: [
+            { field: 'priority', label: '우선순위', width: 80, align: 'center', readOnly: true },
+            { field: 'task_nm', label: '업무명', width: 200, required: true },
+            { field: 'assignee', label: '담당자', width: 100 },
+            { field: 'status', label: '상태', width: 110, editor: 'select', options: [
+                { value: 'TODO', label: '대기' }, { value: 'DOING', label: '진행중' }, { value: 'DONE', label: '완료' },
+            ]},
+            { field: 'due_dt', label: '마감일', width: 120, editor: 'date' },
+        ],
+        onRowReorder: function(fromIdx, toIdx, row) {
+            // 우선순위 자동 재채번
+            grids.reorder.rows.forEach((r, i) => { r.priority = i + 1; });
+            grids.reorder._render();
+            document.getElementById('out-reorder').textContent = '행 이동: ' + fromIdx + ' → ' + toIdx + ' (' + row.task_nm + ')';
+        }
+    });
+    grids.reorder.setData([
+        { priority: 1, task_nm: 'API 설계', assignee: '김철수', status: 'DONE', due_dt: '2026-03-10' },
+        { priority: 2, task_nm: 'DB 스키마 작성', assignee: '이영희', status: 'DONE', due_dt: '2026-03-12' },
+        { priority: 3, task_nm: '프론트 개발', assignee: '박민수', status: 'DOING', due_dt: '2026-03-18' },
+        { priority: 4, task_nm: '단위 테스트', assignee: '정수진', status: 'TODO', due_dt: '2026-03-20' },
+        { priority: 5, task_nm: '통합 테스트', assignee: '최동훈', status: 'TODO', due_dt: '2026-03-22' },
+        { priority: 6, task_nm: '배포', assignee: '김철수', status: 'TODO', due_dt: '2026-03-25' },
+    ]);
+
+    // ── 4. 기본 에디터 (text / number) ──
+    grids.basic = new FormaGrid('#grid-basic', {
+        editable: true,
+        checkable: true,
+        rowNum: true,
+        columns: [
+            { field: 'item_cd', label: '품목코드', width: 120 },
+            { field: 'item_nm', label: '품목명', width: 200, required: true },
+            { field: 'spec', label: '규격', width: 150 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right' },
+            { field: 'price', label: '단가', width: 100, type: 'number', format: 'currency' },
+            { field: 'remark', label: '비고', width: 200 },
+        ]
+    });
+    grids.basic.setData([
+        { item_cd: 'ITM-001', item_nm: '철판 3.0T', spec: '1219×2438', qty: 100, price: 15000, remark: '' },
+        { item_cd: 'ITM-002', item_nm: '스텐판 1.5T', spec: '1000×2000', qty: 50, price: 25000, remark: '긴급' },
+        { item_cd: 'ITM-003', item_nm: '알루미늄판 2.0T', spec: '1219×2438', qty: 200, price: 32000, remark: '' },
+    ]);
+
+    // ── 2. select / combo 에디터 ──
+    const deptOptions = [
+        { value: 'DEV', label: '개발팀' },
+        { value: 'SALES', label: '영업팀' },
+        { value: 'HR', label: '인사팀' },
+        { value: 'FIN', label: '재무팀' },
+        { value: 'MFG', label: '생산팀' },
+        { value: 'QA', label: '품질팀' },
+        { value: 'PLAN', label: '기획팀' },
+        { value: 'MGMT', label: '경영지원팀' },
+    ];
+    const gradeOptions = [
+        { value: 'S', label: '임원' },
+        { value: 'A', label: '부장' },
+        { value: 'B', label: '차장' },
+        { value: 'C', label: '과장' },
+        { value: 'D', label: '대리' },
+        { value: 'E', label: '사원' },
+    ];
+    grids.combo = new FormaGrid('#grid-combo', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            { field: 'emp_no', label: '사번', width: 100, readOnly: true },
+            { field: 'emp_nm', label: '이름', width: 120 },
+            { field: 'dept', label: '부서 (select)', width: 140, editor: 'select', options: deptOptions },
+            { field: 'dept2', label: '부서 (combo)', width: 160, editor: 'combo', options: deptOptions },
+            { field: 'grade', label: '직급 (combo)', width: 140, editor: 'combo', options: gradeOptions },
+        ]
+    });
+    grids.combo.setData([
+        { emp_no: 'E001', emp_nm: '김철수', dept: 'DEV', dept2: 'DEV', grade: 'C' },
+        { emp_no: 'E002', emp_nm: '이영희', dept: 'SALES', dept2: 'SALES', grade: 'D' },
+        { emp_no: 'E003', emp_nm: '박민수', dept: 'HR', dept2: 'HR', grade: 'B' },
+        { emp_no: 'E004', emp_nm: '정수진', dept: 'FIN', dept2: 'FIN', grade: 'E' },
+        { emp_no: 'E005', emp_nm: '최동훈', dept: 'MFG', dept2: 'MFG', grade: 'A' },
+    ]);
+
+    // ── 3. check / switch 에디터 ──
+    grids.toggle = new FormaGrid('#grid-toggle', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            { field: 'menu_cd', label: '메뉴코드', width: 120, readOnly: true },
+            { field: 'menu_nm', label: '메뉴명', width: 180 },
+            { field: 'use_yn', label: '사용여부 (check)', width: 140, editor: 'check' },
+            { field: 'visible', label: '표시여부 (switch)', width: 150, editor: 'switch' },
+            { field: 'srch_yn', label: '조회권한', width: 100, editor: 'check' },
+            { field: 'save_yn', label: '저장권한', width: 100, editor: 'switch' },
+            { field: 'del_yn', label: '삭제권한', width: 100, editor: 'check' },
+        ]
+    });
+    grids.toggle.setData([
+        { menu_cd: 'SDA010', menu_nm: '거래처관리', use_yn: 'Y', visible: 'Y', srch_yn: 'Y', save_yn: 'Y', del_yn: 'Y' },
+        { menu_cd: 'SDA020', menu_nm: '견적템플릿관리', use_yn: 'Y', visible: 'Y', srch_yn: 'Y', save_yn: 'N', del_yn: 'N' },
+        { menu_cd: 'SOA010', menu_nm: '수주관리', use_yn: 'Y', visible: 'N', srch_yn: 'Y', save_yn: 'Y', del_yn: 'N' },
+        { menu_cd: 'SDB010', menu_nm: '수주등록', use_yn: 'N', visible: 'N', srch_yn: 'N', save_yn: 'N', del_yn: 'N' },
+    ]);
+
+    // ── 4. date 에디터 ──
+    grids.date = new FormaGrid('#grid-date', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130, readOnly: true },
+            { field: 'order_dt', label: '주문일', width: 130, editor: 'date' },
+            { field: 'delivery_dt', label: '납기일', width: 130, editor: 'date' },
+            { field: 'confirm_dt', label: '확정일', width: 130, editor: 'date' },
+            { field: 'cust_nm', label: '거래처', width: 150 },
+            { field: 'status', label: '상태', width: 100, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'CONFIRMED', label: '확정' },
+                { value: 'SHIPPED', label: '출하' },
+            ]},
+        ]
+    });
+    grids.date.setData([
+        { order_no: 'ORD-2026-001', order_dt: '2026-03-01', delivery_dt: '2026-03-15', confirm_dt: '', cust_nm: '(주)삼성전자', status: 'CONFIRMED' },
+        { order_no: 'ORD-2026-002', order_dt: '2026-03-05', delivery_dt: '2026-03-20', confirm_dt: '2026-03-06', cust_nm: '(주)LG전자', status: 'SHIPPED' },
+        { order_no: 'ORD-2026-003', order_dt: '2026-03-10', delivery_dt: '', confirm_dt: '', cust_nm: '현대자동차(주)', status: 'DRAFT' },
+    ]);
+
+    // ── 5. currency 에디터 ──
+    grids.currency = new FormaGrid('#grid-currency', {
+        editable: true,
+        checkable: true,
+        rowNum: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 180, required: true },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'unit_price', label: '단가', width: 130, editor: 'currency', footer: 'avg' },
+            { field: 'amount', label: '금액', width: 150, editor: 'currency', footer: 'sum' },
+            { field: 'tax', label: '세액(10%)', width: 130, format: 'currency', readOnly: true, footer: 'sum' },
+            { field: 'total', label: '합계', width: 150, format: 'currency', readOnly: true, footer: 'sum' },
+        ],
+        onCellChange: function(row, field, idx) {
+            if (field === 'qty' || field === 'unit_price') {
+                const q = Number(row.qty) || 0;
+                const p = Number(row.unit_price) || 0;
+                row.amount = q * p;
+                row.tax = Math.round(row.amount * 0.1);
+                row.total = row.amount + row.tax;
+                grids.currency.updateItem(idx, row);
+            } else if (field === 'amount') {
+                row.tax = Math.round((Number(row.amount) || 0) * 0.1);
+                row.total = (Number(row.amount) || 0) + row.tax;
+                grids.currency.updateItem(idx, row);
+            }
+        }
+    });
+    grids.currency.setData([
+        { item_nm: '철판 3.0T', qty: 100, unit_price: 15000, amount: 1500000, tax: 150000, total: 1650000 },
+        { item_nm: '스텐판 1.5T', qty: 50, unit_price: 25000, amount: 1250000, tax: 125000, total: 1375000 },
+        { item_nm: '볼트 M8×30', qty: 1000, unit_price: 150, amount: 150000, tax: 15000, total: 165000 },
+        { item_nm: '페인트(적)', qty: 20, unit_price: 45000, amount: 900000, tax: 90000, total: 990000 },
+    ]);
+
+    // ── 6. textarea 에디터 ──
+    grids.textarea = new FormaGrid('#grid-textarea', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            { field: 'task_no', label: '업무번호', width: 120, readOnly: true },
+            { field: 'title', label: '제목', width: 200 },
+            { field: 'description', label: '상세내용', width: 300, editor: 'textarea' },
+            { field: 'assignee', label: '담당자', width: 100 },
+            { field: 'note', label: '비고', width: 250, editor: 'textarea' },
+        ]
+    });
+    grids.textarea.setData([
+        { task_no: 'TSK-001', title: '로그인 기능 구현', description: '- JWT 토큰 기반 인증\n- 쿠키 자동 갱신', assignee: '김철수', note: '' },
+        { task_no: 'TSK-002', title: '그리드 에디터 확장', description: 'combo, date, currency, switch, textarea\n에디터 타입 추가 구현', assignee: '이영희', note: '3/20 완료 예정' },
+        { task_no: 'TSK-003', title: 'API 문서 작성', description: 'Swagger 기반 자동 생성\n+ 커스텀 문서 병합', assignee: '박민수', note: '' },
+    ]);
+
+    // ── 10. 셀 렌더러 + 필터행 ──
+    grids.renderer = new FormaGrid('#grid-renderer', {
+        editable: true,
+        rowNum: true,
+        filterable: true,
+        columns: [
+            { field: 'emp_no', label: '사번', width: 90, readOnly: true },
+            { field: 'emp_nm', label: '이름', width: 120 },
+            { field: 'dept', label: '부서', width: 120, editor: 'combo', options: [
+                { value: 'DEV', label: '개발팀' }, { value: 'SALES', label: '영업팀' }, { value: 'HR', label: '인사팀' }, { value: 'FIN', label: '재무팀' },
+            ]},
+            { field: 'grade', label: '직급', width: 100, editor: 'select', options: [
+                { value: 'A', label: '부장' }, { value: 'B', label: '차장' }, { value: 'C', label: '과장' }, { value: 'D', label: '대리' }, { value: 'E', label: '사원' },
+            ]},
+            { field: 'status', label: '상태', width: 100, editor: 'select',
+                options: [{ value: 'ACTIVE', label: '재직' }, { value: 'LEAVE', label: '휴직' }, { value: 'QUIT', label: '퇴사' }],
+                renderer: function(val) {
+                    const colors = { ACTIVE: '#4caf50', LEAVE: '#ff9800', QUIT: '#e24b4a' };
+                    const labels = { ACTIVE: '재직', LEAVE: '휴직', QUIT: '퇴사' };
+                    return '<span style="display:inline-block;padding:1px 8px;border-radius:10px;color:#fff;font-size:11px;background:' + (colors[val] || '#999') + '">' + (labels[val] || val || '') + '</span>';
+                }
+            },
+            { field: 'score', label: '평가점수', width: 130,
+                renderer: function(val) {
+                    const n = Number(val) || 0;
+                    const color = n >= 80 ? '#4caf50' : n >= 60 ? '#ff9800' : '#e24b4a';
+                    return '<div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:14px;background:#eee;border-radius:7px;overflow:hidden"><div style="height:100%;width:' + n + '%;background:' + color + ';border-radius:7px"></div></div><span style="font-size:11px;min-width:28px;text-align:right">' + n + '</span></div>';
+                }
+            },
+            { field: 'email', label: '이메일', width: 200,
+                renderer: function(val) { return val ? '<a href="mailto:' + val + '" style="color:#4a90d9;text-decoration:none">' + val + '</a>' : ''; }
+            },
+            { field: 'use_yn', label: '사용', width: 80, editor: 'check' },
+        ]
+    });
+    grids.renderer.setData([
+        { emp_no: 'E001', emp_nm: '김철수', dept: 'DEV', grade: 'C', status: 'ACTIVE', score: 92, email: 'kim@forma.com', use_yn: 'Y' },
+        { emp_no: 'E002', emp_nm: '이영희', dept: 'SALES', grade: 'D', status: 'ACTIVE', score: 78, email: 'lee@forma.com', use_yn: 'Y' },
+        { emp_no: 'E003', emp_nm: '박민수', dept: 'HR', grade: 'B', status: 'LEAVE', score: 65, email: 'park@forma.com', use_yn: 'N' },
+        { emp_no: 'E004', emp_nm: '정수진', dept: 'FIN', grade: 'E', status: 'ACTIVE', score: 88, email: 'jung@forma.com', use_yn: 'Y' },
+        { emp_no: 'E005', emp_nm: '최동훈', dept: 'DEV', grade: 'A', status: 'QUIT', score: 45, email: 'choi@forma.com', use_yn: 'N' },
+        { emp_no: 'E006', emp_nm: '한지우', dept: 'SALES', grade: 'C', status: 'ACTIVE', score: 82, email: 'han@forma.com', use_yn: 'Y' },
+        { emp_no: 'E007', emp_nm: '오세진', dept: 'DEV', grade: 'D', status: 'ACTIVE', score: 71, email: 'oh@forma.com', use_yn: 'Y' },
+        { emp_no: 'E008', emp_nm: '윤미래', dept: 'HR', grade: 'C', status: 'ACTIVE', score: 95, email: 'yoon@forma.com', use_yn: 'Y' },
+    ]);
+
+    // ── 11. 복합 그리드 ──
+    grids.mixed = new FormaGrid('#grid-mixed', {
+        editable: true,
+        checkable: true,
+        rowNum: true,
+        filterable: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 160, required: true },
+            { field: 'category', label: '분류 (combo)', width: 140, editor: 'combo', options: [
+                { value: 'RAW', label: '원자재' },
+                { value: 'PART', label: '부품' },
+                { value: 'PROD', label: '완제품' },
+                { value: 'CONS', label: '소모품' },
+            ]},
+            { field: 'status', label: '상태 (select)', width: 120, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'ACTIVE', label: '활성' },
+                { value: 'CLOSED', label: '종료' },
+            ]},
+            { field: 'order_dt', label: '주문일 (date)', width: 130, editor: 'date' },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'amount', label: '금액 (currency)', width: 140, editor: 'currency', footer: 'sum' },
+            { field: 'use_yn', label: '사용 (check)', width: 90, editor: 'check' },
+            { field: 'notify', label: '알림 (switch)', width: 100, editor: 'switch' },
+            { field: 'remark', label: '비고 (textarea)', width: 200, editor: 'textarea' },
+        ]
+    });
+    grids.mixed.setData([
+        { item_nm: '철판 3.0T', category: 'RAW', status: 'ACTIVE', order_dt: '2026-03-01', qty: 100, amount: 1500000, use_yn: 'Y', notify: 'Y', remark: '긴급 발주' },
+        { item_nm: '볼트 M8', category: 'PART', status: 'DRAFT', order_dt: '2026-03-05', qty: 500, amount: 75000, use_yn: 'Y', notify: 'N', remark: '' },
+        { item_nm: '조립품 A', category: 'PROD', status: 'ACTIVE', order_dt: '2026-03-10', qty: 10, amount: 3200000, use_yn: 'Y', notify: 'Y', remark: '납기 3/20' },
+        { item_nm: '장갑', category: 'CONS', status: 'CLOSED', order_dt: '2026-02-15', qty: 200, amount: 60000, use_yn: 'N', notify: 'N', remark: '' },
+    ]);
+
+    // ── 12. 정렬 + 페이징 ──
+    grids.paging = new FormaGrid('#grid-paging', {
+        editable: true,
+        sortable: true,
+        rowNum: true,
+        paging: true,
+        pageSize: 20,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'cust_nm', label: '거래처', width: 160 },
+            { field: 'order_dt', label: '주문일', width: 120, editor: 'date' },
+            { field: 'status', label: '상태', width: 110, editor: 'combo', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' },
+                { value: 'SHIPPED', label: '출하' }, { value: 'CLOSED', label: '마감' },
+            ]},
+            { field: 'amount', label: '금액', width: 140, editor: 'currency', footer: 'sum' },
+        ],
+        onPageChange: function(page, size) {
+            document.getElementById('out-paging').textContent = 'onPageChange → page: ' + page + ', size: ' + size;
+        }
+    });
+    // 100건 샘플 생성
+    const sampleData = [];
+    const custs = ['(주)삼성전자', '(주)LG전자', '현대자동차(주)', 'SK하이닉스', '포스코', '롯데케미칼', '한화솔루션', 'CJ대한통운'];
+    const statuses = ['DRAFT', 'CONFIRMED', 'SHIPPED', 'CLOSED'];
+    for (let i = 1; i <= 100; i++) {
+        const m = String(Math.floor(Math.random() * 3) + 1).padStart(2, '0');
+        const d = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+        sampleData.push({
+            order_no: 'ORD-2026-' + String(i).padStart(3, '0'),
+            cust_nm: custs[Math.floor(Math.random() * custs.length)],
+            order_dt: '2026-' + m + '-' + d,
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            amount: Math.round(Math.random() * 5000000 / 1000) * 1000,
+        });
+    }
+    grids.paging.setData(sampleData, 100);
+
+    // ── 13. 가상 스크롤 (10,000건) ──
+    grids.virtual = new FormaGrid('#grid-virtual', {
+        editable: true,
+        rowNum: true,
+        virtualScroll: true,
+        height: 350,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'cust_nm', label: '거래처', width: 150 },
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right' },
+            { field: 'price', label: '단가', width: 120, editor: 'currency' },
+            { field: 'amount', label: '금액', width: 140, format: 'currency' },
+            { field: 'status', label: '상태', width: 100, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' }, { value: 'SHIPPED', label: '출하' }, { value: 'CLOSED', label: '마감' },
+            ]},
+        ]
+    });
+    const vsData = [];
+    const vsItems = ['철판 3.0T', '스텐판 1.5T', '알루미늄판', '볼트 M8', '너트 M8', '페인트(적)', '파이프 50A'];
+    const vsCusts = ['(주)삼성전자', '(주)LG전자', '현대자동차', 'SK하이닉스', '포스코', '롯데케미칼'];
+    for (let i = 1; i <= 10000; i++) {
+        const qty = Math.floor(Math.random() * 500) + 1;
+        const price = Math.round((Math.random() * 50000 + 1000) / 100) * 100;
+        vsData.push({
+            order_no: 'ORD-' + String(i).padStart(5, '0'),
+            cust_nm: vsCusts[Math.floor(Math.random() * vsCusts.length)],
+            item_nm: vsItems[Math.floor(Math.random() * vsItems.length)],
+            qty, price, amount: qty * price,
+            status: ['DRAFT','CONFIRMED','SHIPPED','CLOSED'][Math.floor(Math.random() * 4)],
+        });
+    }
+    grids.virtual.setData(vsData);
+
+    // ── 14. 행 그룹핑 ──
+    grids.group = new FormaGrid('#grid-group', {
+        editable: true,
+        rowNum: true,
+        groupBy: 'status',
+        groupFooter: true,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'cust_nm', label: '거래처', width: 150 },
+            { field: 'status', label: '상태', width: 110, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' }, { value: 'SHIPPED', label: '출하' }, { value: 'CLOSED', label: '마감' },
+            ]},
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'amount', label: '금액', width: 140, editor: 'currency', footer: 'sum' },
+        ]
+    });
+    grids.group.setData([
+        { order_no: 'ORD-001', cust_nm: '(주)삼성전자', status: 'CONFIRMED', qty: 100, amount: 1500000 },
+        { order_no: 'ORD-002', cust_nm: '(주)LG전자', status: 'CONFIRMED', qty: 50, amount: 750000 },
+        { order_no: 'ORD-003', cust_nm: '현대자동차', status: 'DRAFT', qty: 200, amount: 3000000 },
+        { order_no: 'ORD-004', cust_nm: 'SK하이닉스', status: 'SHIPPED', qty: 80, amount: 1200000 },
+        { order_no: 'ORD-005', cust_nm: '포스코', status: 'CONFIRMED', qty: 150, amount: 2250000 },
+        { order_no: 'ORD-006', cust_nm: '롯데케미칼', status: 'CLOSED', qty: 30, amount: 450000 },
+        { order_no: 'ORD-007', cust_nm: '(주)삼성전자', status: 'DRAFT', qty: 120, amount: 1800000 },
+        { order_no: 'ORD-008', cust_nm: '(주)LG전자', status: 'SHIPPED', qty: 60, amount: 900000 },
+        { order_no: 'ORD-009', cust_nm: '현대자동차', status: 'CLOSED', qty: 90, amount: 1350000 },
+        { order_no: 'ORD-010', cust_nm: 'SK하이닉스', status: 'CONFIRMED', qty: 40, amount: 600000 },
+    ]);
+
+    // ── 15. 트리 그리드 ──
+    grids.tree = new FormaGrid('#grid-tree', {
+        editable: true,
+        sortable: true,
+        treeField: 'dept_nm',
+        treeIdField: 'dept_cd',
+        treeParentField: 'parent_cd',
+        columns: [
+            { field: 'dept_cd', label: '부서코드', width: 100, readOnly: true },
+            { field: 'dept_nm', label: '부서명', width: 250 },
+            { field: 'head', label: '부서장', width: 100 },
+            { field: 'emp_cnt', label: '인원', width: 70, type: 'number', align: 'right' },
+            { field: 'budget', label: '예산', width: 130, editor: 'currency' },
+        ]
+    });
+    grids.tree.setData([
+        { dept_cd: 'D00', dept_nm: '대표이사', parent_cd: null, head: '홍길동', emp_cnt: 1, budget: 0 },
+        { dept_cd: 'D10', dept_nm: '경영지원본부', parent_cd: 'D00', head: '김경영', emp_cnt: 3, budget: 50000000 },
+        { dept_cd: 'D11', dept_nm: '인사팀', parent_cd: 'D10', head: '이인사', emp_cnt: 5, budget: 20000000 },
+        { dept_cd: 'D12', dept_nm: '재무팀', parent_cd: 'D10', head: '박재무', emp_cnt: 4, budget: 30000000 },
+        { dept_cd: 'D20', dept_nm: '기술본부', parent_cd: 'D00', head: '최기술', emp_cnt: 5, budget: 120000000 },
+        { dept_cd: 'D21', dept_nm: '개발1팀', parent_cd: 'D20', head: '정개발', emp_cnt: 12, budget: 50000000 },
+        { dept_cd: 'D22', dept_nm: '개발2팀', parent_cd: 'D20', head: '강개발', emp_cnt: 10, budget: 40000000 },
+        { dept_cd: 'D23', dept_nm: '품질팀', parent_cd: 'D20', head: '오품질', emp_cnt: 6, budget: 30000000 },
+        { dept_cd: 'D30', dept_nm: '영업본부', parent_cd: 'D00', head: '한영업', emp_cnt: 4, budget: 80000000 },
+        { dept_cd: 'D31', dept_nm: '국내영업팀', parent_cd: 'D30', head: '윤영업', emp_cnt: 8, budget: 40000000 },
+        { dept_cd: 'D32', dept_nm: '해외영업팀', parent_cd: 'D30', head: '장영업', emp_cnt: 6, budget: 40000000 },
+    ]);
+
+    // ── 16. 마스터-디테일 중첩 그리드 ──
+    const detailData = {
+        'ORD-M01': [
+            { item_nm: '철판 3.0T', spec: '1219×2438', qty: 100, price: 15000, amount: 1500000 },
+            { item_nm: '스텐판 1.5T', spec: '1000×2000', qty: 50, price: 25000, amount: 1250000 },
+        ],
+        'ORD-M02': [
+            { item_nm: '볼트 M8×30', spec: 'STS304', qty: 500, price: 150, amount: 75000 },
+            { item_nm: '너트 M8', spec: 'STS304', qty: 500, price: 120, amount: 60000 },
+            { item_nm: '와셔 M8', spec: 'STS304', qty: 500, price: 80, amount: 40000 },
+        ],
+        'ORD-M03': [
+            { item_nm: '페인트(적)', spec: '18L', qty: 20, price: 45000, amount: 900000 },
+        ],
+    };
+    grids.master = new FormaGrid('#grid-master', {
+        editable: true,
+        rowNum: true,
+        sortable: true,
+        detailGrid: function(row, container, idx) {
+            const items = detailData[row.order_no] || [];
+            const dg = new FormaGrid(container, {
+                editable: true,
+                rowNum: true,
+                columns: [
+                    { field: 'item_nm', label: '품목명', width: 160 },
+                    { field: 'spec', label: '규격', width: 120 },
+                    { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+                    { field: 'price', label: '단가', width: 110, editor: 'currency' },
+                    { field: 'amount', label: '금액', width: 130, editor: 'currency', footer: 'sum' },
+                ]
+            });
+            dg.setData(items);
+        },
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 130 },
+            { field: 'order_dt', label: '주문일', width: 120, editor: 'date' },
+            { field: 'cust_nm', label: '거래처', width: 150 },
+            { field: 'status', label: '상태', width: 100, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' }, { value: 'SHIPPED', label: '출하' },
+            ]},
+            { field: 'total', label: '합계금액', width: 140, format: 'currency', footer: 'sum' },
+        ]
+    });
+    grids.master.setData([
+        { order_no: 'ORD-M01', order_dt: '2026-03-01', cust_nm: '(주)삼성전자', status: 'CONFIRMED', total: 2750000 },
+        { order_no: 'ORD-M02', order_dt: '2026-03-05', cust_nm: '(주)LG전자', status: 'SHIPPED', total: 175000 },
+        { order_no: 'ORD-M03', order_dt: '2026-03-10', cust_nm: '현대자동차', status: 'DRAFT', total: 900000 },
+    ]);
+
+    // ── 17. N단 멀티헤더 (3단) + frozen ──
+    grids.frozen = new FormaGrid('#grid-frozen', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            // 거래처: 단일 라벨 → 3행 rowspan 자동
+            { field: 'cust_cd', label: '코드', width: 80, frozen: true, readOnly: true },
+            { field: 'cust_nm', label: '거래처명', width: 140, frozen: true, readOnly: true },
+            // 상반기 → 1분기/2분기 → 월별 (3단)
+            { field: 'jan', label: [{ text: '상반기', colspan: 6 }, { text: '1분기', colspan: 3 }, { text: '1월' }], width: 95, editor: 'currency' },
+            { field: 'feb', label: [null, null, { text: '2월' }], width: 95, editor: 'currency' },
+            { field: 'mar', label: [null, null, { text: '3월' }], width: 95, editor: 'currency' },
+            { field: 'apr', label: [null, { text: '2분기', colspan: 3 }, { text: '4월' }], width: 95, editor: 'currency' },
+            { field: 'may', label: [null, null, { text: '5월' }], width: 95, editor: 'currency' },
+            { field: 'jun', label: [null, null, { text: '6월' }], width: 95, editor: 'currency' },
+            // 하반기 → 3분기/4분기 → 월별 (3단)
+            { field: 'jul', label: [{ text: '하반기', colspan: 6 }, { text: '3분기', colspan: 3 }, { text: '7월' }], width: 95, editor: 'currency' },
+            { field: 'aug', label: [null, null, { text: '8월' }], width: 95, editor: 'currency' },
+            { field: 'sep', label: [null, null, { text: '9월' }], width: 95, editor: 'currency' },
+            { field: 'oct', label: [null, { text: '4분기', colspan: 3 }, { text: '10월' }], width: 95, editor: 'currency' },
+            { field: 'nov', label: [null, null, { text: '11월' }], width: 95, editor: 'currency' },
+            { field: 'dec', label: [null, null, { text: '12월' }], width: 95, editor: 'currency' },
+            // 합계: 단일 라벨 → 3행 rowspan 자동
+            { field: 'total', label: '합계', width: 120, format: 'currency', readOnly: true, footer: 'sum' },
+        ]
+    });
+    grids.frozen.setData([
+        { cust_cd: 'C001', cust_nm: '(주)삼성전자', jan:12000000, feb:15000000, mar:13500000, apr:14000000, may:16000000, jun:15500000, jul:13000000, aug:14500000, sep:16000000, oct:15000000, nov:17000000, dec:18000000, total:179500000 },
+        { cust_cd: 'C002', cust_nm: '(주)LG전자', jan:8000000, feb:9500000, mar:7800000, apr:8500000, may:9000000, jun:10200000, jul:8800000, aug:9200000, sep:10500000, oct:9800000, nov:11000000, dec:12000000, total:114300000 },
+        { cust_cd: 'C003', cust_nm: '현대자동차(주)', jan:22000000, feb:18000000, mar:25000000, apr:20000000, may:23000000, jun:21000000, jul:24000000, aug:19000000, sep:26000000, oct:22000000, nov:25000000, dec:23000000, total:268000000 },
+        { cust_cd: 'C004', cust_nm: 'SK하이닉스', jan:5000000, feb:6200000, mar:5800000, apr:6500000, may:7000000, jun:6800000, jul:5500000, aug:6800000, sep:7200000, oct:6900000, nov:7500000, dec:8000000, total:79200000 },
+    ]);
+
+    // ── 11. N단 멀티헤더 (4단) ──
+    grids.multi4 = new FormaGrid('#grid-multi4', {
+        editable: true,
+        sortable: true,
+        rowNum: true,
+        columns: [
+            // 사업부: 단일 → 4행 rowspan
+            { field: 'division', label: '사업부', width: 120, readOnly: true },
+            // 국내 → 서울/경기 → 매출/원가/이익 (4단)
+            { field: 'sel_rev', label: [{ text: '국내', colspan: 6 }, { text: '서울', colspan: 3 }, { text: '실적', colspan: 2 }, { text: '매출' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'sel_cost', label: [null, null, null, { text: '원가' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'sel_profit', label: [null, null, { text: '이익' }], width: 100, format: 'currency', readOnly: true, footer: 'sum' },
+            { field: 'gg_rev', label: [null, { text: '경기', colspan: 3 }, { text: '실적', colspan: 2 }, { text: '매출' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'gg_cost', label: [null, null, null, { text: '원가' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'gg_profit', label: [null, null, { text: '이익' }], width: 100, format: 'currency', readOnly: true, footer: 'sum' },
+            // 해외 → 미국/일본 → 매출/원가/이익 (4단)
+            { field: 'us_rev', label: [{ text: '해외', colspan: 6 }, { text: '미국', colspan: 3 }, { text: '실적', colspan: 2 }, { text: '매출' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'us_cost', label: [null, null, null, { text: '원가' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'us_profit', label: [null, null, { text: '이익' }], width: 100, format: 'currency', readOnly: true, footer: 'sum' },
+            { field: 'jp_rev', label: [null, { text: '일본', colspan: 3 }, { text: '실적', colspan: 2 }, { text: '매출' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'jp_cost', label: [null, null, null, { text: '원가' }], width: 100, editor: 'currency', footer: 'sum' },
+            { field: 'jp_profit', label: [null, null, { text: '이익' }], width: 100, format: 'currency', readOnly: true, footer: 'sum' },
+            // 총이익: 단일 → 4행 rowspan
+            { field: 'grand_total', label: '총이익', width: 120, format: 'currency', readOnly: true, footer: 'sum' },
+        ],
+        onCellChange: function(row, field, idx) {
+            // 이익 자동계산
+            if (field.endsWith('_rev') || field.endsWith('_cost')) {
+                const prefix = field.replace(/_rev$|_cost$/, '');
+                row[prefix + '_profit'] = (Number(row[prefix + '_rev']) || 0) - (Number(row[prefix + '_cost']) || 0);
+                row.grand_total = (Number(row.sel_profit) || 0) + (Number(row.gg_profit) || 0) + (Number(row.us_profit) || 0) + (Number(row.jp_profit) || 0);
+                grids.multi4.updateItem(idx, row);
+            }
+        }
+    });
+    grids.multi4.setData([
+        { division: '전자사업부', sel_rev:50000000, sel_cost:35000000, sel_profit:15000000, gg_rev:30000000, gg_cost:22000000, gg_profit:8000000, us_rev:80000000, us_cost:55000000, us_profit:25000000, jp_rev:40000000, jp_cost:28000000, jp_profit:12000000, grand_total:60000000 },
+        { division: '자동차사업부', sel_rev:120000000, sel_cost:90000000, sel_profit:30000000, gg_rev:85000000, gg_cost:60000000, gg_profit:25000000, us_rev:200000000, us_cost:150000000, us_profit:50000000, jp_rev:95000000, jp_cost:70000000, jp_profit:25000000, grand_total:130000000 },
+        { division: '화학사업부', sel_rev:35000000, sel_cost:28000000, sel_profit:7000000, gg_rev:42000000, gg_cost:33000000, gg_profit:9000000, us_rev:60000000, us_cost:45000000, us_profit:15000000, jp_rev:28000000, jp_cost:22000000, jp_profit:6000000, grand_total:37000000 },
+    ]);
+
+    // ── 19. 스플릿 레이아웃 ──
+    const splitH = FormaUtil.initSplit('#split-demo-h', { minSize: 200, saveKey: 'demo-h', collapsible: true });
+    grids.splitLeft = new FormaGrid('#split-grid-left', {
+        editable: true, sortable: true, rowNum: true,
+        columns: [
+            { field: 'cust_cd', label: '코드', width: 80 },
+            { field: 'cust_nm', label: '거래처명', width: 150 },
+            { field: 'cust_type', label: '유형', width: 80, editor: 'select', options: [
+                { value: 'C', label: '고객' }, { value: 'V', label: '공급사' },
+            ]},
+            { field: 'tel', label: '전화번호', width: 120 },
+        ],
+        onRowClick: function(row) {
+            forms.splitRight.setData(row);
+        }
+    });
+    grids.splitLeft.setData([
+        { cust_cd: 'C001', cust_nm: '(주)삼성전자', cust_type: 'C', tel: '02-1234-5678', addr: '서울시 강남구', email: 'samsung@test.com', remark: 'VIP 고객' },
+        { cust_cd: 'C002', cust_nm: '(주)LG전자', cust_type: 'C', tel: '02-3456-7890', addr: '서울시 영등포구', email: 'lg@test.com', remark: '' },
+        { cust_cd: 'V001', cust_nm: '포스코', cust_type: 'V', tel: '054-220-1234', addr: '경북 포항시', email: 'posco@test.com', remark: '원자재 공급' },
+        { cust_cd: 'V002', cust_nm: '현대제철', cust_type: 'V', tel: '041-530-5678', addr: '충남 당진시', email: 'hyundai@test.com', remark: '' },
+        { cust_cd: 'C003', cust_nm: 'SK하이닉스', cust_type: 'C', tel: '031-456-7890', addr: '경기 이천시', email: 'sk@test.com', remark: '반도체 거래처' },
+    ]);
+    forms.splitRight = new FormaForm('#split-form-right', {
+        columns: 1, labelWidth: 80,
+        elements: [
+            { field: 'cust_cd', label: '코드', readOnly: true },
+            { field: 'cust_nm', label: '거래처명' },
+            { field: 'cust_type', label: '유형', widget: 'combo', options: [{ value: 'C', label: '고객' }, { value: 'V', label: '공급사' }] },
+            { field: 'tel', label: '전화번호' },
+            { field: 'email', label: '이메일' },
+            { field: 'addr', label: '주소' },
+            { field: 'remark', label: '비고', widget: 'textarea', rows: 2 },
+        ]
+    });
+
+    // 20. 상하 스플릿
+    FormaUtil.initSplit('#split-demo-v', { minSize: 120, collapsible: true });
+    grids.splitTop = new FormaGrid('#split-grid-top', {
+        editable: true, sortable: true, rowNum: true,
+        columns: [
+            { field: 'order_no', label: '주문번호', width: 120 },
+            { field: 'cust_nm', label: '거래처', width: 140 },
+            { field: 'order_dt', label: '주문일', width: 110, editor: 'date' },
+            { field: 'amount', label: '금액', width: 120, editor: 'currency', footer: 'sum' },
+            { field: 'status', label: '상태', width: 90, editor: 'select', options: [
+                { value: 'DRAFT', label: '작성중' }, { value: 'CONFIRMED', label: '확정' },
+            ]},
+        ],
+        onRowClick: function(row) {
+            const items = splitDetailData[row.order_no] || [];
+            grids.splitBottom.setData(items);
+        }
+    });
+    grids.splitTop.setData([
+        { order_no: 'ORD-001', cust_nm: '(주)삼성전자', order_dt: '2026-03-01', amount: 2750000, status: 'CONFIRMED' },
+        { order_no: 'ORD-002', cust_nm: '(주)LG전자', order_dt: '2026-03-05', amount: 175000, status: 'DRAFT' },
+        { order_no: 'ORD-003', cust_nm: '현대자동차', order_dt: '2026-03-10', amount: 900000, status: 'CONFIRMED' },
+    ]);
+    const splitDetailData = {
+        'ORD-001': [
+            { item_nm: '철판 3.0T', qty: 100, price: 15000, amount: 1500000 },
+            { item_nm: '스텐판 1.5T', qty: 50, price: 25000, amount: 1250000 },
+        ],
+        'ORD-002': [
+            { item_nm: '볼트 M8', qty: 500, price: 150, amount: 75000 },
+            { item_nm: '너트 M8', qty: 500, price: 120, amount: 60000 },
+            { item_nm: '와셔 M8', qty: 500, price: 80, amount: 40000 },
+        ],
+        'ORD-003': [
+            { item_nm: '페인트(적)', qty: 20, price: 45000, amount: 900000 },
+        ],
+    };
+    grids.splitBottom = new FormaGrid('#split-grid-bottom', {
+        editable: true, sortable: true, rowNum: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right', footer: 'sum' },
+            { field: 'price', label: '단가', width: 110, editor: 'currency' },
+            { field: 'amount', label: '금액', width: 130, editor: 'currency', footer: 'sum' },
+        ]
+    });
+
+    // ── 21. 이벤트 + 셀CSS ──
+    grids.events = new FormaGrid('#grid-events', {
+        editable: true,
+        rowNum: true,
+        columns: [
+            { field: 'item_nm', label: '품목명', width: 180 },
+            { field: 'qty', label: '수량', width: 80, type: 'number', align: 'right' },
+            { field: 'price', label: '단가', width: 130, editor: 'currency' },
+            { field: 'amount', label: '금액', width: 150, editor: 'currency', readOnly: true, footer: 'sum' },
+        ],
+        onRowClick: function(row, idx) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onRowClick] row ' + idx + ': ' + row.item_nm + '\n';
+            out.scrollTop = out.scrollHeight;
+        },
+        onRowDblClick: function(row, idx) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onRowDblClick] row ' + idx + ': ' + row.item_nm + '\n';
+            out.scrollTop = out.scrollHeight;
+        },
+        onCellChange: function(row, field, idx) {
+            const out = document.getElementById('out-events');
+            out.textContent += '[onCellChange] row ' + idx + ', ' + field + ' = ' + JSON.stringify(row[field]) + '\n';
+            // 수량 × 단가 = 금액
+            if (field === 'qty' || field === 'price') {
+                const q = Number(row.qty) || 0;
+                const p = Number(row.price) || 0;
+                row.amount = q * p;
+                grids.events.updateItem(idx, row);
+                out.textContent += '  → 금액 자동계산: ' + q + ' × ' + p.toLocaleString() + ' = ' + row.amount.toLocaleString() + '\n';
+                // 음수면 빨간색
+                if (row.amount < 0) {
+                    grids.events.addCellCss(idx, 'amount', 'text-red');
+                } else {
+                    grids.events.removeCellCss(idx, 'amount', 'text-red');
+                }
+            }
+            out.scrollTop = out.scrollHeight;
+        }
+    });
+    grids.events.setData([
+        { item_nm: '철판 3.0T', qty: 100, price: 15000, amount: 1500000 },
+        { item_nm: '스텐판 1.5T', qty: 50, price: 25000, amount: 1250000 },
+        { item_nm: '반품(철판)', qty: -10, price: 15000, amount: -150000 },
+    ]);
+    // 음수 금액 초기 CSS
+    grids.events.addCellCss(2, 'amount', 'text-red');
+});
+
+// ── 헬퍼 ──
+function showData(key, type) {
+    let data;
+    if (type === 'modified') data = grids[key].getModifiedData();
+    else if (type === 'checked') data = grids[key].getCheckedData();
+    else data = grids[key].getData();
+    document.getElementById('out-' + key).textContent = JSON.stringify(data, null, 2);
+}
+
+function validateMixed() {
+    const ok = grids.mixed.checkGridValidation();
+    if (ok) document.getElementById('out-mixed').textContent = 'checkGridValidation() → true (통과)';
+}
+</script>
+</body>
+</html>

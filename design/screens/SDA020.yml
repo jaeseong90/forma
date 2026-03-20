@@ -61,13 +61,13 @@ sql:
   selectGrid2:
     table: tb_estimate_template_item
     columns: acnt_cd, acnt_nm, parent_cd, lvl, unit_cd, use_yn, remark, sort_order
-    where: egrp_code = #{egrp_code} AND ser = #{ser}
+    where: "egrp_code = #{egrp_code} AND ser = #{ser}"
     orderBy: sort_order
   insertGrid2:
     table: tb_estimate_template_item
   updateGrid2:
     table: tb_estimate_template_item
-    where: egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}
+    where: "egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}"
   deleteGrid2:
     table: tb_estimate_template_item
-    where: egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}
+    where: "egrp_code = #{egrp_code} AND ser = #{ser} AND acnt_cd = #{acnt_cd}"
