@@ -1,28 +1,38 @@
 /**
- * FORMA Core - Listener 패턴 + platform.post/get + Callback + 상수
+ * FORMA Core — Promise/async 기반
+ *
+ * 사용법:
+ *   var result = await platform.post('/api/save', data);
+ *   var result = await platform.post('/api/save', data, { loading: true });
+ *
+ *   // 기존 Callback 패턴도 하위 호환
+ *   platform.post('/api/save', data, new Callback(function(r) { ... }));
  */
 const RESULT_CODE = { OK: 'OK', WARN: 'WARN', ERROR: 'ERROR' };
 
+/**
+ * Callback — 하위 호환용. 신규 코드에서는 await platform.post() 사용 권장.
+ */
 function Callback(callbackFunc) {
     this.callback = callbackFunc;
-    let isShowLoading = true;
+    var isShowLoading = true;
     this.setShowLoading = function(bool) { isShowLoading = bool; };
-    this.preHook = function() { if (isShowLoading) FormaPopup.loading.show(); };
-    this.postHook = function() { if (isShowLoading) setTimeout(() => FormaPopup.loading.hide(), 100); };
+    this.preHook = function() { if (isShowLoading && typeof FormaPopup !== 'undefined') FormaPopup.loading.show(); };
+    this.postHook = function() { if (isShowLoading && typeof FormaPopup !== 'undefined') setTimeout(function() { FormaPopup.loading.hide(); }, 100); };
 }
 
 const platform = {
     listener: {},
 
     _handleAuthError(response) {
-        const error = response.headers.get('error');
+        var error = response.headers.get('error');
         if (!error) return false;
-        const messages = {
+        var messages = {
             token_missing: '로그인이 필요합니다.',
             token_expired: '세션이 만료되었습니다. 다시 로그인해주세요.',
             user_isvalid: '사용자 정보가 올바르지 않습니다.'
         };
-        const msg = messages[error] || '인증 오류가 발생했습니다.';
+        var msg = messages[error] || '인증 오류가 발생했습니다.';
         if (typeof FormaPopup !== 'undefined') {
             FormaPopup.alert.show(msg).then(function() { location.href = '/login.html'; });
         } else {
@@ -32,37 +42,65 @@ const platform = {
         return true;
     },
 
-    async post(url, param, callbackObj) {
-        if (callbackObj?.preHook) callbackObj.preHook();
+    /**
+     * POST 요청. Promise 반환.
+     * @param {string} url
+     * @param {Object} param
+     * @param {Object} options  { loading: true } 또는 Callback 인스턴스 (하위 호환)
+     * @returns {Promise<Object>} BaseResponse { resultCode, resultMessage, resultData }
+     */
+    async post(url, param, options) {
+        // 하위 호환: Callback 인스턴스인 경우
+        var isLegacyCallback = options instanceof Callback;
+        var showLoading = isLegacyCallback ? false : (options && options.loading !== false);
+
+        if (isLegacyCallback && options.preHook) options.preHook();
+        else if (showLoading && typeof FormaPopup !== 'undefined') FormaPopup.loading.show();
+
         try {
-            const response = await fetch(url, {
+            var response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(param)
             });
-            // 인증 에러 체크
+
             if (response.status === 401) {
                 this._handleAuthError(response);
-                return;
+                return { resultCode: 'ERROR', resultMessage: '인증 필요' };
             }
-            const data = await response.json();
-            if (data.resultCode === RESULT_CODE.ERROR && data.resultMessage) FormaPopup.alert.show(data.resultMessage);
-            else if (data.resultCode === RESULT_CODE.WARN && data.resultMessage) FormaPopup.alert.show(data.resultMessage);
-            if (callbackObj?.callback) callbackObj.callback(data);
+
+            var data = await response.json();
+
+            // WARN/ERROR 메시지 자동 표시
+            if (data.resultCode === RESULT_CODE.ERROR && data.resultMessage) {
+                if (typeof FormaPopup !== 'undefined') FormaPopup.alert.show(data.resultMessage);
+            } else if (data.resultCode === RESULT_CODE.WARN && data.resultMessage) {
+                if (typeof FormaPopup !== 'undefined') FormaPopup.alert.show(data.resultMessage);
+            }
+
+            // 하위 호환 콜백 실행
+            if (isLegacyCallback && options.callback) options.callback(data);
+
             return data;
         } catch (err) {
             console.error(err);
-            FormaPopup.alert.show('서버 연결 실패');
+            if (typeof FormaPopup !== 'undefined') FormaPopup.alert.show('서버 연결 실패');
+            return { resultCode: 'ERROR', resultMessage: '서버 연결 실패' };
         } finally {
-            if (callbackObj?.postHook) callbackObj.postHook();
+            if (isLegacyCallback && options.postHook) options.postHook();
+            else if (showLoading && typeof FormaPopup !== 'undefined') setTimeout(function() { FormaPopup.loading.hide(); }, 100);
         }
     },
 
-    async get(url, params = {}) {
-        const qs = new URLSearchParams(params).toString();
-        const fullUrl = qs ? url + '?' + qs : url;
+    /**
+     * GET 요청. Promise 반환.
+     */
+    async get(url, params) {
+        params = params || {};
+        var qs = new URLSearchParams(params).toString();
+        var fullUrl = qs ? url + '?' + qs : url;
         try {
-            const response = await fetch(fullUrl);
+            var response = await fetch(fullUrl);
             if (response.status === 401) {
                 this._handleAuthError(response);
                 return { resultCode: 'ERROR', resultMessage: '인증 필요' };
@@ -75,78 +113,56 @@ const platform = {
     },
 
     initListener(pgmId) {
-        const l = {
+        var l = {
             pgmId: pgmId,
             pgmInfo: null,
             pgmAuth: null,
             initializedPgm: false,
-
-            // 생명주기
             initPgm: function() {},
             activePgm: function() {},
-
-            // 표준 버튼
             button: {
-                search: { click() {} },
-                news:   { click() {} },
-                save:   { click() {} },
-                del:    { click() {} },
-                print:  { click() {} },
-                upload: { click() {} },
-                init:   { click() {} },
+                search: { click: function() {} },
+                news:   { click: function() {} },
+                save:   { click: function() {} },
+                del:    { click: function() {} },
+                print:  { click: function() {} },
+                upload: { click: function() {} },
+                init:   { click: function() {} },
             },
-
-            // 그리드 이벤트
-            gridRow: { click(record, grid, col) {}, dblclick(rowId, colId, record, grid) {} },
-            gridEditor: { changed(grid, state, editor) {}, beforeEditStart(grid, record, curCol) { return true; } },
-
-            // 트리그리드 이벤트
-            treeGridRow: { click(record, treeGrid, col) {}, dblclick(rowId, colId, record, treeGrid) {} },
-            treeGridEditor: { changed(treeGrid, state, editor) {}, beforeEditStart(treeGrid, record, curCol) { return true; } },
-
-            // 탭 이벤트
-            tabBar: { tabChange(tab) {} },
-
-            // 에디터(폼) 이벤트
-            editor: { change(el) {}, keydown(el, event) {} },
-
-            // 컴포넌트 참조
-            form: {},
-            grid: {},
-            treeGrid: {},
-            tab: {},
-            toolbar: {},
-            modal: null,
-            auth: null,
+            gridRow: { click: function() {}, dblclick: function() {} },
+            gridEditor: { changed: function() {}, beforeEditStart: function() { return true; } },
+            treeGridRow: { click: function() {}, dblclick: function() {} },
+            treeGridEditor: { changed: function() {}, beforeEditStart: function() { return true; } },
+            tabBar: { tabChange: function() {} },
+            editor: { change: function() {}, keydown: function() {} },
+            form: {}, grid: {}, treeGrid: {}, tab: {}, toolbar: {}, modal: null, auth: null,
         };
-        for (let i = 1; i <= 10; i++) l.button['etc' + i] = { click() {} };
+        for (var i = 1; i <= 10; i++) l.button['etc' + i] = { click: function() {} };
         this.listener[pgmId] = l;
         return l;
     },
 
     async startPage(pgmId, listener) {
-        // 1. Init API 호출
         try {
-            const res = await fetch('/api/pgm/' + pgmId + '/init');
-            const json = await res.json();
+            var res = await fetch('/api/pgm/' + pgmId + '/init');
+            var json = await res.json();
             if (json.resultCode === RESULT_CODE.OK) {
                 listener.pgmInfo = json.resultData.pgmInfo;
                 listener.pgmAuth = json.resultData.pgmAuth;
             }
         } catch (e) {
-            console.warn('PGM init failed, using defaults');
             listener.pgmInfo = {};
             listener.pgmAuth = {};
         }
 
-        // 2. 툴바 렌더링
-        FormaToolbar.render('#forma-toolbar', {
-            listener: listener,
-            pgmInfo: listener.pgmInfo,
-            pgmAuth: listener.pgmAuth,
-        });
+        if (typeof FormaToolbar !== 'undefined') {
+            FormaToolbar.render('#forma-toolbar', {
+                listener: listener,
+                pgmInfo: listener.pgmInfo,
+                pgmAuth: listener.pgmAuth,
+            });
+        }
 
-        // 3. initPgm 실행
         listener.initPgm();
         listener.initializedPgm = true;
     }

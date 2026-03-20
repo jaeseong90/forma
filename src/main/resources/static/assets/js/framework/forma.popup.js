@@ -1,45 +1,66 @@
 /**
- * FormaPopup - alert, confirm, loading
+ * FormaPopup — alert, confirm, loading, toast (전부 Promise 기반)
+ *
+ * await FormaPopup.alert.show('완료');
+ * var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
+ * if (ok) { ... }
  */
 const FormaPopup = {
     alert: {
         show(msg) {
-            return new Promise(resolve => {
-                const overlay = document.createElement('div');
+            return new Promise(function(resolve) {
+                var overlay = document.createElement('div');
                 overlay.className = 'forma-dialog-overlay';
-                const dialog = document.createElement('div');
+                var dialog = document.createElement('div');
                 dialog.className = 'forma-dialog';
-                dialog.innerHTML = `
-                    <div class="forma-dialog-body">${msg}</div>
-                    <div class="forma-dialog-footer">
-                        <button class="forma-btn forma-btn-primary forma-dialog-ok">확인</button>
-                    </div>`;
+                dialog.innerHTML =
+                    '<div class="forma-dialog-body">' + msg + '</div>' +
+                    '<div class="forma-dialog-footer">' +
+                        '<button class="forma-btn forma-btn-primary forma-dialog-ok">확인</button>' +
+                    '</div>';
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
-                dialog.querySelector('.forma-dialog-ok').onclick = () => { overlay.remove(); resolve(); };
-                dialog.querySelector('.forma-dialog-ok').focus();
+                var btn = dialog.querySelector('.forma-dialog-ok');
+                btn.onclick = function() { overlay.remove(); resolve(); };
+                btn.focus();
             });
         }
     },
 
     confirm: {
+        /**
+         * 확인/취소 다이얼로그. Promise<boolean> 반환.
+         * 하위 호환: 두 번째 인자가 function이면 콜백으로도 동작.
+         *
+         * var ok = await FormaPopup.confirm.show('저장?');
+         * FormaPopup.confirm.show('저장?', function(ok) { ... });  // 하위 호환
+         */
         show(msg, callback) {
-            const overlay = document.createElement('div');
-            overlay.className = 'forma-dialog-overlay';
-            const dialog = document.createElement('div');
-            dialog.className = 'forma-dialog';
-            dialog.innerHTML = `
-                <div class="forma-dialog-body">${msg}</div>
-                <div class="forma-dialog-footer">
-                    <button class="forma-btn forma-dialog-cancel">취소</button>
-                    <button class="forma-btn forma-btn-primary forma-dialog-ok">확인</button>
-                </div>`;
-            overlay.appendChild(dialog);
-            document.body.appendChild(overlay);
-            const close = (result) => { overlay.remove(); if (callback) callback(result); };
-            dialog.querySelector('.forma-dialog-ok').onclick = () => close(true);
-            dialog.querySelector('.forma-dialog-cancel').onclick = () => close(false);
-            overlay.onclick = (e) => { if (e.target === overlay) close(false); };
+            var promise = new Promise(function(resolve) {
+                var overlay = document.createElement('div');
+                overlay.className = 'forma-dialog-overlay';
+                var dialog = document.createElement('div');
+                dialog.className = 'forma-dialog';
+                dialog.innerHTML =
+                    '<div class="forma-dialog-body">' + msg + '</div>' +
+                    '<div class="forma-dialog-footer">' +
+                        '<button class="forma-btn forma-dialog-cancel">취소</button>' +
+                        '<button class="forma-btn forma-btn-primary forma-dialog-ok">확인</button>' +
+                    '</div>';
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+                var close = function(result) { overlay.remove(); resolve(result); };
+                dialog.querySelector('.forma-dialog-ok').onclick = function() { close(true); };
+                dialog.querySelector('.forma-dialog-cancel').onclick = function() { close(false); };
+                overlay.onclick = function(e) { if (e.target === overlay) close(false); };
+                dialog.querySelector('.forma-dialog-ok').focus();
+            });
+
+            // 하위 호환: 콜백이 있으면 실행
+            if (typeof callback === 'function') {
+                promise.then(callback);
+            }
+            return promise;
         }
     },
 
@@ -70,16 +91,16 @@ const FormaPopup = {
             return this._container;
         },
         _show(message, type) {
-            const c = this._getContainer();
-            const t = document.createElement('div');
-            t.className = `forma-toast forma-toast-${type}`;
+            var c = this._getContainer();
+            var t = document.createElement('div');
+            t.className = 'forma-toast forma-toast-' + type;
             t.textContent = message;
             c.appendChild(t);
-            requestAnimationFrame(() => t.classList.add('forma-toast-show'));
-            setTimeout(() => {
+            requestAnimationFrame(function() { t.classList.add('forma-toast-show'); });
+            setTimeout(function() {
                 t.classList.remove('forma-toast-show');
                 t.classList.add('forma-toast-hide');
-                setTimeout(() => t.remove(), 300);
+                setTimeout(function() { t.remove(); }, 300);
             }, 3000);
         },
         success(msg) { this._show(msg, 'success'); },
