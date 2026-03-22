@@ -129,6 +129,12 @@
 
 <script src="/assets/js/framework/forma.core.js"></script>
 <script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
 <script src="/assets/js/framework/forma.mdi.js"></script>
 <script src="/assets/js/framework/forma.menu.js"></script>
 <script>
@@ -167,8 +173,12 @@
     function convertMenuUrls(items) {
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            if (item.children) convertMenuUrls(item.children);
-            // pgm_id가 있고 url이 있는 화면 → 그대로 유지 (커스텀 HTML + YAML 모두 지원)
+            if (item.children && item.children.length > 0) {
+                convertMenuUrls(item.children);
+            } else if (item.url && item.id) {
+                // 모든 리프 화면을 YAML 엔진 URL로 변환
+                item.url = '/pages/screen.html?id=' + item.id;
+            }
         }
     }
 

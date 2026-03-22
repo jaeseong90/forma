@@ -99,6 +99,8 @@ const FormaMenu = {
                         }
                     };
                 })(item);
+
+                li.appendChild(a);
             }
             ul.appendChild(li);
         }

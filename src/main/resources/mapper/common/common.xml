@@ -4,7 +4,7 @@
 <mapper namespace="common">
 
     <select id="selectCodeList" parameterType="map" resultType="map">
-        SELECT code AS value, code_name AS label, sort_order
+        SELECT code AS "value", code_name AS "label", sort_order
         FROM tb_code
         WHERE grp_code = #{grp_code} AND use_yn = 'Y'
         ORDER BY sort_order, code
