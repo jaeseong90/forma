@@ -74,6 +74,45 @@ public class LoginController {
         ));
     }
 
+    @PostMapping("/changePassword")
+    public BaseResponse<?> changePassword(@RequestBody Map<String, Object> param,
+                                          HttpServletRequest request) {
+        String currentPassword = (String) param.get("currentPassword");
+        String newPassword = (String) param.get("newPassword");
+
+        if (currentPassword == null || currentPassword.isEmpty()) {
+            return BaseResponse.Warn("현재 비밀번호를 입력하세요.");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            return BaseResponse.Warn("새 비밀번호를 입력하세요.");
+        }
+
+        // Get current user from JWT cookie
+        String token = CookieUtil.getCookieValue(request, Constants.JWT_COOKIE_NAME);
+        if (token == null || !jwtTokenProvider.validateToken(token)) {
+            return BaseResponse.Warn("로그인이 필요합니다.");
+        }
+        Map<String, Object> claims = jwtTokenProvider.parseBody(token);
+        String userId = (String) claims.getOrDefault("userId", "");
+
+        // Verify current password
+        Map<String, Object> userInfo = loginService.selectUserById(userId);
+        if (userInfo == null) {
+            return BaseResponse.Warn("사용자 정보를 찾을 수 없습니다.");
+        }
+        String storedPw = (String) userInfo.get("USER_PW");
+        if (!loginService.checkPassword(currentPassword, storedPw)) {
+            return BaseResponse.Warn("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        // Encode and update
+        String encodedPw = loginService.encodePassword(newPassword);
+        loginService.updatePassword(userId, encodedPw);
+
+        log.info("Password changed: userId={}", userId);
+        return BaseResponse.Ok("비밀번호가 변경되었습니다.");
+    }
+
     @GetMapping("/logout")
     public void logout(HttpServletResponse response) throws Exception {
         CookieUtil.removeCookie(response, Constants.JWT_COOKIE_NAME);

@@ -62,4 +62,13 @@
         ORDER BY m.sort_order
     </select>
 
+    <!-- 비밀번호 변경 -->
+    <update id="updatePassword" parameterType="map">
+        UPDATE tb_user
+        SET user_pw = #{user_pw},
+            updated_by = #{user_id},
+            updated_at = NOW()
+        WHERE user_id = #{user_id}
+    </update>
+
 </mapper>

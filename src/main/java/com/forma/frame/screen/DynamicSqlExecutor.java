@@ -33,7 +33,47 @@ public class DynamicSqlExecutor {
 
     // ==================== SELECT ====================
 
+    /**
+     * Paged select: returns Map with "data" (List) and "totalCount" (int).
+     * Used when the grid has paging: true and page/pageSize params are present.
+     */
+    public Map<String, Object> executeSelectPaged(ScreenDefinition def, String action, Map<String, Object> param) {
+        String baseSql = buildSelectSql(def, action, param);
+        Map<String, Object> params = buildSelectParams(def, param);
+
+        int page = toInt(param.get("page"), 1);
+        int pageSize = toInt(param.get("pageSize"), 50);
+        int offset = (page - 1) * pageSize;
+
+        // COUNT query
+        String countSql = "SELECT COUNT(*) FROM (" + baseSql + ") _cnt";
+        log.debug("[DynamicSQL] COUNT: {}", countSql);
+        Integer totalCount = jdbc.queryForObject(countSql, params, Integer.class);
+
+        // Paged data query
+        String pagedSql = baseSql + " LIMIT :_pageSize OFFSET :_offset";
+        params.put("_pageSize", pageSize);
+        params.put("_offset", offset);
+        log.debug("[DynamicSQL] SELECT PAGED: {}", pagedSql);
+        List<Map<String, Object>> data = jdbc.queryForList(pagedSql, params);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("data", data);
+        result.put("totalCount", totalCount != null ? totalCount : 0);
+        return result;
+    }
+
     public List<Map<String, Object>> executeSelect(ScreenDefinition def, String action, Map<String, Object> param) {
+        String sqlStr = buildSelectSql(def, action, param);
+        Map<String, Object> params = buildSelectParams(def, param);
+        log.debug("[DynamicSQL] SELECT: {}", sqlStr);
+        return jdbc.queryForList(sqlStr, params);
+    }
+
+    /**
+     * Build the SELECT SQL string (without LIMIT/OFFSET).
+     */
+    private String buildSelectSql(ScreenDefinition def, String action, Map<String, Object> param) {
         SqlDef sql = def.getSql();
         String table = resolveTable(sql, action);
         String columns = resolveColumns(sql, action);
@@ -52,18 +92,15 @@ public class DynamicSqlExecutor {
                 sb.append(" ").append(joinType).append(" JOIN ");
                 sb.append(validateTableRef(join.get("table")));
                 if (join.get("alias") != null) sb.append(" ").append(validateIdentifier(join.get("alias")));
-                sb.append(" ON ").append(join.get("on")); // ON 절은 YAML에서 직접 정의
+                sb.append(" ON ").append(join.get("on"));
             }
         }
 
         // 검색 조건 동적 구성
-        Map<String, Object> params = new HashMap<>();
         List<String> conditions = new ArrayList<>();
-
         if (def.getSearch() != null && param != null) {
             for (SearchField sf : def.getSearch()) {
                 String field = sf.getField().toLowerCase();
-                // 파라미터에서 값 추출 (대소문자 무관)
                 Object value = getParamValue(param, sf.getField());
                 if (value == null || value.toString().isEmpty()) continue;
 
@@ -73,19 +110,14 @@ public class DynamicSqlExecutor {
                     Object to = getParamValue(param, sf.getField() + "_to");
                     if (from != null && !from.toString().isEmpty()) {
                         conditions.add(validateIdentifier(field) + " >= :" + field + "_from");
-                        params.put(field + "_from", from.toString());
                     }
                     if (to != null && !to.toString().isEmpty()) {
                         conditions.add(validateIdentifier(field) + " <= :" + field + "_to");
-                        params.put(field + "_to", to.toString());
                     }
                 } else if ("text".equals(widget)) {
                     conditions.add(validateIdentifier(field) + " LIKE '%' || :" + field + " || '%'");
-                    params.put(field, value.toString());
                 } else {
-                    // combo, select, date → 완전 일치
                     conditions.add(validateIdentifier(field) + " = :" + field);
-                    params.put(field, value.toString());
                 }
             }
         }
@@ -98,15 +130,50 @@ public class DynamicSqlExecutor {
             sb.append(" ORDER BY ").append(validateOrderBy(orderBy));
         }
 
+        return sb.toString();
+    }
+
+    /**
+     * Build named parameters map for a SELECT query.
+     */
+    private Map<String, Object> buildSelectParams(ScreenDefinition def, Map<String, Object> param) {
+        Map<String, Object> params = new HashMap<>();
+
+        if (def.getSearch() != null && param != null) {
+            for (SearchField sf : def.getSearch()) {
+                String field = sf.getField().toLowerCase();
+                Object value = getParamValue(param, sf.getField());
+                if (value == null || value.toString().isEmpty()) continue;
+
+                String widget = sf.getWidget();
+                if ("dateRange".equals(widget)) {
+                    Object from = getParamValue(param, sf.getField() + "_from");
+                    Object to = getParamValue(param, sf.getField() + "_to");
+                    if (from != null && !from.toString().isEmpty()) {
+                        params.put(field + "_from", from.toString());
+                    }
+                    if (to != null && !to.toString().isEmpty()) {
+                        params.put(field + "_to", to.toString());
+                    }
+                } else {
+                    params.put(field, value.toString());
+                }
+            }
+        }
+
         // 데이터 권한 주입
         Map<String, Object> authParams = DataAuthContext.get();
         if (authParams != null) {
             params.putAll(authParams);
         }
 
-        String sqlStr = sb.toString();
-        log.debug("[DynamicSQL] SELECT: {}", sqlStr);
-        return jdbc.queryForList(sqlStr, params);
+        return params;
+    }
+
+    private int toInt(Object val, int defaultVal) {
+        if (val == null) return defaultVal;
+        if (val instanceof Number) return ((Number) val).intValue();
+        try { return Integer.parseInt(val.toString()); } catch (NumberFormatException e) { return defaultVal; }
     }
 
     // ==================== INSERT ====================

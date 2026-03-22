@@ -50,6 +50,13 @@ public class LoginService {
     }
 
     /**
+     * 비밀번호 변경
+     */
+    public void updatePassword(String userId, String encodedPassword) {
+        sql.update(ns + ".updatePassword", Map.of("user_id", userId, "user_pw", encodedPassword));
+    }
+
+    /**
      * 로그인 로그 저장
      */
     public void insertLoginLog(String userId, String userIp) {

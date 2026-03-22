@@ -28,10 +28,13 @@ public class GenericCrudController extends BaseController {
     }
 
     @PostMapping("/{screenId}/selectGrid1")
-    public BaseResponse<List<Map<String, Object>>> selectGrid1(
+    public BaseResponse<?> selectGrid1(
             @PathVariable String screenId,
             @RequestBody Map<String, Object> param) {
         ScreenDefinition def = getDefinitionOrThrow(screenId);
+        if (isPagedRequest(def, "grid1", param)) {
+            return BaseResponse.Ok(sqlExecutor.executeSelectPaged(def, "selectGrid1", param));
+        }
         return BaseResponse.Ok(sqlExecutor.executeSelect(def, "selectGrid1", param));
     }
 
@@ -46,10 +49,13 @@ public class GenericCrudController extends BaseController {
     }
 
     @PostMapping("/{screenId}/selectGrid2")
-    public BaseResponse<List<Map<String, Object>>> selectGrid2(
+    public BaseResponse<?> selectGrid2(
             @PathVariable String screenId,
             @RequestBody Map<String, Object> param) {
         ScreenDefinition def = getDefinitionOrThrow(screenId);
+        if (isPagedRequest(def, "grid2", param)) {
+            return BaseResponse.Ok(sqlExecutor.executeSelectPaged(def, "selectGrid2", param));
+        }
         return BaseResponse.Ok(sqlExecutor.executeSelect(def, "selectGrid2", param));
     }
 
@@ -95,6 +101,17 @@ public class GenericCrudController extends BaseController {
             throw new FormaException("Screen not found: " + screenId);
         }
         return def;
+    }
+
+    /**
+     * Check if this request should use server-side paging.
+     * True when the grid definition has paging: true AND the request contains a page param.
+     */
+    private boolean isPagedRequest(ScreenDefinition def, String gridKey, Map<String, Object> param) {
+        if (param == null || !param.containsKey("page")) return false;
+        if (def.getGrids() == null) return false;
+        ScreenDefinition.GridDef grid = def.getGrids().get(gridKey);
+        return grid != null && grid.isPaging();
     }
 
     /**

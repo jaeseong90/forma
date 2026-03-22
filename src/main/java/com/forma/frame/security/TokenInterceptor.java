@@ -44,6 +44,9 @@ public class TokenInterceptor implements HandlerInterceptor {
             user.setUserIp(request.getRemoteAddr());
             request.setAttribute(Constants.LOGIN_USER_ATTR, user);
 
+            // Auto-renew token if less than 6 hours remaining
+            renewTokenIfNeeded(token, claims, user, response);
+
             // 데이터 권한 컨텍스트 설정
             Map<String, Object> authParams = dataAuthService.buildAuthParams(user);
             DataAuthContext.set(authParams);
@@ -58,6 +61,31 @@ public class TokenInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         DataAuthContext.clear();
+    }
+
+    private static final long RENEWAL_THRESHOLD_MILLIS = 6 * 60 * 60 * 1000L; // 6 hours
+
+    /**
+     * If the token has less than 6 hours remaining, issue a fresh 24-hour token.
+     */
+    private void renewTokenIfNeeded(String token, Map<String, Object> claims, LoginUserVo user, HttpServletResponse response) {
+        try {
+            long remaining = jwtTokenProvider.getRemainingMillis(token);
+            if (remaining < RENEWAL_THRESHOLD_MILLIS) {
+                Map<String, Object> newClaims = Map.of(
+                        "userId", claims.getOrDefault("userId", ""),
+                        "userName", claims.getOrDefault("userName", ""),
+                        "userDeptCode", claims.getOrDefault("userDeptCode", ""),
+                        "userDeptName", claims.getOrDefault("userDeptName", ""),
+                        "admin", Boolean.TRUE.equals(claims.get("admin"))
+                );
+                String newToken = jwtTokenProvider.createToken(user.getUserId(), newClaims);
+                CookieUtil.addCookie(response, Constants.JWT_COOKIE_NAME, newToken, (int) jwtTokenProvider.getValidSeconds());
+                log.debug("JWT token renewed for user: {}, remaining was: {}ms", user.getUserId(), remaining);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to renew JWT token", e);
+        }
     }
 
     private boolean handleAuthError(HttpServletRequest request, HttpServletResponse response, String errorCode) throws Exception {

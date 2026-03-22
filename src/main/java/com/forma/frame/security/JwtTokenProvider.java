@@ -56,4 +56,18 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token).getBody();
         return claims;
     }
+
+    /**
+     * Returns the remaining validity time in milliseconds for the given token.
+     */
+    public long getRemainingMillis(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
+        Date expiration = claims.getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
+
+    public long getValidSeconds() {
+        return validMillis / 1000;
+    }
 }
