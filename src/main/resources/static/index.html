@@ -2,107 +2,265 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>FORMA v2</title>
-    <link rel="stylesheet" href="/assets/css/forma.css">
+    <title>FORMA — ERP Development Framework</title>
     <style>
-        .idx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .idx-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 16px; }
-        .idx-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #4a90d9; color: #333; }
-        .idx-card ul { list-style: none; padding: 0; }
-        .idx-card li { padding: 4px 0; }
-        .idx-card a { color: #4a90d9; text-decoration: none; font-size: 13px; }
-        .idx-card a:hover { text-decoration: underline; }
-        .idx-card .desc { font-size: 11px; color: #888; margin-left: 4px; }
-        .idx-stats { display: flex; gap: 12px; margin-top: 12px; }
-        .idx-stat { flex: 1; background: #f8fafc; border: 1px solid #e8ecf0; border-radius: 6px; padding: 12px 16px; text-align: center; }
-        .idx-stat-num { font-size: 24px; font-weight: 700; color: #4a90d9; }
-        .idx-stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, 'Segoe UI', sans-serif; color: #333; background: #f8fafc; }
+
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #1a2332 0%, #2a4a6b 100%); color: #fff; padding: 60px 0 50px; text-align: center; }
+        .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; }
+        .hero h1 span { color: #5b9ef4; }
+        .hero p { font-size: 16px; color: #a0b8d0; margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+        .hero-btns { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
+        .hero-btn { display: inline-block; padding: 10px 24px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+        .hero-btn-primary { background: #5b9ef4; color: #fff; }
+        .hero-btn-primary:hover { background: #4a8de3; }
+        .hero-btn-outline { border: 1px solid #5b9ef4; color: #5b9ef4; }
+        .hero-btn-outline:hover { background: rgba(91,158,244,0.1); }
+        .hero-version { display: inline-block; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: #7ab0e8; margin-top: 16px; }
+
+        /* Container */
+        .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+        /* Quick Start */
+        .section { padding: 40px 0; }
+        .section-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #e0e4e8; }
+        .code-block { background: #1e1e2e; color: #e0e0e0; padding: 16px 20px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; }
+        .code-block .comment { color: #666; }
+        .code-block .cmd { color: #a8e6cf; }
+        .code-block .url { color: #ffd93d; }
+
+        /* Features */
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .feature { background: #fff; border: 1px solid #e0e4e8; border-radius: 8px; padding: 20px; }
+        .feature-icon { font-size: 28px; margin-bottom: 8px; }
+        .feature h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .feature p { font-size: 12px; color: #666; line-height: 1.5; }
+
+        /* YAML Demo */
+        .yaml-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .yaml-demo pre { background: #1e1e2e; color: #e0e0e0; padding: 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-x: auto; }
+        .yaml-key { color: #ff6b6b; }
+        .yaml-val { color: #a8e6cf; }
+        .yaml-comment { color: #666; }
+        .yaml-result { background: #fff; border: 1px solid #e0e4e8; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .yaml-result h3 { font-size: 14px; margin-bottom: 12px; color: #333; }
+        .yaml-result ul { list-style: none; padding: 0; }
+        .yaml-result li { padding: 6px 0; font-size: 13px; color: #555; border-bottom: 1px solid #f0f0f0; }
+        .yaml-result li:before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+        .yaml-result li.done:before { background: #4caf50; }
+
+        /* Links */
+        .links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .link-card { background: #fff; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; text-decoration: none; color: #333; transition: all 0.15s; display: flex; align-items: center; gap: 12px; }
+        .link-card:hover { border-color: #5b9ef4; box-shadow: 0 2px 8px rgba(91,158,244,0.15); }
+        .link-icon { font-size: 24px; width: 40px; text-align: center; }
+        .link-text h4 { font-size: 14px; font-weight: 600; }
+        .link-text p { font-size: 11px; color: #888; margin-top: 2px; }
+
+        /* Stack */
+        .stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .stack-badge { background: #e8f0fe; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 30px; color: #999; font-size: 12px; border-top: 1px solid #e0e4e8; margin-top: 20px; }
+
+        @media (max-width: 768px) {
+            .features, .yaml-demo, .links { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 28px; }
+        }
     </style>
 </head>
 <body>
-<div class="forma-page" style="max-width:900px">
-    <h1 class="forma-page-title">FORMA v2 — ERP 프레임워크</h1>
 
-    <div class="idx-stats">
-        <div class="idx-stat"><div class="idx-stat-num">1,838</div><div class="idx-stat-label">FormaGrid (줄)</div></div>
-        <div class="idx-stat"><div class="idx-stat-num">1,449</div><div class="idx-stat-label">FormaForm (줄)</div></div>
-        <div class="idx-stat"><div class="idx-stat-num">21</div><div class="idx-stat-label">폼 위젯 수</div></div>
-        <div class="idx-stat"><div class="idx-stat-num">8</div><div class="idx-stat-label">그리드 에디터</div></div>
-        <div class="idx-stat"><div class="idx-stat-num">19+19</div><div class="idx-stat-label">데모 섹션</div></div>
-    </div>
-
-    <div class="idx-grid">
-        <div class="idx-card">
-            <h3>개발 도구 (API 레퍼런스 + 데모)</h3>
-            <ul>
-                <li><a href="/pages/dev/AI_GUIDE.html" style="font-weight:600;color:#e24b4a">AI 코드 생성 가이드</a> <span class="desc">파이프라인, 프롬프트 사용법, 블럭 카탈로그, YAML 설계서 구조</span></li>
-                <li><a href="/pages/dev/GRID_DEMO.html">FormaGrid 데모</a> <span class="desc">21개 섹션 — 에디터, 병합, 멀티행, 트리, 마스터-디테일, 가상스크롤, 스플릿...</span></li>
-                <li><a href="/pages/dev/FORM_DEMO.html">FormaForm 데모</a> <span class="desc">19개 섹션 — 21종 위젯, 검증, 이벤트, 접기/펼치기, autocomplete, 파일업로드...</span></li>
-                <li><a href="/pages/dev/FRAMEWORK_DEMO.html">테마 / 다국어 / 차트 / 메뉴 / 임포트 / 인쇄</a> <span class="desc">프레임워크 인프라 6종 데모</span></li>
-                <li><a href="/pages/dev/COMP_DEMO.html">Tab / Modal / Popup 데모</a> <span class="desc">6개 섹션 — 탭, 동적 탭, 스플릿+탭, Alert/Confirm/Toast, 모달 팝업, 그리드 검색 팝업</span></li>
-            </ul>
+<div class="hero">
+    <div class="container">
+        <h1><span>FORMA</span></h1>
+        <p>YAML 1파일로 ERP 화면을 완성하는 AI 시대의 업무시스템 개발 프레임워크</p>
+        <div class="hero-btns">
+            <a href="/login.html" class="hero-btn hero-btn-primary">ERP 데모 시작</a>
+            <a href="https://github.com/jaeseong90/forma" class="hero-btn hero-btn-outline" target="_blank">GitHub</a>
         </div>
-        <div class="idx-card">
-            <h3>업무 화면 (샘플)</h3>
-            <ul>
-                <li><a href="/pages/screen.html?id=MMA010" style="font-weight:600;color:#e24b4a">MMA010 - 품목관리 (YAML Engine)</a> <span class="desc">코드 없이 YAML만으로 동작</span></li>
-                <li><a href="/pages/base/SDA010.html">SDA010 - 거래처관리</a> <span class="desc">list 패턴</span></li>
-                <li><a href="/pages/base/SDA020.html">SDA020 - 견적템플릿관리</a> <span class="desc">split-detail 패턴</span></li>
-                <li><a href="/pages/sales/SOA010.html">SOA010 - 수주관리</a> <span class="desc">master-detail 패턴</span></li>
-                <li><a href="/pages/sales/SDB010.html">SDB010 - 수주등록</a> <span class="desc">split-tab 패턴</span></li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="idx-grid" style="margin-top:12px;">
-        <div class="idx-card">
-            <h3>FormaGrid 주요 기능</h3>
-            <ul style="font-size:12px;color:#555;line-height:1.9">
-                <li>에디터 8종: text, select, combo, date, currency, check, switch, textarea</li>
-                <li>N단 멀티헤더 (무제한 colspan/rowspan)</li>
-                <li>셀 병합 (merge: true, mergeCells API)</li>
-                <li>멀티행 레코드 (rowDetail, 편집 가능)</li>
-                <li>트리 그리드 (treeField, 접기/펼치기)</li>
-                <li>마스터-디테일 중첩 그리드 (detailGrid)</li>
-                <li>가상 스크롤 (10,000건+)</li>
-                <li>행 그룹핑 + 소계 (groupBy, groupFooter)</li>
-                <li>키보드 셀 내비게이션 (16키)</li>
-                <li>클립보드 Ctrl+C/V (Excel 호환)</li>
-                <li>Undo/Redo (Ctrl+Z/Y, 100건 스택)</li>
-                <li>우클릭 컨텍스트 메뉴 (헤더/셀)</li>
-                <li>컬럼 숨기기/표시, 자동맞춤</li>
-                <li>행 드래그&드롭 재정렬</li>
-                <li>필터행 (텍스트/select)</li>
-                <li>커스텀 셀 렌더러 (HTML/DOM)</li>
-                <li>frozen 컬럼, footer 집계, 페이징</li>
-                <li>CSV + XLSX 내보내기 (서식 포함)</li>
-                <li>gstat 자동관리, 검증, 셀CSS, 툴팁</li>
-            </ul>
-        </div>
-        <div class="idx-card">
-            <h3>FormaForm 위젯 21종</h3>
-            <ul style="font-size:12px;color:#555;line-height:1.9">
-                <li>text, textarea, password, hidden</li>
-                <li>combo (검색 드롭다운), multiCombo (복수 선택)</li>
-                <li>autocomplete (자동완성 검색)</li>
-                <li>date, dateRange (캘린더+프리셋), time</li>
-                <li>yearMonth, year</li>
-                <li>currency (금액 콤마포맷)</li>
-                <li>checkbox, radio, switch (ON/OFF)</li>
-                <li>codePopup (팝업 검색)</li>
-                <li>file (파일 업로드, accept/multiple)</li>
-                <li>display (읽기전용/뱃지)</li>
-                <li>divider (구분선, 접기/펼치기)</li>
-                <li>― API ―</li>
-                <li>getData/setData, getField/setField</li>
-                <li>validate, formReadonly, isDirty</li>
-                <li>setOptions, setRequired, setReadonly</li>
-                <li>showField/hideField, focus</li>
-                <li>getChangedFields, resetToOriginal</li>
-                <li>destroy (메모리 정리)</li>
-            </ul>
-        </div>
+        <div class="hero-version">v0.2.0 &middot; Spring Boot 3.4 &middot; Java 17</div>
     </div>
 </div>
+
+<div class="container">
+
+    <!-- Quick Start -->
+    <div class="section">
+        <h2 class="section-title">Quick Start</h2>
+        <div class="code-block">
+            <span class="comment"># 1. 클론</span><br>
+            <span class="cmd">git clone https://github.com/jaeseong90/forma.git</span><br>
+            <span class="cmd">cd forma</span><br><br>
+            <span class="comment"># 2. 실행 (Java 17 필요)</span><br>
+            <span class="cmd">./gradlew bootRun</span><br><br>
+            <span class="comment"># 3. 브라우저</span><br>
+            <span class="url">http://localhost:8081</span> <span class="comment">&larr; 이 페이지</span><br>
+            <span class="url">http://localhost:8081/login.html</span> <span class="comment">&larr; ERP 메인 (admin / 빈 비밀번호)</span>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="section">
+        <h2 class="section-title">Features</h2>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📄</div>
+                <h3>YAML = 화면</h3>
+                <p>Controller, Service, Mapper, HTML 없이 YAML 1파일만 작성하면 완전한 CRUD 화면이 런타임에 생성됩니다.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🖥️</div>
+                <h3>SPA MDI</h3>
+                <p>iframe 없는 div 기반 MDI. 메모리 효율적이고 화면간 직접 통신이 가능합니다.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔐</div>
+                <h3>3계층 권한</h3>
+                <p>역할-메뉴-데이터 권한. 버튼 단위 접근 제어와 부서/사용자 단위 데이터 필터링.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>ERP 그리드</h3>
+                <p>인라인 편집 8종, 셀 병합, 트리, 가상 스크롤, 그룹핑, 키보드, 클립보드, Undo.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <h3>21종 폼 위젯</h3>
+                <p>text, combo, date, currency, codePopup, switch, multiCombo 등 ERP 실무에 필요한 위젯.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📋</div>
+                <h3>감사 로그</h3>
+                <p>INSERT/UPDATE/DELETE 자동 추적. Before/After JSON 비교. 서비스 실행시간 트레이스.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- YAML Demo -->
+    <div class="section">
+        <h2 class="section-title">YAML 1파일 = 완성 화면</h2>
+        <div class="yaml-demo">
+            <pre><span class="yaml-key">screen:</span>
+  <span class="yaml-key">id:</span> <span class="yaml-val">MMA010</span>
+  <span class="yaml-key">name:</span> <span class="yaml-val">품목관리</span>
+  <span class="yaml-key">type:</span> <span class="yaml-val">list</span>
+
+<span class="yaml-key">search:</span>
+  - <span class="yaml-key">field:</span> <span class="yaml-val">item_nm</span>
+    <span class="yaml-key">label:</span> <span class="yaml-val">품목명</span>
+    <span class="yaml-key">widget:</span> <span class="yaml-val">text</span>
+
+<span class="yaml-key">grids:</span>
+  <span class="yaml-key">grid1:</span>
+    <span class="yaml-key">editable:</span> <span class="yaml-val">true</span>
+    <span class="yaml-key">columns:</span>
+      - { <span class="yaml-key">field:</span> <span class="yaml-val">ITEM_CD</span>, <span class="yaml-key">label:</span> <span class="yaml-val">품목코드</span> }
+      - { <span class="yaml-key">field:</span> <span class="yaml-val">ITEM_NM</span>, <span class="yaml-key">label:</span> <span class="yaml-val">품목명</span> }
+      - { <span class="yaml-key">field:</span> <span class="yaml-val">UNIT_PRICE</span>, <span class="yaml-key">label:</span> <span class="yaml-val">단가</span> }
+
+<span class="yaml-key">sql:</span>
+  <span class="yaml-key">tables:</span>
+    - { <span class="yaml-key">name:</span> <span class="yaml-val">tb_item</span> }</pre>
+            <div class="yaml-result">
+                <h3>이 YAML 파일 하나로:</h3>
+                <ul>
+                    <li class="done">검색폼 자동 생성</li>
+                    <li class="done">데이터 그리드 자동 생성</li>
+                    <li class="done">조회 SQL 동적 생성</li>
+                    <li class="done">INSERT/UPDATE SQL 동적 생성</li>
+                    <li class="done">DELETE SQL 동적 생성</li>
+                    <li class="done">서버 페이징 지원</li>
+                    <li class="done">데이터 권한 자동 적용</li>
+                    <li class="done">감사 로그 자동 기록</li>
+                </ul>
+                <p style="margin-top:12px;font-size:12px;color:#888;">Controller, Service, Mapper XML, HTML &mdash; 전부 불필요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Types -->
+    <div class="section">
+        <h2 class="section-title">지원 레이아웃</h2>
+        <div class="features">
+            <div class="feature">
+                <h3>list</h3>
+                <p>검색폼 + 편집 가능 그리드. 가장 기본적인 CRUD 화면.</p>
+                <p style="margin-top:6px;font-size:11px;color:#4a90d9;">예: 거래처관리, 품목관리</p>
+            </div>
+            <div class="feature">
+                <h3>split-detail</h3>
+                <p>좌측 마스터 그리드 클릭 &rarr; 우측 디테일 그리드 로딩. 좌우 분할.</p>
+                <p style="margin-top:6px;font-size:11px;color:#4a90d9;">예: 견적템플릿관리</p>
+            </div>
+            <div class="feature">
+                <h3>master-detail</h3>
+                <p>상단 마스터 그리드 + 중간 입력폼 + 하단 디테일 그리드.</p>
+                <p style="margin-top:6px;font-size:11px;color:#4a90d9;">예: 수주관리</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Links -->
+    <div class="section">
+        <h2 class="section-title">데모 & 관리</h2>
+        <div class="links">
+            <a href="/login.html" class="link-card">
+                <div class="link-icon">🏢</div>
+                <div class="link-text">
+                    <h4>ERP 메인</h4>
+                    <p>로그인 &rarr; 메뉴 &rarr; 업무 화면 체험 (admin / 빈 비밀번호)</p>
+                </div>
+            </a>
+            <a href="/h2" class="link-card">
+                <div class="link-icon">🗄️</div>
+                <div class="link-text">
+                    <h4>H2 콘솔</h4>
+                    <p>인메모리 DB 직접 조회 (jdbc:h2:mem:forma, sa)</p>
+                </div>
+            </a>
+            <a href="/pages/dev/GRID_DEMO.html" class="link-card">
+                <div class="link-icon">📊</div>
+                <div class="link-text">
+                    <h4>그리드 데모</h4>
+                    <p>FormaGrid 전체 기능 데모</p>
+                </div>
+            </a>
+            <a href="/pages/dev/FORM_DEMO.html" class="link-card">
+                <div class="link-icon">📝</div>
+                <div class="link-text">
+                    <h4>폼 데모</h4>
+                    <p>FormaForm 21종 위젯 데모</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="section">
+        <h2 class="section-title">Tech Stack</h2>
+        <div class="stack">
+            <span class="stack-badge">Spring Boot 3.4</span>
+            <span class="stack-badge">Java 17</span>
+            <span class="stack-badge">MyBatis 3</span>
+            <span class="stack-badge">JWT</span>
+            <span class="stack-badge">Apache POI</span>
+            <span class="stack-badge">H2 / MySQL / PostgreSQL</span>
+            <span class="stack-badge">Vanilla JS</span>
+            <span class="stack-badge">YAML Runtime Engine</span>
+            <span class="stack-badge">Docker</span>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    FORMA v0.2.0 &middot; AI-Powered ERP Development Framework &middot;
+    <a href="https://github.com/jaeseong90/forma" style="color:#5b9ef4;">GitHub</a>
+</div>
+
 </body>
 </html>

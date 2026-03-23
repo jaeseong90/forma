@@ -17,3 +17,6 @@ VALUES ('MMA010', '품목관리', 'Y', 'Y', 'Y', 'Y', 'Y');
 
 INSERT INTO tb_pgm_info (pgm_id, pgm_nm, srch_yn, new_yn, save_yn, del_yn, init_yn)
 VALUES ('SYS010', '감사로그/트레이스', 'Y', 'N', 'N', 'N', 'Y');
+
+INSERT INTO tb_pgm_info (pgm_id, pgm_nm, srch_yn, new_yn, save_yn, del_yn, init_yn)
+VALUES ('SYS020', '시스템 관리', 'Y', 'Y', 'Y', 'Y', 'Y');

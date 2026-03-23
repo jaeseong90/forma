@@ -1,0 +1,39 @@
+# FORMA v2 — Docker Compose
+# 사용법:
+#   docker compose up -d          # 기본 (H2 인메모리)
+#   docker compose --profile mysql up -d   # MySQL 연동
+
+services:
+  forma:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${FORMA_PROFILE:-local}
+      - FORMA_JWT_SECRET=${FORMA_JWT_SECRET:-change-this-in-production}
+      - DB_URL=${DB_URL:-}
+      - DB_USER=${DB_USER:-forma}
+      - DB_PASS=${DB_PASS:-forma}
+    volumes:
+      - forma-uploads:/app/uploads
+    restart: unless-stopped
+
+  # MySQL (optional — docker compose --profile mysql up -d)
+  mysql:
+    image: mysql:8.0
+    profiles: ["mysql"]
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=forma
+      - MYSQL_USER=forma
+      - MYSQL_PASSWORD=forma
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./src/main/resources/schema/init-mysql.sql:/docker-entrypoint-initdb.d/01-init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  forma-uploads:
+  mysql-data:

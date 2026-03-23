@@ -1,0 +1,22 @@
+## FORMA — MySQL 프로필
+## 사용법: ./gradlew bootRun --args='--spring.profiles.active=mysql'
+## 또는: java -jar forma.jar --spring.profiles.active=mysql
+
+spring:
+  sql:
+    init:
+      mode: never  # 프로덕션에서는 schema/data 자동 실행 안 함
+  h2:
+    console:
+      enabled: false
+
+forma:
+  primary:
+    datasource:
+      jdbc-url: ${DB_URL:jdbc:mysql://localhost:3306/forma?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: ${DB_USER:forma}
+      password: ${DB_PASS:forma}
+  jwt:
+    secret: ${FORMA_JWT_SECRET:change-this-in-production-to-a-secure-random-string}
+    valid-seconds: 86400

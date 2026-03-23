@@ -44,6 +44,7 @@ INSERT INTO tb_menu VALUES ('M21', '수주관리', 'M20', 'P', 'SOA010', '/pages
 INSERT INTO tb_menu VALUES ('M22', '수주등록', 'M20', 'P', 'SDB010', '/pages/sales/SDB010.html', '✏️', 2, 'Y');
 INSERT INTO tb_menu VALUES ('M90', '시스템관리', NULL, 'G', NULL, NULL, '⚙️', 9, 'Y');
 INSERT INTO tb_menu VALUES ('M91', '감사로그/트레이스', 'M90', 'P', 'SYS010', '/pages/admin/SYS010.html', '📊', 1, 'Y');
+INSERT INTO tb_menu VALUES ('M92', '시스템 관리', 'M90', 'P', 'SYS020', '/pages/admin/SYS020.html', '👥', 2, 'Y');
 
 -- 역할-메뉴 권한
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M11', 'Y','Y','Y','Y','Y','Y','Y');
@@ -52,6 +53,7 @@ INSERT INTO tb_role_menu VALUES ('ADMIN', 'M21', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M16', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M22', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M91', 'Y','Y','Y','Y','Y','Y','Y');
+INSERT INTO tb_role_menu VALUES ('ADMIN', 'M92', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('USER', 'M11', 'Y','Y','Y','N','N','N','Y');
 INSERT INTO tb_role_menu VALUES ('USER', 'M21', 'Y','N','N','N','N','N','Y');
 INSERT INTO tb_role_menu VALUES ('MANAGER', 'M11', 'Y','Y','Y','Y','Y','Y','Y');

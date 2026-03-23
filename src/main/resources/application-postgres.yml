@@ -1,0 +1,21 @@
+## FORMA — PostgreSQL 프로필
+## 사용법: ./gradlew bootRun --args='--spring.profiles.active=postgres'
+
+spring:
+  sql:
+    init:
+      mode: never
+  h2:
+    console:
+      enabled: false
+
+forma:
+  primary:
+    datasource:
+      jdbc-url: ${DB_URL:jdbc:postgresql://localhost:5432/forma}
+      driver-class-name: org.postgresql.Driver
+      username: ${DB_USER:forma}
+      password: ${DB_PASS:forma}
+  jwt:
+    secret: ${FORMA_JWT_SECRET:change-this-in-production-to-a-secure-random-string}
+    valid-seconds: 86400
