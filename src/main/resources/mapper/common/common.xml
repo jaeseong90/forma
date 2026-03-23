@@ -97,7 +97,7 @@
                CAST(a.before_data AS VARCHAR) AS before_data,
                CAST(a.after_data AS VARCHAR) AS after_data,
                a.user_id, a.user_ip,
-               DATE_FORMAT(a.audit_dt, '%Y-%m-%d %H:%i:%s') AS audit_dt
+               FORMATDATETIME(a.audit_dt, 'yyyy-MM-dd HH:mm:ss') AS audit_dt
         FROM tb_audit_log a
         <where><include refid="whereAuditLog"/></where>
         ORDER BY a.audit_seq DESC
