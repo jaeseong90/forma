@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <title>메뉴관리</title>
     <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        .menu-tree { padding: 4px; font-size: 12px; }
+        .menu-tree ul { list-style: none; padding-left: 16px; margin: 0; }
+        .menu-tree > ul { padding-left: 0; }
+        .menu-tree li { padding: 0; }
+        .menu-tree-item {
+            display: flex; align-items: center; gap: 4px;
+            padding: 4px 6px; cursor: pointer; border-radius: 3px;
+            border-left: 3px solid transparent;
+        }
+        .menu-tree-item:hover { background: var(--bg-hover); }
+        .menu-tree-item.selected { background: var(--bg-selected); border-left-color: var(--primary); font-weight: 600; }
+        .menu-tree-item .toggle { width: 14px; text-align: center; font-size: 9px; color: #888; cursor: pointer; }
+        .menu-tree-item .icon { font-size: 13px; }
+        .menu-tree-item .label { flex: 1; }
+        .menu-tree-item .id-badge { font-size: 10px; color: #999; }
+        .menu-tree-item .type-badge { font-size: 9px; padding: 1px 4px; border-radius: 2px; }
+        .menu-tree-item .type-badge.group { background: #e0f2fe; color: #0284c7; }
+        .menu-tree-item .type-badge.page { background: #f0fdf4; color: #16a34a; }
+    </style>
 </head>
 <body>
 <div class="forma-page">
@@ -12,7 +32,25 @@
         <div id="toolbar-SY010"></div>
     </div>
     <div class="forma-content">
-        <div id="grid-SY010"></div>
+        <div class="forma-split-h" id="split-SY010" style="min-height:500px;">
+            <div class="forma-split-panel" style="width:320px;">
+                <div class="forma-section" style="height:100%;overflow:auto;">
+                    <div class="forma-section-title">메뉴 트리</div>
+                    <div id="menu-tree-SY010" class="menu-tree"></div>
+                </div>
+            </div>
+            <div class="forma-split-handle"></div>
+            <div class="forma-split-panel" style="flex:1;">
+                <div class="forma-section">
+                    <div class="forma-section-title" id="detail-title-SY010">메뉴 상세 (메뉴를 선택하세요)</div>
+                    <div id="menu-form-SY010"></div>
+                </div>
+                <div class="forma-section" style="margin-top:8px;">
+                    <div class="forma-section-title">하위 메뉴</div>
+                    <div id="child-grid-SY010"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script src="/assets/js/framework/forma.core.js"></script>
@@ -28,96 +66,259 @@
     var PGM = 'SY010';
     var S = PGM;
     var listener = platform.initListener(PGM);
-    var ctx = {};
+    var ctx = { allMenus: [], selectedMenu: null, groupOptions: [] };
 
+    // Init
     try {
         var res = await platform.get('/api/pgm/' + PGM + '/init');
-        if (res.resultCode === 'OK') {
-            listener.pgmInfo = res.resultData.pgmInfo;
-            listener.pgmAuth = res.resultData.pgmAuth;
-        }
+        if (res.resultCode === 'OK') { listener.pgmInfo = res.resultData.pgmInfo; listener.pgmAuth = res.resultData.pgmAuth; }
     } catch(e) { listener.pgmInfo = {}; listener.pgmAuth = {}; }
-
     if (typeof FormaToolbar !== 'undefined') {
         FormaToolbar.render('#toolbar-' + S, { listener: listener, pgmInfo: listener.pgmInfo, pgmAuth: listener.pgmAuth });
     }
 
-    ctx.grid1 = new FormaGrid('#grid-' + S, {
-        editable: true,
-        checkable: true,
-        treeField: 'MENU_NM',
-        treeIdField: 'MENU_ID',
-        treeParentField: 'PARENT_ID',
-        columns: [
-            { field: 'MENU_ID', label: '메뉴ID', width: 80, editor: 'text' },
-            { field: 'MENU_NM', label: '메뉴명', width: 200, editor: 'text', required: true },
-            { field: 'PARENT_ID', label: '상위메뉴', width: 80 },
-            { field: 'MENU_TYPE', label: '유형', width: 60, editor: 'select', align: 'center',
+    FormaUtil.initSplit('#split-' + S);
+
+    // 상세 폼
+    ctx.menuForm = new FormaForm('#menu-form-' + S, {
+        columns: 2, labelWidth: 90,
+        elements: [
+            { field: 'menu_id', label: '메뉴ID', required: true },
+            { field: 'menu_nm', label: '메뉴명', required: true },
+            { field: 'parent_id', label: '상위메뉴', widget: 'combo', options: [] },
+            { field: 'menu_type', label: '유형', widget: 'combo',
               options: [{ value: 'G', label: '그룹' }, { value: 'P', label: '화면' }] },
-            { field: 'PGM_ID', label: '프로그램ID', width: 100, editor: 'codeHelp',
-              nameField: 'PGM_NM',
-              popup: {
-                  url: '/pages/popup/PGM_P01.html',
-                  title: '프로그램 검색',
-                  codeField: 'PGM_ID',
-                  nameField: 'PGM_NM',
-                  width: 600, height: 400
-              }
-            },
-            { field: 'URL', label: 'URL', width: 250, editor: 'text' },
-            { field: 'ICON', label: '아이콘', width: 50, editor: 'text', align: 'center' },
-            { field: 'SORT_ORDER', label: '정렬', width: 50, editor: 'text', type: 'number', align: 'center' },
-            { field: 'USE_YN', label: '사용', width: 50, editor: 'check', align: 'center' }
+            { field: 'pgm_id', label: '프로그램', widget: 'codePopup',
+              popup: { url: '/pages/popup/PGM_P01.html', codeField: 'PGM_ID', nameField: 'PGM_NM', width: 600, height: 400 } },
+            { field: 'url', label: 'URL' },
+            { field: 'icon', label: '아이콘' },
+            { field: 'sort_order', label: '정렬순서', widget: 'number' },
+            { field: 'use_yn', label: '사용', widget: 'combo',
+              options: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] }
         ]
     });
 
+    // 하위 메뉴 그리드 (읽기 전용, 정렬 확인용)
+    ctx.childGrid = new FormaGrid('#child-grid-' + S, {
+        sortable: true,
+        columns: [
+            { field: 'MENU_ID', label: '메뉴ID', width: 80 },
+            { field: 'MENU_NM', label: '메뉴명', width: 150 },
+            { field: 'MENU_TYPE', label: '유형', width: 50, align: 'center',
+              renderer: function(v) { return v === 'G' ? '그룹' : '화면'; } },
+            { field: 'PGM_ID', label: '프로그램', width: 80 },
+            { field: 'SORT_ORDER', label: '정렬', width: 50, type: 'number', align: 'center' },
+            { field: 'USE_YN', label: '사용', width: 40, align: 'center' }
+        ],
+        onRowClick: function(row) { selectMenu(row.MENU_ID); }
+    });
+
+    // ═══ 트리 렌더링 ═══
+    function buildTree(menus) {
+        var map = {};
+        var roots = [];
+        menus.forEach(function(m) { map[m.MENU_ID] = { data: m, children: [] }; });
+        menus.forEach(function(m) {
+            if (m.PARENT_ID && map[m.PARENT_ID]) {
+                map[m.PARENT_ID].children.push(map[m.MENU_ID]);
+            } else {
+                roots.push(map[m.MENU_ID]);
+            }
+        });
+        return roots;
+    }
+
+    function renderTree(nodes, container) {
+        container.innerHTML = '';
+        var ul = document.createElement('ul');
+        nodes.forEach(function(node) { ul.appendChild(renderNode(node)); });
+        container.appendChild(ul);
+    }
+
+    function renderNode(node) {
+        var m = node.data;
+        var li = document.createElement('li');
+
+        var div = document.createElement('div');
+        div.className = 'menu-tree-item';
+        div.dataset.menuId = m.MENU_ID;
+
+        // 토글
+        var toggle = document.createElement('span');
+        toggle.className = 'toggle';
+        if (node.children.length > 0) {
+            toggle.textContent = '\u25BC';
+            toggle.onclick = function(e) {
+                e.stopPropagation();
+                var sub = li.querySelector('ul');
+                if (sub) {
+                    var open = sub.style.display !== 'none';
+                    sub.style.display = open ? 'none' : '';
+                    toggle.textContent = open ? '\u25B6' : '\u25BC';
+                }
+            };
+        }
+        div.appendChild(toggle);
+
+        // 아이콘
+        if (m.ICON) {
+            var icon = document.createElement('span');
+            icon.className = 'icon';
+            icon.textContent = m.ICON;
+            div.appendChild(icon);
+        }
+
+        // 라벨
+        var label = document.createElement('span');
+        label.className = 'label';
+        label.textContent = m.MENU_NM;
+        div.appendChild(label);
+
+        // 유형 뱃지
+        var badge = document.createElement('span');
+        badge.className = 'type-badge ' + (m.MENU_TYPE === 'G' ? 'group' : 'page');
+        badge.textContent = m.MENU_TYPE === 'G' ? '그룹' : '화면';
+        div.appendChild(badge);
+
+        // ID
+        var idBadge = document.createElement('span');
+        idBadge.className = 'id-badge';
+        idBadge.textContent = m.MENU_ID;
+        div.appendChild(idBadge);
+
+        // 클릭
+        div.onclick = function() { selectMenu(m.MENU_ID); };
+
+        li.appendChild(div);
+
+        // 하위
+        if (node.children.length > 0) {
+            var sub = document.createElement('ul');
+            node.children.forEach(function(child) { sub.appendChild(renderNode(child)); });
+            li.appendChild(sub);
+        }
+
+        return li;
+    }
+
+    function selectMenu(menuId) {
+        ctx.selectedMenu = ctx.allMenus.find(function(m) { return m.MENU_ID === menuId; });
+        if (!ctx.selectedMenu) return;
+
+        var m = ctx.selectedMenu;
+        document.getElementById('detail-title-' + S).textContent = m.MENU_NM + ' (' + m.MENU_ID + ')';
+
+        // 폼에 데이터 세팅 (키를 소문자로 변환)
+        ctx.menuForm.setData({
+            menu_id: m.MENU_ID, menu_nm: m.MENU_NM, parent_id: m.PARENT_ID || '',
+            menu_type: m.MENU_TYPE, pgm_id: m.PGM_ID || '', url: m.URL || '',
+            icon: m.ICON || '', sort_order: m.SORT_ORDER, use_yn: m.USE_YN
+        });
+        ctx.menuForm.setReadonly('menu_id', true);
+        ctx._isNew = false;
+
+        // 하위 메뉴 표시
+        var children = ctx.allMenus.filter(function(c) { return c.PARENT_ID === menuId; });
+        ctx.childGrid.setData(children);
+
+        // 트리 하이라이트
+        var items = document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item');
+        items.forEach(function(el) { el.classList.toggle('selected', el.dataset.menuId === menuId); });
+    }
+
+    function updateGroupOptions() {
+        var opts = [{ value: '', label: '(최상위)' }];
+        ctx.allMenus.filter(function(m) { return m.MENU_TYPE === 'G'; }).forEach(function(m) {
+            opts.push({ value: m.MENU_ID, label: m.MENU_NM + ' (' + m.MENU_ID + ')' });
+        });
+        ctx.groupOptions = opts;
+        ctx.menuForm.setOptions('parent_id', opts);
+    }
+
+    // ═══ 버튼 ═══
     listener.button.search.click = function() {
         platform.post('/api/admin/menus', {}, new Callback(function(r) {
             if (r.resultCode === RESULT_CODE.OK) {
-                ctx.grid1.setData(r.resultData);
-                if (ctx.grid1.expandAllTree) ctx.grid1.expandAllTree();
+                ctx.allMenus = r.resultData;
+                var tree = buildTree(ctx.allMenus);
+                renderTree(tree, document.getElementById('menu-tree-' + S));
+                updateGroupOptions();
+                ctx.menuForm.clear();
+                ctx.childGrid.clearData();
+                ctx.selectedMenu = null;
+                document.getElementById('detail-title-' + S).textContent = '메뉴 상세 (메뉴를 선택하세요)';
             }
         }));
     };
 
     listener.button.news.click = function() {
-        var selected = ctx.grid1.getSelectedItem();
-        var defaults = { MENU_TYPE: 'P', USE_YN: 'Y', SORT_ORDER: 0 };
-        if (selected && selected.MENU_TYPE === 'G') {
-            defaults.PARENT_ID = selected.MENU_ID;
+        ctx._isNew = true;
+        ctx.selectedMenu = null;
+        var defaults = { menu_type: 'P', use_yn: 'Y', sort_order: 0 };
+
+        // 현재 선택된 메뉴가 그룹이면 그 아래로
+        var sel = document.querySelector('#menu-tree-' + S + ' .menu-tree-item.selected');
+        if (sel) {
+            var selMenu = ctx.allMenus.find(function(m) { return m.MENU_ID === sel.dataset.menuId; });
+            if (selMenu && selMenu.MENU_TYPE === 'G') {
+                defaults.parent_id = selMenu.MENU_ID;
+            }
         }
-        ctx.grid1.addRow(defaults);
+
+        ctx.menuForm.clear();
+        ctx.menuForm.setData(defaults);
+        ctx.menuForm.setReadonly('menu_id', false);
+        ctx.menuForm.focus('menu_id');
+        ctx.childGrid.clearData();
+        document.getElementById('detail-title-' + S).textContent = '신규 메뉴';
+
+        // 트리 선택 해제
+        document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item').forEach(function(el) { el.classList.remove('selected'); });
     };
 
     listener.button.save.click = async function() {
-        var data = ctx.grid1.getModifiedData();
-        if (!data.length) { FormaPopup.alert.show('변경사항이 없습니다.'); return; }
-        if (!ctx.grid1.checkGridValidation()) return;
-        data.forEach(function(row) {
-            if (row.PGM_ID && (!row.URL || row.URL === '')) {
-                row.URL = '/pages/screen.html?id=' + row.PGM_ID;
-            }
-        });
+        if (!ctx.menuForm.validate()) return;
+        var data = ctx.menuForm.getData();
+        data.gstat = ctx._isNew ? 'I' : 'U';
+
+        // URL 자동 생성
+        if (data.pgm_id && !data.url) {
+            data.url = '/pages/screen.html?id=' + data.pgm_id;
+        }
+
         var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
         if (ok) {
-            await platform.post('/api/admin/menus/save', data);
+            await platform.post('/api/admin/menus/save', [data]);
             FormaPopup.toast.success('저장되었습니다.');
             listener.button.search.click();
         }
     };
 
     listener.button.del.click = async function() {
-        var data = ctx.grid1.getCheckedData();
-        if (!data.length) { FormaPopup.alert.show('삭제할 메뉴를 선택하세요.'); return; }
-        var ok = await FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?');
-        if (!ok) return;
-        await platform.post('/api/admin/menus/delete', data);
-        FormaPopup.toast.success('삭제되었습니다.');
-        listener.button.search.click();
+        if (!ctx.selectedMenu) { FormaPopup.alert.show('삭제할 메뉴를 선택하세요.'); return; }
+        var children = ctx.allMenus.filter(function(c) { return c.PARENT_ID === ctx.selectedMenu.MENU_ID; });
+        if (children.length > 0) {
+            FormaPopup.alert.show('하위 메뉴가 ' + children.length + '개 있습니다. 하위 메뉴를 먼저 삭제하세요.');
+            return;
+        }
+        var ok = await FormaPopup.confirm.show('\'' + ctx.selectedMenu.MENU_NM + '\' 메뉴를 삭제하시겠습니까?');
+        if (ok) {
+            await platform.post('/api/admin/menus/delete', [{ menu_id: ctx.selectedMenu.MENU_ID }]);
+            FormaPopup.toast.success('삭제되었습니다.');
+            listener.button.search.click();
+        }
     };
 
-    listener.button.init.click = function() { ctx.grid1.clearData(); };
+    listener.button.init.click = function() {
+        ctx.menuForm.clear();
+        ctx.childGrid.clearData();
+        ctx.selectedMenu = null;
+        ctx._isNew = false;
+        document.getElementById('detail-title-' + S).textContent = '메뉴 상세 (메뉴를 선택하세요)';
+        document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item').forEach(function(el) { el.classList.remove('selected'); });
+    };
 
+    // 초기 로드
     listener.button.search.click();
     listener.initializedPgm = true;
 })();
