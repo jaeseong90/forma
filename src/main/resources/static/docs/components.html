@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FORMA Component API Reference</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 13px; color: #333; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar */
+        .doc-sidebar { width: 240px; min-width: 240px; background: #1a2332; color: #c0d0e0; overflow-y: auto; padding: 16px 0; }
+        .doc-sidebar h2 { font-size: 16px; font-weight: 700; color: #5b9ef4; padding: 0 16px 12px; }
+        .doc-nav { list-style: none; }
+        .doc-nav a { display: block; padding: 6px 16px; color: #a0b8d0; text-decoration: none; font-size: 12px; border-left: 3px solid transparent; }
+        .doc-nav a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .doc-nav a.active { border-left-color: #5b9ef4; color: #fff; background: rgba(91,158,244,0.1); }
+        .doc-nav-group { font-size: 10px; font-weight: 700; color: #5a6a7a; padding: 12px 16px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Content */
+        .doc-content { flex: 1; overflow-y: auto; padding: 24px 32px; max-width: 900px; }
+        .doc-content h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: #1a2332; }
+        .doc-content h2 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e0e4e8; color: #333; }
+        .doc-content h3 { font-size: 14px; font-weight: 700; margin: 20px 0 8px; color: #555; }
+        .doc-content p { line-height: 1.7; margin-bottom: 8px; color: #444; }
+        .doc-content section { display: none; }
+        .doc-content section.active { display: block; }
+
+        /* Code */
+        pre { background: #1e1e2e; color: #e0e0e0; padding: 14px 16px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; overflow-x: auto; margin: 8px 0 16px; }
+        code { background: #f0f2f5; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; color: #d63384; }
+
+        /* Table */
+        .api-table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 12px; }
+        .api-table th { background: #f5f7fa; text-align: left; padding: 8px 10px; border: 1px solid #e0e4e8; font-weight: 600; color: #555; }
+        .api-table td { padding: 6px 10px; border: 1px solid #e0e4e8; vertical-align: top; }
+        .api-table td:first-child { font-family: 'Consolas', monospace; color: #2563eb; white-space: nowrap; }
+        .api-table tr:hover td { background: #f8fafc; }
+
+        /* Badge */
+        .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+        .badge-required { background: #fee2e2; color: #dc2626; }
+        .badge-optional { background: #e0f2fe; color: #0284c7; }
+        .badge-default { background: #f0f0f0; color: #666; }
+
+        /* Live demo area */
+        .demo-area { border: 1px solid #e0e4e8; border-radius: 6px; padding: 16px; margin: 12px 0; background: #fafbfc; }
+        .demo-label { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Tip box */
+        .tip { background: #eff6ff; border-left: 3px solid #3b82f6; padding: 10px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; font-size: 12px; color: #1e40af; }
+    </style>
+</head>
+<body>
+
+<div class="doc-sidebar">
+    <h2><a href="/" style="color:#5b9ef4;text-decoration:none;">FORMA</a></h2>
+    <ul class="doc-nav">
+        <div class="doc-nav-group">Overview</div>
+        <li><a href="#overview" class="active" onclick="showSection('overview')">Quick Start</a></li>
+
+        <div class="doc-nav-group">Components</div>
+        <li><a href="#grid" onclick="showSection('grid')">FormaGrid</a></li>
+        <li><a href="#form" onclick="showSection('form')">FormaForm</a></li>
+        <li><a href="#toolbar" onclick="showSection('toolbar')">FormaToolbar</a></li>
+        <li><a href="#modal" onclick="showSection('modal')">FormaModal</a></li>
+        <li><a href="#tab" onclick="showSection('tab')">FormaTab</a></li>
+        <li><a href="#popup" onclick="showSection('popup')">FormaPopup</a></li>
+        <li><a href="#menu" onclick="showSection('menu')">FormaMenu</a></li>
+        <li><a href="#mdi" onclick="showSection('mdi')">FormaMdi</a></li>
+
+        <div class="doc-nav-group">Utilities</div>
+        <li><a href="#util" onclick="showSection('util')">FormaUtil</a></li>
+        <li><a href="#theme" onclick="showSection('theme')">FormaTheme</a></li>
+        <li><a href="#chart" onclick="showSection('chart')">FormaChart</a></li>
+        <li><a href="#i18n" onclick="showSection('i18n')">FormaI18n</a></li>
+
+        <div class="doc-nav-group">Backend</div>
+        <li><a href="#platform" onclick="showSection('platform')">platform (Core)</a></li>
+        <li><a href="#listener" onclick="showSection('listener')">Listener</a></li>
+        <li><a href="#yaml" onclick="showSection('yaml')">YAML Engine</a></li>
+    </ul>
+</div>
+
+<div class="doc-content" id="doc-content">
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-overview" class="active">
+    <h1>FORMA Component API Reference</h1>
+    <p>FORMA 프레임워크의 모든 프론트엔드 컴포넌트 API 문서입니다.<br>좌측 메뉴에서 컴포넌트를 선택하세요.</p>
+
+    <h2>Script 로드 순서</h2>
+<pre>&lt;script src="/assets/js/framework/forma.core.js"&gt;&lt;/script&gt;     &lt;!-- 필수: platform, Callback, RESULT_CODE --&gt;
+&lt;script src="/assets/js/framework/forma.popup.js"&gt;&lt;/script&gt;    &lt;!-- 필수: alert, confirm, loading, toast --&gt;
+&lt;script src="/assets/js/framework/forma.util.js"&gt;&lt;/script&gt;     &lt;!-- 필수: 유틸리티 --&gt;
+&lt;script src="/assets/js/framework/forma.grid.js"&gt;&lt;/script&gt;     &lt;!-- 그리드 --&gt;
+&lt;script src="/assets/js/framework/forma.form.js"&gt;&lt;/script&gt;     &lt;!-- 폼 --&gt;
+&lt;script src="/assets/js/framework/forma.toolbar.js"&gt;&lt;/script&gt;  &lt;!-- 툴바 --&gt;
+&lt;script src="/assets/js/framework/forma.tab.js"&gt;&lt;/script&gt;      &lt;!-- 탭 --&gt;
+&lt;script src="/assets/js/framework/forma.modal.js"&gt;&lt;/script&gt;    &lt;!-- 모달 --&gt;</pre>
+
+    <h2>화면 기본 구조 (IIFE 패턴)</h2>
+<pre>(function() {
+    var PGM = 'SDA010';
+    var listener = platform.initListener(PGM);
+    var ctx = {};
+
+    listener.initPgm = function() {
+        ctx.searchForm = new FormaForm('#search-area', { search: true, elements: [...] });
+        ctx.grid1 = new FormaGrid('#grid-area', { editable: true, columns: [...] });
+        listener.button.search.click();
+    };
+
+    listener.button.search.click = function() {
+        platform.post('/sda010/selectGrid1', ctx.searchForm.getData(), new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        }));
+    };
+
+    document.addEventListener('DOMContentLoaded', () =&gt; platform.startPage(PGM, listener));
+})();</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-grid">
+    <h1>FormaGrid</h1>
+    <p>ERP 수준의 데이터 그리드. 인라인 편집, 셀 병합, 트리, 가상 스크롤, 그룹핑, 키보드, 클립보드, Undo/Redo.</p>
+
+    <h2>생성</h2>
+<pre>var grid = new FormaGrid('#grid-area', {
+    editable: true,       // 인라인 편집
+    checkable: true,      // 체크박스 컬럼
+    sortable: true,       // 헤더 클릭 정렬
+    rowNum: true,          // 행번호 컬럼
+    paging: true,          // 페이징 바
+    pageSize: 50,          // 페이지 크기
+    columns: [...]         // 컬럼 정의
+});</pre>
+
+    <h2>생성자 옵션</h2>
+    <table class="api-table">
+        <tr><th>옵션</th><th>타입</th><th>기본값</th><th>설명</th></tr>
+        <tr><td>columns</td><td>Array</td><td>[]</td><td>컬럼 정의 배열</td></tr>
+        <tr><td>editable</td><td>Boolean</td><td>false</td><td>인라인 편집 활성화 (더블클릭/Enter/F2)</td></tr>
+        <tr><td>checkable</td><td>Boolean</td><td>false</td><td>체크박스 컬럼 표시</td></tr>
+        <tr><td>sortable</td><td>Boolean</td><td>false</td><td>헤더 클릭 정렬</td></tr>
+        <tr><td>rowNum</td><td>Boolean</td><td>false</td><td>행번호 컬럼</td></tr>
+        <tr><td>reorderable</td><td>Boolean</td><td>false</td><td>드래그 행 순서 변경</td></tr>
+        <tr><td>filterable</td><td>Boolean</td><td>false</td><td>헤더 아래 필터행</td></tr>
+        <tr><td>paging</td><td>Boolean</td><td>false</td><td>페이징 바 표시</td></tr>
+        <tr><td>pageSize</td><td>Number</td><td>50</td><td>페이지 크기</td></tr>
+        <tr><td>virtualScroll</td><td>Boolean</td><td>false</td><td>가상 스크롤 (대량 데이터)</td></tr>
+        <tr><td>height</td><td>Number</td><td>400</td><td>virtualScroll 시 높이 (px)</td></tr>
+        <tr><td>groupBy</td><td>String</td><td>null</td><td>그룹핑 필드명</td></tr>
+        <tr><td>treeField</td><td>String</td><td>null</td><td>트리 표시 컬럼</td></tr>
+        <tr><td>onRowClick</td><td>Function</td><td>null</td><td>(row, idx)</td></tr>
+        <tr><td>onRowDblClick</td><td>Function</td><td>null</td><td>(row, idx)</td></tr>
+        <tr><td>onCellChange</td><td>Function</td><td>null</td><td>(row, field, idx)</td></tr>
+        <tr><td>onPageChange</td><td>Function</td><td>null</td><td>(page, size) — 서버 페이징</td></tr>
+    </table>
+
+    <h2>컬럼 속성</h2>
+    <table class="api-table">
+        <tr><th>속성</th><th>타입</th><th>설명</th></tr>
+        <tr><td>field</td><td>String</td><td>데이터 필드명</td></tr>
+        <tr><td>label</td><td>String|Array</td><td>헤더 텍스트. 멀티헤더: [{text, colspan}, ...]</td></tr>
+        <tr><td>width</td><td>Number</td><td>너비 (px)</td></tr>
+        <tr><td>type</td><td>String</td><td>'number' 등</td></tr>
+        <tr><td>format</td><td>String</td><td>'currency', 'date'</td></tr>
+        <tr><td>editor</td><td>String</td><td>'text' | 'select' | 'combo' | 'date' | 'currency' | 'check' | 'switch' | 'textarea'</td></tr>
+        <tr><td>options</td><td>Array</td><td>select/combo용 [{value, label}]</td></tr>
+        <tr><td>code</td><td>String</td><td>select/combo용 서버 코드 그룹</td></tr>
+        <tr><td>frozen</td><td>Boolean</td><td>고정 컬럼 (좌측 sticky)</td></tr>
+        <tr><td>readOnly</td><td>Boolean</td><td>편집 불가</td></tr>
+        <tr><td>required</td><td>Boolean</td><td>checkGridValidation 필수</td></tr>
+        <tr><td>footer</td><td>String</td><td>'sum' | 'count' | 'avg'</td></tr>
+        <tr><td>align</td><td>String</td><td>'left' | 'center' | 'right'</td></tr>
+        <tr><td>merge</td><td>Boolean</td><td>같은 값 연속 행 자동 병합</td></tr>
+        <tr><td>renderer</td><td>Function</td><td>(val, row, col, idx) → HTML string</td></tr>
+    </table>
+
+    <h2>API 메서드</h2>
+    <table class="api-table">
+        <tr><th>메서드</th><th>설명</th></tr>
+        <tr><td>setData(data, totalCount?)</td><td>데이터 세팅. 서버 페이징 시 totalCount 전달.</td></tr>
+        <tr><td>getData()</td><td>전체 데이터 배열 반환</td></tr>
+        <tr><td>getCheckedData()</td><td>체크된 행 배열 반환</td></tr>
+        <tr><td>getModifiedData()</td><td>수정된 행 (gstat='I'|'U') 배열 반환</td></tr>
+        <tr><td>getSelectedItem()</td><td>현재 선택된 행 객체</td></tr>
+        <tr><td>addRow(defaults)</td><td>새 행 추가 (gstat='I')</td></tr>
+        <tr><td>deleteRow()</td><td>선택된 행 삭제</td></tr>
+        <tr><td>updateItem(idx, data)</td><td>행 업데이트 (gstat='U' 자동 설정)</td></tr>
+        <tr><td>clearData()</td><td>데이터 초기화</td></tr>
+        <tr><td>checkGridValidation()</td><td>required 컬럼 검증. false면 에러 표시.</td></tr>
+        <tr><td>exportCsv(filename)</td><td>CSV 내보내기</td></tr>
+        <tr><td>exportXlsx(filename)</td><td>XLSX 내보내기 (클라이언트)</td></tr>
+        <tr><td>exportXlsxServer(filename)</td><td>XLSX 서버사이드 다운로드 (대량 데이터)</td></tr>
+        <tr><td>print(title?)</td><td>인쇄 (새 창)</td></tr>
+        <tr><td>undo() / redo()</td><td>실행 취소/다시 실행</td></tr>
+        <tr><td>hideColumn(field) / showColumn(field)</td><td>컬럼 숨기기/표시</td></tr>
+    </table>
+
+    <h2>키보드 단축키</h2>
+    <table class="api-table">
+        <tr><th>키</th><th>동작</th></tr>
+        <tr><td>Arrow Keys</td><td>셀 이동</td></tr>
+        <tr><td>Tab / Shift+Tab</td><td>다음/이전 셀</td></tr>
+        <tr><td>Enter / F2</td><td>편집 시작</td></tr>
+        <tr><td>Esc</td><td>편집 취소</td></tr>
+        <tr><td>Space</td><td>체크 토글</td></tr>
+        <tr><td>Ctrl+C / Ctrl+V</td><td>클립보드 복사/붙여넣기</td></tr>
+        <tr><td>Ctrl+Z / Ctrl+Y</td><td>Undo / Redo</td></tr>
+        <tr><td>Delete</td><td>셀 내용 지우기</td></tr>
+    </table>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-form">
+    <h1>FormaForm</h1>
+    <p>21종 위젯을 지원하는 폼 컴포넌트. 검색폼/입력폼 모드, 변경 감지(isDirty), 검증(validate).</p>
+
+    <h2>생성</h2>
+<pre>// 검색폼 (가로 배치)
+var searchForm = new FormaForm('#search-area', {
+    search: true,
+    elements: [
+        { field: 'keyword', label: '검색어', widget: 'text' },
+        { field: 'date', label: '기간', widget: 'dateRange', default: 'THIS_MONTH' }
+    ]
+});
+
+// 입력폼 (세로 배치)
+var form = new FormaForm('#form-area', {
+    columns: 2, labelWidth: 100,
+    elements: [
+        { field: 'name', label: '이름', required: true },
+        { field: 'dept', label: '부서', widget: 'combo', code: 'DEPT_TYPE' }
+    ]
+});</pre>
+
+    <h2>위젯 타입</h2>
+    <table class="api-table">
+        <tr><th>widget</th><th>설명</th><th>주요 속성</th></tr>
+        <tr><td>text</td><td>텍스트 입력 (기본)</td><td>placeholder, maxLength, type='number'</td></tr>
+        <tr><td>number</td><td>숫자 입력</td><td>min, max, step, suffix, prefix</td></tr>
+        <tr><td>combo</td><td>드롭다운</td><td>options: [{value, label}], code: 'GROUP'</td></tr>
+        <tr><td>date</td><td>날짜 선택</td><td>readOnly</td></tr>
+        <tr><td>dateRange</td><td>기간 (from~to)</td><td>default: 'THIS_MONTH', 'TODAY', 'THIS_YEAR'</td></tr>
+        <tr><td>codePopup</td><td>코드 팝업</td><td>popup: {url, codeField, nameField, width, height}</td></tr>
+        <tr><td>textarea</td><td>텍스트영역</td><td>rows</td></tr>
+        <tr><td>checkbox</td><td>체크박스</td><td>checkLabel</td></tr>
+        <tr><td>radio</td><td>라디오 버튼</td><td>options: [{value, label}]</td></tr>
+        <tr><td>hidden</td><td>숨김 필드</td><td>—</td></tr>
+        <tr><td>currency</td><td>금액 입력</td><td>콤마 자동포맷, getData()에서 Number</td></tr>
+        <tr><td>multiCombo</td><td>복수 선택</td><td>getData()에서 쉼표구분 문자열</td></tr>
+        <tr><td>yearMonth</td><td>년월 선택</td><td>default: 'THIS_MONTH'</td></tr>
+        <tr><td>year</td><td>년도 선택</td><td>default: 'THIS_YEAR', range: 5</td></tr>
+        <tr><td>switch</td><td>ON/OFF 토글</td><td>onLabel, offLabel, getData()에서 'Y'/'N'</td></tr>
+        <tr><td>display</td><td>읽기전용 텍스트/뱃지</td><td>badge: true, badgeColors: {값: 색상}</td></tr>
+        <tr><td>password</td><td>비밀번호</td><td>눈 아이콘 토글</td></tr>
+        <tr><td>divider</td><td>구분선/섹션</td><td>label (텍스트)</td></tr>
+    </table>
+
+    <h2>공통 필드 속성</h2>
+    <table class="api-table">
+        <tr><th>속성</th><th>타입</th><th>설명</th></tr>
+        <tr><td>field</td><td>String</td><td>데이터 필드명</td></tr>
+        <tr><td>label</td><td>String</td><td>라벨 텍스트</td></tr>
+        <tr><td>required</td><td>Boolean</td><td>필수 여부 (라벨에 * 표시)</td></tr>
+        <tr><td>readOnly</td><td>Boolean</td><td>읽기 전용</td></tr>
+        <tr><td>colspan</td><td>Number</td><td>차지할 컬럼 수 (form 모드)</td></tr>
+        <tr><td>prefix</td><td>String</td><td>입력 앞 표시 ('&#8361;', '$')</td></tr>
+        <tr><td>suffix</td><td>String</td><td>입력 뒤 표시 ('원', 'kg', '%')</td></tr>
+        <tr><td>helpText</td><td>String</td><td>필드 아래 도움말</td></tr>
+        <tr><td>onChange</td><td>Function</td><td>(value, oldValue)</td></tr>
+        <tr><td>dependsOn</td><td>Object</td><td>의존 콤보 {field, paramKey}</td></tr>
+    </table>
+
+    <h2>API 메서드</h2>
+    <table class="api-table">
+        <tr><th>메서드</th><th>설명</th></tr>
+        <tr><td>getData()</td><td>폼 데이터 반환. dateRange→{field}_from/{field}_to, currency→Number</td></tr>
+        <tr><td>setData(obj)</td><td>폼 데이터 세팅 + 원본 저장 (isDirty 기준)</td></tr>
+        <tr><td>getField(field)</td><td>개별 필드 값</td></tr>
+        <tr><td>setField(field, value)</td><td>개별 필드 값 세팅</td></tr>
+        <tr><td>clear()</td><td>전체 초기화</td></tr>
+        <tr><td>validate()</td><td>required 필드 검증</td></tr>
+        <tr><td>isDirty()</td><td>원본 대비 변경 여부</td></tr>
+        <tr><td>setOptions(field, options)</td><td>콤보 옵션 교체</td></tr>
+        <tr><td>showField(field) / hideField(field)</td><td>필드 표시/숨김</td></tr>
+        <tr><td>setRequired(field, bool)</td><td>필수 여부 동적 변경</td></tr>
+        <tr><td>setReadonly(field, bool)</td><td>읽기 전용 동적 변경</td></tr>
+        <tr><td>focus(field)</td><td>특정 필드 포커스</td></tr>
+    </table>
+
+    <h2>codePopup 사용법</h2>
+<pre>{ field: 'cust_cd', label: '거래처', widget: 'codePopup',
+  popup: {
+      url: '/pages/popup/CUS_P01.html',
+      codeField: 'CUST_CD',    // 팝업에서 반환할 코드 필드
+      nameField: 'CUST_NM',    // 팝업에서 반환할 이름 필드
+      width: 800, height: 600
+  }
+}</pre>
+    <div class="tip">팝업 내부에서 <code>var modal = FormaModal.current(); modal.ok({CUST_CD: 'C001', CUST_NM: '삼성전자'});</code> 로 결과를 반환합니다.</div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-toolbar">
+    <h1>FormaToolbar</h1>
+    <p>권한 기반 버튼바. <code>tb_pgm_info</code>의 설정에 따라 버튼이 자동 표시/숨김됩니다.</p>
+
+    <h2>자동 렌더링</h2>
+    <p><code>platform.startPage()</code> 호출 시 자동으로 렌더링됩니다. 직접 호출할 필요 없습니다.</p>
+
+    <h2>기본 버튼</h2>
+    <table class="api-table">
+        <tr><th>버튼</th><th>Listener</th><th>단축키</th><th>DB 플래그</th></tr>
+        <tr><td>조회</td><td>listener.button.search.click</td><td>F3</td><td>srch_yn</td></tr>
+        <tr><td>신규</td><td>listener.button.news.click</td><td>F4</td><td>new_yn</td></tr>
+        <tr><td>삭제</td><td>listener.button.del.click</td><td>F5</td><td>del_yn</td></tr>
+        <tr><td>저장</td><td>listener.button.save.click</td><td>F9</td><td>save_yn</td></tr>
+        <tr><td>출력</td><td>listener.button.print.click</td><td>F11</td><td>prnt_yn</td></tr>
+        <tr><td>초기화</td><td>listener.button.init.click</td><td>F12</td><td>init_yn</td></tr>
+        <tr><td>업로드</td><td>listener.button.upload.click</td><td>—</td><td>upld_yn</td></tr>
+        <tr><td>커스텀 1~10</td><td>listener.button.etc1~10.click</td><td>—</td><td>etc_desc1~5</td></tr>
+    </table>
+
+    <h2>런타임 버튼 제어</h2>
+<pre>listener.button.etc1.show();   // 버튼 표시
+listener.button.etc1.hide();   // 버튼 숨김</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-modal">
+    <h1>FormaModal</h1>
+    <p>팝업 모달. 중첩 지원, 드래그 이동, ESC 닫기.</p>
+
+    <h2>사용법</h2>
+<pre>var modal = new FormaModal({
+    title: '거래처 검색',
+    url: '/pages/popup/CUS_P01.html',
+    width: 800, height: 600,
+    okCallback: function(result) {
+        console.log(result.CUST_CD, result.CUST_NM);
+    }
+});
+modal.show(param);  // param은 팝업에서 FormaModal.getParam()으로 수신</pre>
+
+    <h2>SIZE 프리셋</h2>
+    <table class="api-table">
+        <tr><th>프리셋</th><th>크기</th></tr>
+        <tr><td>FormaModal.SIZE.XS</td><td>400 x 300</td></tr>
+        <tr><td>FormaModal.SIZE.S</td><td>600 x 400</td></tr>
+        <tr><td>FormaModal.SIZE.M</td><td>800 x 600</td></tr>
+        <tr><td>FormaModal.SIZE.L</td><td>1000 x 700</td></tr>
+        <tr><td>FormaModal.SIZE.XL</td><td>1200 x 800</td></tr>
+    </table>
+
+    <h2>팝업 내부 API</h2>
+<pre>var modal = FormaModal.current();     // 현재 모달 인스턴스
+var param = FormaModal.getParam();    // show()에 전달된 파라미터
+modal.ok({ CODE: 'C001' });           // 결과 전달 후 닫기
+modal.cancel();                       // 취소 후 닫기</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-tab">
+    <h1>FormaTab</h1>
+<pre>var tab = new FormaTab('#tab-area', {
+    tabs: [
+        { id: 'tab-basic', label: '기본정보' },
+        { id: 'tab-items', label: '품목명세' }
+    ],
+    listener: listener,
+    onTabChange: function(tabId) { /* 탭 전환 처리 */ }
+});
+
+tab.selectTab('tab-items');    // 탭 전환
+tab.getActiveTab();            // 현재 활성 탭 ID
+tab.hideTab('tab-items');      // 탭 숨김
+tab.showTab('tab-items');      // 탭 표시</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-popup">
+    <h1>FormaPopup</h1>
+    <table class="api-table">
+        <tr><th>API</th><th>설명</th><th>반환</th></tr>
+        <tr><td>FormaPopup.alert.show(msg)</td><td>알림 대화상자</td><td>Promise</td></tr>
+        <tr><td>FormaPopup.confirm.show(msg)</td><td>확인/취소 대화상자</td><td>Promise&lt;boolean&gt;</td></tr>
+        <tr><td>FormaPopup.loading.show()</td><td>로딩 오버레이 표시</td><td>—</td></tr>
+        <tr><td>FormaPopup.loading.hide()</td><td>로딩 오버레이 숨김</td><td>—</td></tr>
+        <tr><td>FormaPopup.toast.success(msg)</td><td>성공 토스트 (3초)</td><td>—</td></tr>
+        <tr><td>FormaPopup.toast.error(msg)</td><td>에러 토스트</td><td>—</td></tr>
+        <tr><td>FormaPopup.toast.info(msg)</td><td>정보 토스트</td><td>—</td></tr>
+    </table>
+<pre>// async/await 패턴
+var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
+if (ok) { /* 저장 */ }</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-menu">
+    <h1>FormaMenu</h1>
+<pre>FormaMenu.init('#menu-area', menuData);
+FormaMenu.reloadFavorites();                // 즐겨찾기 서버 로드
+await FormaMenu.addFavorite(menuId);        // 즐겨찾기 추가
+await FormaMenu.removeFavorite(menuId);     // 즐겨찾기 삭제</pre>
+    <div class="tip">메뉴 항목 우클릭 → 즐겨찾기 추가 컨텍스트 메뉴가 자동 표시됩니다.</div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-mdi">
+    <h1>FormaMdi</h1>
+    <p>iframe 없는 div 기반 멀티탭(MDI). 메모리 효율적, 화면간 직접 통신 가능.</p>
+    <table class="api-table">
+        <tr><th>API</th><th>설명</th></tr>
+        <tr><td>FormaMdi.init(tabSel, contentSel)</td><td>초기화</td></tr>
+        <tr><td>FormaMdi.open({id, label, url})</td><td>화면 열기 (이미 열려있으면 활성화)</td></tr>
+        <tr><td>FormaMdi.close(id)</td><td>탭 닫기</td></tr>
+        <tr><td>FormaMdi.closeAll()</td><td>전체 탭 닫기</td></tr>
+        <tr><td>FormaMdi.getActiveId()</td><td>현재 활성 탭 ID</td></tr>
+        <tr><td>FormaMdi.isOpen(id)</td><td>탭 열림 여부</td></tr>
+    </table>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-util">
+    <h1>FormaUtil</h1>
+    <h2>날짜</h2>
+    <table class="api-table">
+        <tr><td>FormaUtil.today()</td><td>'2026-03-23'</td></tr>
+        <tr><td>FormaUtil.now()</td><td>'2026-03-23 13:00:00'</td></tr>
+        <tr><td>FormaUtil.addDays(date, n)</td><td>날짜 더하기</td></tr>
+        <tr><td>FormaUtil.addMonths(date, n)</td><td>월 더하기</td></tr>
+        <tr><td>FormaUtil.firstDayOfMonth(date)</td><td>월 첫째날</td></tr>
+        <tr><td>FormaUtil.lastDayOfMonth(date)</td><td>월 마지막날</td></tr>
+        <tr><td>FormaUtil.diffDays(d1, d2)</td><td>일수 차이</td></tr>
+    </table>
+    <h2>숫자/통화</h2>
+    <table class="api-table">
+        <tr><td>FormaUtil.formatCurrency(1500000)</td><td>'1,500,000'</td></tr>
+        <tr><td>FormaUtil.parseCurrency('1,500,000')</td><td>1500000</td></tr>
+        <tr><td>FormaUtil.formatNumber(3.14159, 2)</td><td>'3.14'</td></tr>
+        <tr><td>FormaUtil.formatPercent(0.156, 1)</td><td>'15.6%'</td></tr>
+    </table>
+    <h2>문자열</h2>
+    <table class="api-table">
+        <tr><td>FormaUtil.formatBizNo('1234567890')</td><td>'123-45-67890'</td></tr>
+        <tr><td>FormaUtil.formatPhone('01012345678')</td><td>'010-1234-5678'</td></tr>
+        <tr><td>FormaUtil.byteLength(str)</td><td>바이트 수 계산</td></tr>
+        <tr><td>FormaUtil.escapeHtml(str)</td><td>HTML 이스케이프</td></tr>
+    </table>
+    <h2>배열</h2>
+    <table class="api-table">
+        <tr><td>FormaUtil.groupBy(arr, key)</td><td>그룹핑 {key: [items]}</td></tr>
+        <tr><td>FormaUtil.sumBy(arr, key)</td><td>합계</td></tr>
+        <tr><td>FormaUtil.unique(arr)</td><td>중복 제거</td></tr>
+        <tr><td>FormaUtil.deepCopy(obj)</td><td>깊은 복사</td></tr>
+    </table>
+    <h2>코드 캐시</h2>
+    <table class="api-table">
+        <tr><td>FormaUtil.getCodeItems(grpCode)</td><td>코드 그룹 조회 (캐시)</td></tr>
+        <tr><td>FormaUtil.getCodeLabel(grpCode, code)</td><td>코드명 조회</td></tr>
+        <tr><td>FormaUtil.preloadCodes('A','B')</td><td>미리 로드</td></tr>
+    </table>
+    <h2>Split 패널</h2>
+<pre>FormaUtil.initSplit('#split-area', {
+    minSize: 200,     // 최소 너비
+    maxSize: 600,     // 최대 너비
+    collapsible: true // 접기 가능
+});</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-theme">
+    <h1>FormaTheme</h1>
+<pre>FormaTheme.set('dark');       // 'light' | 'dark' | 'blue'
+FormaTheme.toggle();          // 순환 전환
+FormaTheme.get();             // 현재 테마
+FormaTheme.addTheme('custom', { '--bg': '#fff', '--text': '#333', ... });</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-chart">
+    <h1>FormaChart</h1>
+<pre>FormaChart.bar('#chart', { data: [...], xField: 'month', yField: 'sales' });
+FormaChart.line('#chart', { ... });
+FormaChart.pie('#chart', { data: [...], valueField: 'amt', labelField: 'name' });
+FormaChart.donut('#chart', { ... });
+FormaChart.hbar('#chart', { ... });</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-i18n">
+    <h1>FormaI18n</h1>
+<pre>FormaI18n.setLocale('en');
+FormaI18n.t('save');           // 'Save' (en) / '저장' (ko) / '保存' (ja)
+FormaI18n.getLocale();         // 'en'
+FormaI18n.addMessages('ko', { custom_key: '사용자 정의 텍스트' });</pre>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-platform">
+    <h1>platform (Core API)</h1>
+    <h2>HTTP 요청</h2>
+<pre>// POST (Promise)
+var result = await platform.post('/sda010/selectGrid1', params);
+var result = await platform.post('/sda010/selectGrid1', params, { loading: true });
+
+// GET
+var result = await platform.get('/api/codes/CUST_TYPE');
+
+// 하위 호환 (Callback)
+platform.post(url, params, new Callback(function(result) { ... }));</pre>
+    <h2>응답 구조</h2>
+<pre>{ resultCode: 'OK' | 'WARN' | 'ERROR', resultMessage: '...', resultData: {...} }</pre>
+    <div class="tip">WARN/ERROR 응답은 자동으로 FormaPopup.alert.show()로 표시됩니다. 401 응답은 로그인 페이지로 리다이렉트.</div>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-listener">
+    <h1>Listener 이벤트</h1>
+    <table class="api-table">
+        <tr><th>카테고리</th><th>이벤트</th><th>파라미터</th></tr>
+        <tr><td>button</td><td>search/news/save/del/print/upload/init.click</td><td>—</td></tr>
+        <tr><td>button</td><td>etc1~etc10.click</td><td>—</td></tr>
+        <tr><td>gridRow</td><td>click</td><td>(record, grid, col)</td></tr>
+        <tr><td>gridRow</td><td>dblclick</td><td>(rowId, colId, record, grid)</td></tr>
+        <tr><td>gridEditor</td><td>changed</td><td>(grid, state, editor)</td></tr>
+        <tr><td>gridEditor</td><td>beforeEditStart</td><td>(grid, record, curCol) → true/false</td></tr>
+        <tr><td>tabBar</td><td>tabChange</td><td>(tab)</td></tr>
+        <tr><td>editor</td><td>change</td><td>(el)</td></tr>
+    </table>
+</section>
+
+<!-- ═══════════════════════════════════════ -->
+<section id="sec-yaml">
+    <h1>YAML Runtime Engine</h1>
+    <p>YAML 설계서 1파일로 완전한 CRUD 화면을 런타임에 생성합니다.</p>
+
+    <h2>YAML 파일 위치</h2>
+    <p><code>design/screens/{SCREEN_ID}.yml</code></p>
+
+    <h2>화면 타입</h2>
+    <table class="api-table">
+        <tr><th>type</th><th>DOM 구조</th><th>동작</th></tr>
+        <tr><td>list</td><td>검색폼 + grid1</td><td>기본 CRUD</td></tr>
+        <tr><td>split-detail</td><td>검색폼 + [grid1 | grid2]</td><td>grid1 클릭 → grid2 로드</td></tr>
+        <tr><td>master-detail</td><td>검색폼 + grid1 + form + grid2</td><td>grid1 클릭 → form + grid2</td></tr>
+        <tr><td>split-tab</td><td>검색폼 + [grid1 | tab(form+grids)]</td><td>복합 화면</td></tr>
+    </table>
+
+    <h2>API 엔드포인트</h2>
+    <table class="api-table">
+        <tr><td>GET /api/screen/{id}/definition</td><td>화면 정의 조회</td></tr>
+        <tr><td>POST /api/screen/{id}/selectGrid1</td><td>Grid1 데이터 조회</td></tr>
+        <tr><td>POST /api/screen/{id}/selectGrid2</td><td>Grid2 데이터 조회</td></tr>
+        <tr><td>POST /api/screen/{id}/saveGrid1</td><td>Grid1 저장 (gstat 기반 I/U)</td></tr>
+        <tr><td>POST /api/screen/{id}/saveGrid2</td><td>Grid2 저장</td></tr>
+        <tr><td>POST /api/screen/{id}/deleteGrid1</td><td>Grid1 삭제</td></tr>
+        <tr><td>GET /api/screen/_reload</td><td>YAML 재로딩</td></tr>
+    </table>
+
+    <h2>YAML 전체 구조</h2>
+<pre>screen:
+  id: SDA010
+  name: 거래처관리
+  type: list              # list | split-detail | master-detail | split-tab
+
+auth:
+  search: true
+  new: true
+  save: true
+  delete: true
+
+search:
+  - { field: keyword, label: 검색어, widget: text }
+  - { field: type, label: 구분, widget: combo, code: CUST_TYPE }
+
+grids:
+  grid1:
+    editable: true
+    checkable: true
+    paging: true
+    pageSize: 50
+    columns:
+      - { field: CUST_CD, label: 거래처코드, width: 100 }
+      - { field: CUST_NM, label: 거래처명, width: 200, editor: text, required: true }
+
+form:                     # master-detail, split-tab에서 사용
+  masterForm:
+    columns: 2
+    elements:
+      - { field: ORDER_NO, label: 수주번호, readOnly: true }
+
+sql:
+  tables:
+    - { name: tb_customer }
+  selectGrid1:
+    table: tb_customer
+    columns: cust_cd, cust_nm, cust_type
+    orderBy: cust_cd
+  selectGrid2:
+    table: tb_order_item
+    where: "order_no = #{order_no}"</pre>
+</section>
+
+</div>
+
+<script>
+function showSection(id) {
+    var sections = document.querySelectorAll('.doc-content section');
+    for (var i = 0; i < sections.length; i++) sections[i].classList.remove('active');
+    var target = document.getElementById('sec-' + id);
+    if (target) target.classList.add('active');
+
+    var links = document.querySelectorAll('.doc-nav a');
+    for (var i = 0; i < links.length; i++) links[i].classList.remove('active');
+    var link = document.querySelector('.doc-nav a[href="#' + id + '"]');
+    if (link) link.classList.add('active');
+
+    document.querySelector('.doc-content').scrollTop = 0;
+}
+
+// 해시 기반 네비게이션
+if (location.hash) showSection(location.hash.replace('#', ''));
+</script>
+</body>
+</html>
