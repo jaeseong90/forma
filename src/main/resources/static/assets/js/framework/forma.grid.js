@@ -1097,6 +1097,12 @@ class FormaGrid {
 
     _renderCell(td, row, col, rowIdx) {
         let val = row[col.field];
+        // textarea 컬럼: 줄바꿈 보존 + 자동 높이
+        if (col.editor === 'textarea') {
+            td.classList.add('fg-wrap');
+            td.textContent = val ?? '';
+            return;
+        }
         // 커스텀 렌더러
         if (col.renderer) {
             const result = col.renderer(val, row, col, rowIdx);
@@ -1109,6 +1115,13 @@ class FormaGrid {
             const opts = col.options || this._codeCache[col.code] || [];
             const opt = opts.find(o => String(o.value) === String(val));
             td.textContent = opt ? opt.label : (val ?? '');
+            return;
+        }
+        // codeHelp: 코드 + 이름 표시
+        if (col.editor === 'codeHelp') {
+            var nameField = col.nameField || (col.field.replace(/_CD$|_CODE$/i, '_NM').replace(/_cd$|_code$/i, '_nm'));
+            var name = row[nameField] || '';
+            td.textContent = (val ? val + (name ? ' ' + name : '') : '');
             return;
         }
         if ((col.format === 'currency' || col.editor === 'currency') && val != null && val !== '') {
@@ -1485,6 +1498,7 @@ class FormaGrid {
         if (editor === 'date') { this._startDateEdit(rowIdx, col, td, row); return; }
         if (editor === 'currency' || col.format === 'currency') { this._startCurrencyEdit(rowIdx, col, td, row); return; }
         if (editor === 'textarea') { this._startTextareaEdit(rowIdx, col, td, row); return; }
+        if (editor === 'codeHelp') { this._startCodeHelpEdit(rowIdx, col, td, row); return; }
 
         const ci = this.columns.indexOf(col);
         const originalValue = row[col.field];
@@ -1638,6 +1652,79 @@ class FormaGrid {
         ta.onblur = commit;
         ta.onkeydown = (e) => {
             if (e.key === 'Escape') { this._editing = false; td.style.position = ''; row[col.field] = originalValue; this._renderCell(td, row, col, rowIdx); this._setFocusCell(rowIdx, ci); }
+        };
+    }
+
+    // ── codeHelp (그리드 코드 팝업) ──
+    _startCodeHelpEdit(rowIdx, col, td, row) {
+        const ci = this.columns.indexOf(col);
+        const originalValue = row[col.field];
+        const nameField = col.nameField || col.field.replace(/_CD$|_CODE$/i, '_NM').replace(/_cd$|_code$/i, '_nm');
+
+        td.textContent = '';
+        const wrap = document.createElement('span');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:2px;width:100%;';
+
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.className = 'forma-grid-input';
+        inp.style.cssText = 'flex:1;min-width:0;';
+        inp.value = row[col.field] ?? '';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '\uD83D\uDD0D';
+        btn.style.cssText = 'border:none;background:none;cursor:pointer;font-size:13px;padding:0 2px;';
+
+        wrap.appendChild(inp);
+        wrap.appendChild(btn);
+        td.appendChild(wrap);
+        inp.focus();
+
+        const self = this;
+
+        const openPopup = () => {
+            if (typeof FormaModal === 'undefined' || !col.popup) return;
+            const modal = new FormaModal({
+                title: col.popup.title || col.label || '코드 검색',
+                url: col.popup.url,
+                width: col.popup.width || 800,
+                height: col.popup.height || 600,
+                okCallback: function(result) {
+                    const codeField = col.popup.codeField || col.field;
+                    const popupNameField = col.popup.nameField || nameField;
+                    const codeVal = result[codeField] || '';
+                    const nameVal = result[popupNameField] || '';
+                    self._editing = false;
+                    self._commitValue(rowIdx, col, codeVal, originalValue);
+                    row[nameField] = nameVal;
+                    // 추가 필드 매핑
+                    if (col.popup.fields) {
+                        for (var k in col.popup.fields) {
+                            row[col.popup.fields[k]] = result[k] || '';
+                        }
+                    }
+                    self._renderCell(td, row, col, rowIdx);
+                    self._renderRow(rowIdx);
+                    self._renderFooter();
+                }
+            });
+            modal.show({ keyword: inp.value });
+        };
+
+        btn.onclick = openPopup;
+        inp.onkeydown = (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); openPopup(); }
+            else if (e.key === 'Escape') { self._editing = false; row[col.field] = originalValue; self._renderCell(td, row, col, rowIdx); self._setFocusCell(rowIdx, ci); }
+            else if (e.key === 'Tab') { e.preventDefault(); self._editing = false; self._commitValue(rowIdx, col, inp.value || null, originalValue); self._renderCell(td, row, col, rowIdx); self._navigateEdit(rowIdx, ci, e.shiftKey ? 'prev' : 'next'); }
+        };
+        inp.onblur = (e) => {
+            // 버튼 클릭 시에는 blur 무시
+            setTimeout(() => {
+                if (document.activeElement === btn) return;
+                self._editing = false;
+                self._commitValue(rowIdx, col, inp.value || null, originalValue);
+                self._renderCell(td, row, col, rowIdx);
+            }, 150);
         };
     }
 
