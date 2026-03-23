@@ -11,6 +11,12 @@ FORMA v2 - ERP/업무시스템 AI 활용 개발 프레임워크.
 # H2 콘솔: http://localhost:8081/h2 (jdbc:h2:mem:forma, sa, 비밀번호 없음)
 ```
 
+## 서버 관리 규칙 (중요)
+- **포트 8081만 사용**. 다른 포트의 프로세스를 건드리지 말 것.
+- 서버 재시작 시 `./gradlew --stop` 만 사용. **`taskkill`이나 `pkill`로 java.exe 전체를 죽이지 말 것** — 다른 서비스가 영향받음.
+- 서버 중지가 필요하면: `./gradlew --stop` → `sleep 2` → `./gradlew bootRun`
+- 8081 포트가 이미 사용 중이면 기존 Gradle 데몬만 정리할 것.
+
 ## 기술 스택
 - Spring Boot 3.4.3, Java 17, MyBatis 3.0.4
 - JWT (jjwt), Apache POI, Lombok
