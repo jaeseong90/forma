@@ -36,11 +36,11 @@ com.forma/
 │   ├── trace/          # TraceFilter, ServiceTraceAspect, TraceStore
 │   ├── sse/            # SseBroadcaster, SseRegistry
 │   ├── mvc/            # WebMvcConfig (인터셉터 등록), GlobalExceptionAdvice
-│   ├── excel/          # ExcelUtil
+│   ├── excel/          # ExcelController, ExcelService (XLSX 서버사이드 다운로드)
 │   ├── log/            # FormaLogService, FormaLogType
 │   ├── exception/      # FormaException
 │   └── util/           # Constants, SeqGenerator, StringUtil, OptimisticLockUtil
-├── common/             # 공통 (PgmController, CodeController, CommonService)
+├── common/             # 공통 (PgmController, CodeController, CommonService, PopupController, UserSettingsController, AdminController)
 ├── login/              # 로그인 (LoginController, LoginService, LoginUserVo)
 └── domain/             # 업무 코드 (AI가 생성하거나 YAML로 대체)
     ├── base/
@@ -59,8 +59,10 @@ static/
 ├── login.html                # 로그인 페이지
 ├── main.html                 # ERP 메인 (좌측 메뉴 + MDI 탭)
 ├── index.html                # 개발자 포털
-├── pages/screen.html         # YAML 엔진 제네릭 화면
+├── pages/screen.html         # YAML 엔진 제네릭 화면 (list/split-detail/master-detail 지원)
 ├── pages/{module}/{PGMID}.html  # 커스텀 화면
+├── pages/popup/              # 공통 팝업 (CUS_P01 거래처검색, ITM_P01 품목검색)
+├── pages/admin/              # 관리자 화면 (SYS010 감사로그/트레이스)
 ├── pages/dev/                # 데모 페이지 (GRID_DEMO, FORM_DEMO, COMP_DEMO, FRAMEWORK_DEMO, AI_GUIDE)
 └── assets/
     ├── css/forma.css          # CSS 변수 기반 테마
@@ -74,7 +76,7 @@ static/
         ├── forma.popup.js     # FormaPopup.alert/confirm/loading/toast
         ├── forma.util.js      # FormaUtil (40+개 유틸 — 날짜/숫자/문자열/배열/검증/코드캐시 + Split 패널)
         ├── forma.mdi.js       # FormaMdi (SPA MDI — iframe 없음, div 기반 탭 관리)
-        ├── forma.menu.js      # FormaMenu (좌측 트리 메뉴, FormaMdi.open 연동)
+        ├── forma.menu.js      # FormaMenu (좌측 트리 메뉴, 즐겨찾기, 우클릭 즐겨찾기 추가)
         ├── forma.i18n.js      # FormaI18n (다국어 ko/en/ja/zh)
         ├── forma.theme.js     # FormaTheme (light/dark/blue, CSS 변수 기반)
         └── forma.chart.js     # FormaChart (SVG 차트 5종: bar/line/pie/donut/hbar)
@@ -342,7 +344,8 @@ public class Sda010Service extends BaseService {
 | clearData() / clearSelect() | 초기화 |
 | eachRow(callback) | 전체 행 순회 |
 | checkGridValidation() | required 검증 |
-| exportCsv(filename) / exportXlsx(filename) | CSV/XLSX 내보내기 |
+| exportCsv(filename) / exportXlsx(filename) | CSV/XLSX 내보내기 (클라이언트) |
+| exportXlsxServer(filename, data?) | XLSX 서버사이드 다운로드 (대량 데이터용) |
 | importExcel(callback?) | CSV/TSV 파일 임포트 |
 | print(title?) | 인쇄 (새 창) |
 | undo() / redo() | 실행 취소/다시 실행 |
@@ -607,6 +610,110 @@ resources/schema/
 ├── 03-samples.sql   # 샘플 업무 데이터
 └── 04-pgm.sql       # PGM 정보
 ```
+
+---
+
+## XLSX 서버사이드 다운로드
+
+대량 데이터(1만건+) Excel 다운로드. Apache POI SXSSF(스트리밍) 기반.
+
+### API
+```
+POST /api/excel/download
+{ "fileName": "거래처목록", "sheetName": "Sheet1",
+  "columns": [{ "field": "cust_cd", "label": "거래처코드", "width": 15, "type": "number" }],
+  "data": [{ "cust_cd": "C001" }] }
+→ XLSX 파일 스트림 응답
+```
+
+### 프론트 사용법
+```javascript
+// 소량 (클라이언트): ctx.grid1.exportXlsx('파일명');
+// 대량 (서버): ctx.grid1.exportXlsxServer('파일명');
+// 별도 데이터: ctx.grid1.exportXlsxServer('파일명', customData);
+```
+
+---
+
+## 공통 팝업 (코드 검색)
+
+| 팝업 | 경로 | 반환 |
+|------|------|------|
+| 거래처 검색 | `/pages/popup/CUS_P01.html` | `{ CUST_CD, CUST_NM }` |
+| 품목 검색 | `/pages/popup/ITM_P01.html` | `{ ITEM_CD, ITEM_NM, UNIT_PRICE, UNIT_CD }` |
+
+### API
+```
+POST /api/popup/customer  { keyword, cust_type }
+POST /api/popup/item      { keyword, item_grp }
+```
+
+### FormaForm codePopup 연동
+```javascript
+{ field: 'cust_cd', label: '거래처', widget: 'codePopup',
+  popup: { url: '/pages/popup/CUS_P01.html', codeField: 'CUST_CD', nameField: 'CUST_NM', width: 800, height: 600 } }
+```
+
+---
+
+## 즐겨찾기 메뉴
+
+메뉴 항목 우클릭 → 즐겨찾기 추가. 좌측 메뉴 상단에 즐겨찾기 섹션 표시.
+
+### API
+```
+GET  /api/user/favorites           → 즐겨찾기 목록
+POST /api/user/favorites/add       { menu_id } 또는 { pgm_id }
+POST /api/user/favorites/remove    { menu_id }
+```
+
+### 테이블
+```sql
+tb_user_favorite (user_id, menu_id, sort_order, created_at)
+```
+
+---
+
+## 개인 설정 저장
+
+테마, 메뉴 접힘 상태 등을 서버에 저장. 재로그인 시 복원.
+
+### API
+```
+GET  /api/user/settings                → { theme: "dark", menuCollapsed: "N" }
+POST /api/user/settings  { key: val }  → 설정 저장 (MERGE)
+```
+
+### 테이블
+```sql
+tb_user_settings (user_id, setting_key, setting_value, updated_at)
+```
+
+---
+
+## 감사 로그/트레이스 조회 화면 (SYS010)
+
+관리자 전용. 두 탭 구성:
+- **감사 로그 탭**: tb_audit_log 서버 페이징 조회 + before/after JSON 비교
+- **트레이스 탭**: 인메모리 서비스 트레이스 (최근 200건, 실행시간 표시)
+
+### API
+```
+POST /api/admin/auditLog  { page, pageSize, pgm_id, user_id, action, audit_dt_from, audit_dt_to }
+GET  /api/trace/recent?count=200
+```
+
+---
+
+## YAML 화면 엔진 레이아웃 지원
+
+screen.html이 YAML의 `screen.type`에 따라 자동으로 DOM 구조를 생성:
+
+| type | DOM 구조 | 동작 |
+|------|----------|------|
+| list | 검색폼 + grid1 | 기본 CRUD |
+| split-detail | 검색폼 + [grid1 \| grid2] | grid1 클릭 → grid2 로드 |
+| master-detail | 검색폼 + grid1 + masterForm + grid2 | grid1 클릭 → form + grid2 로드 |
 
 ---
 

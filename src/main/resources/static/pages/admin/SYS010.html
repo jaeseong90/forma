@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>감사로그/트레이스 조회</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">감사로그/트레이스 조회 (SYS010)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="tab-area"></div>
+        <div id="tab-audit" style="display:none;">
+            <div id="audit-search"></div>
+            <div id="audit-grid" style="margin-top:8px;"></div>
+            <div id="audit-detail" style="margin-top:8px;"></div>
+        </div>
+        <div id="tab-trace" style="display:none;">
+            <div id="trace-grid"></div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    var PGM = 'SYS010';
+    var listener = platform.initListener(PGM);
+    var ctx = {};
+
+    listener.initPgm = function() {
+        // 탭
+        ctx.tab = new FormaTab('#tab-area', {
+            tabs: [
+                { id: 'tab-audit', label: '감사 로그' },
+                { id: 'tab-trace', label: '서비스 트레이스' }
+            ],
+            listener: listener,
+            onTabChange: function(tabId) {
+                document.getElementById('tab-audit').style.display = tabId === 'tab-audit' ? '' : 'none';
+                document.getElementById('tab-trace').style.display = tabId === 'tab-trace' ? '' : 'none';
+                if (tabId === 'tab-trace' && !ctx.traceLoaded) loadTrace();
+            }
+        });
+
+        // 감사 로그 검색폼
+        ctx.auditSearch = new FormaForm('#audit-search', {
+            search: true,
+            elements: [
+                { field: 'audit_dt', label: '기간', widget: 'dateRange', default: 'THIS_MONTH' },
+                { field: 'pgm_id', label: '프로그램', widget: 'text', placeholder: 'PGM ID' },
+                { field: 'user_id', label: '사용자', widget: 'text' },
+                { field: 'action', label: '액션', widget: 'combo',
+                  options: [
+                      { value: '', label: '전체' },
+                      { value: 'INSERT', label: 'INSERT' },
+                      { value: 'UPDATE', label: 'UPDATE' },
+                      { value: 'DELETE', label: 'DELETE' }
+                  ]
+                }
+            ]
+        });
+
+        // 감사 로그 그리드
+        ctx.auditGrid = new FormaGrid('#audit-grid', {
+            sortable: true,
+            paging: true,
+            pageSize: 50,
+            columns: [
+                { field: 'AUDIT_SEQ', label: 'SEQ', width: 70, align: 'center' },
+                { field: 'AUDIT_DT', label: '일시', width: 140, align: 'center' },
+                { field: 'PGM_ID', label: '프로그램', width: 80, align: 'center' },
+                { field: 'TABLE_NAME', label: '테이블', width: 120 },
+                { field: 'ACTION', label: '액션', width: 70, align: 'center',
+                  renderer: function(val) {
+                      var colors = { INSERT: '#4caf50', UPDATE: '#2196f3', DELETE: '#f44336' };
+                      return '<span style="color:' + (colors[val] || '#333') + ';font-weight:600;">' + (val || '') + '</span>';
+                  }
+                },
+                { field: 'ROW_KEY', label: '키', width: 150 },
+                { field: 'USER_ID', label: '사용자', width: 80 },
+                { field: 'USER_IP', label: 'IP', width: 110 },
+                { field: 'TRACE_ID', label: 'Trace ID', width: 120 }
+            ],
+            onRowClick: function(row) {
+                showAuditDetail(row);
+            },
+            onPageChange: function(page, size) {
+                loadAuditLog(page, size);
+            }
+        });
+
+        // 감사 로그 디테일 (before/after)
+        ctx.detailForm = new FormaForm('#audit-detail', {
+            columns: 2,
+            elements: [
+                { field: 'before_data', label: 'Before', widget: 'textarea', rows: 6, readOnly: true },
+                { field: 'after_data', label: 'After', widget: 'textarea', rows: 6, readOnly: true }
+            ]
+        });
+
+        // 트레이스 그리드
+        ctx.traceGrid = new FormaGrid('#trace-grid', {
+            sortable: true,
+            columns: [
+                { field: 'traceId', label: 'Trace ID', width: 120 },
+                { field: 'pgmId', label: 'PGM', width: 80, align: 'center' },
+                { field: 'type', label: '타입', width: 80, align: 'center' },
+                { field: 'name', label: '이름', width: 250 },
+                { field: 'detail', label: '상세', width: 200 },
+                { field: 'elapsedMs', label: '소요(ms)', width: 90, type: 'number', align: 'right',
+                  renderer: function(val) {
+                      var color = val > 1000 ? '#f44336' : val > 500 ? '#ff9800' : '#333';
+                      return '<span style="color:' + color + ';">' + (val || 0) + '</span>';
+                  }
+                },
+                { field: 'error', label: '에러', width: 200,
+                  renderer: function(val) {
+                      return val ? '<span style="color:#f44336;">' + val + '</span>' : '';
+                  }
+                },
+                { field: 'ts', label: '시각', width: 140,
+                  renderer: function(val) {
+                      return val ? new Date(val).toLocaleString('ko-KR') : '';
+                  }
+                }
+            ]
+        });
+
+        // 탭 초기 표시
+        document.getElementById('tab-audit').style.display = '';
+
+        listener.button.search.click();
+    };
+
+    listener.button.search.click = function() {
+        var activeTab = ctx.tab ? ctx.tab.getActiveTab() : 'tab-audit';
+        if (activeTab === 'tab-audit') {
+            loadAuditLog(1, 50);
+        } else {
+            loadTrace();
+        }
+    };
+
+    listener.button.init.click = function() {
+        ctx.auditSearch.clear();
+        ctx.auditGrid.clearData();
+        ctx.detailForm.clear();
+    };
+
+    function loadAuditLog(page, size) {
+        var params = ctx.auditSearch.getData();
+        params.page = page;
+        params.pageSize = size;
+        platform.post('/api/admin/auditLog', params, new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                ctx.auditGrid.setData(result.resultData.data, result.resultData.totalCount);
+            }
+        }));
+    }
+
+    function showAuditDetail(row) {
+        var before = row.BEFORE_DATA || '';
+        var after = row.AFTER_DATA || '';
+        try { before = JSON.stringify(JSON.parse(before), null, 2); } catch(e) {}
+        try { after = JSON.stringify(JSON.parse(after), null, 2); } catch(e) {}
+        ctx.detailForm.setData({ before_data: before, after_data: after });
+    }
+
+    function loadTrace() {
+        ctx.traceLoaded = true;
+        platform.get('/api/trace/recent', { count: 200 }).then(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                ctx.traceGrid.setData(result.resultData);
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+})();
+</script>
+</body>
+</html>

@@ -671,6 +671,61 @@ class FormaGrid {
     }
 
     // ══════════════════════════════════════════════════════════
+    //  서버사이드 XLSX 다운로드 (대량 데이터용)
+    // ══════════════════════════════════════════════════════════
+
+    /**
+     * 서버에서 Apache POI로 XLSX를 생성해 다운로드.
+     * 클라이언트 exportXlsx()는 소량에 적합, 대량(1만건+)은 이 메서드 사용.
+     * @param {string} filename  파일명 (확장자 제외)
+     * @param {Array} [data]     데이터 배열 (생략 시 현재 그리드 데이터)
+     */
+    exportXlsxServer(filename, data) {
+        var visCols = this.columns.filter(function(c) { return !c._hidden; });
+        var cols = visCols.map(function(c) {
+            var lbl = c.label;
+            if (Array.isArray(lbl)) { var last = lbl[lbl.length - 1]; lbl = last ? (last.text || c.field) : c.field; }
+            return { field: c.field, label: lbl || c.field, width: Math.round((c.width || 100) / 8), type: c.type, format: c.format };
+        });
+        var rows = data || this.rows;
+
+        // select/combo 옵션 변환
+        var exportData = rows.map(function(row) {
+            var r = {};
+            visCols.forEach(function(col) {
+                var val = row[col.field];
+                if ((col.editor === 'select' || col.editor === 'combo') && col.options) {
+                    var opt = col.options.find(function(o) { return String(o.value) === String(val); });
+                    if (opt) val = opt.label;
+                }
+                if (col.editor === 'check' || col.editor === 'switch') val = (val === 'Y' || val === true) ? 'Y' : 'N';
+                r[col.field] = val;
+            });
+            return r;
+        });
+
+        var payload = JSON.stringify({ fileName: filename || 'export', sheetName: 'Sheet1', columns: cols, data: exportData });
+
+        fetch('/api/excel/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+        }).then(function(res) {
+            if (!res.ok) throw new Error('Download failed');
+            return res.blob();
+        }).then(function(blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (filename || 'export') + '.xlsx';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }).catch(function(err) {
+            console.error(err);
+            if (typeof FormaPopup !== 'undefined') FormaPopup.toast.error('다운로드 실패');
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
     //  Excel 임포트 (CSV/TSV 파싱 → 그리드 데이터)
     // ══════════════════════════════════════════════════════════
 

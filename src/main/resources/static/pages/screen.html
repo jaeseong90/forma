@@ -11,10 +11,7 @@
         <h1 class="forma-page-title" id="page-title">로딩 중...</h1>
         <div id="forma-toolbar"></div>
     </div>
-    <div class="forma-content">
-        <div id="search-area"></div>
-        <div id="grid1-area"></div>
-    </div>
+    <div class="forma-content" id="content-root"></div>
 </div>
 <script src="/assets/js/framework/forma.core.js"></script>
 <script src="/assets/js/framework/forma.popup.js"></script>
@@ -28,7 +25,7 @@
 /**
  * FORMA Generic Screen Engine
  * YAML 설계서 1파일로 완전한 CRUD 화면을 런타임 생성한다.
- * /pages/screen.html?id=MMA010
+ * 지원 레이아웃: list, split-detail, master-detail, split-tab
  */
 (async function() {
     var screenId = new URLSearchParams(location.search).get('id');
@@ -49,14 +46,19 @@
         return;
     }
     var def = defRes.resultData;
+    var screenType = def.screen.type || 'list';
 
     // 2. 타이틀 설정
     document.getElementById('page-title').textContent = def.screen.name + ' (' + def.screen.id + ')';
     document.title = def.screen.name + ' - FORMA';
 
-    // 3. 초기화
+    // 3. DOM 구조 생성 (레이아웃별)
+    var contentRoot = document.getElementById('content-root');
+    buildLayout(contentRoot, screenType, def);
+
+    // 4. 초기화
     listener.initPgm = function() {
-        // 검색폼 생성
+        // 검색폼
         if (def.search && def.search.length > 0) {
             ctx.searchForm = new FormaForm('#search-area', {
                 search: true,
@@ -64,82 +66,289 @@
             });
         }
 
-        // 그리드 생성
+        // Grid1
         if (def.grids && def.grids.grid1) {
-            var gridDef = def.grids.grid1;
-            ctx.grid1 = new FormaGrid('#grid1-area', {
-                editable: gridDef.editable || false,
-                checkable: gridDef.checkable || false,
-                sortable: gridDef.sortable || false,
-                rowNum: gridDef.rowNum || false,
-                paging: gridDef.paging || false,
-                pageSize: gridDef.pageSize || 50,
-                columns: gridDef.columns || []
+            var g1 = def.grids.grid1;
+            var g1Opts = {
+                editable: g1.editable || false,
+                checkable: g1.checkable || false,
+                sortable: g1.sortable || false,
+                rowNum: g1.rowNum || false,
+                paging: g1.paging || false,
+                pageSize: g1.pageSize || 50,
+                columns: g1.columns || []
+            };
+            if (g1.paging) {
+                g1Opts.onPageChange = function(page, size) { loadGrid1(page, size); };
+            }
+            // split-detail / master-detail: grid1 클릭 → grid2 로드
+            if (screenType === 'split-detail' || screenType === 'master-detail') {
+                g1Opts.onRowClick = function(row) {
+                    ctx._selectedMaster = row;
+                    loadGrid2(row);
+                    if (screenType === 'master-detail' && ctx.masterForm) {
+                        ctx.masterForm.setData(row);
+                    }
+                };
+            }
+            ctx.grid1 = new FormaGrid('#grid1-area', g1Opts);
+        }
+
+        // Grid2
+        if (def.grids && def.grids.grid2) {
+            var g2 = def.grids.grid2;
+            ctx.grid2 = new FormaGrid('#grid2-area', {
+                editable: g2.editable || false,
+                checkable: g2.checkable || false,
+                sortable: g2.sortable || false,
+                rowNum: g2.rowNum || false,
+                paging: g2.paging || false,
+                pageSize: g2.pageSize || 50,
+                columns: g2.columns || [],
+                onPageChange: g2.paging ? function(page, size) { loadGrid2(ctx._selectedMaster, page, size); } : null
             });
+        }
+
+        // Master Form (master-detail)
+        if (screenType === 'master-detail' && def.form && def.form.masterForm) {
+            var mf = def.form.masterForm;
+            ctx.masterForm = new FormaForm('#master-form-area', {
+                columns: mf.columns || 2,
+                labelWidth: mf.labelWidth || 120,
+                elements: mf.elements || []
+            });
+        }
+
+        // Split 초기화
+        if (screenType === 'split-detail') {
+            FormaUtil.initSplit('#split-area');
         }
 
         listener.button.search.click();
     };
 
-    // 4. 조회
+    // 5. 조회
     listener.button.search.click = function() {
         var params = ctx.searchForm ? ctx.searchForm.getData() : {};
+        loadGrid1(1, 50, params);
+    };
+
+    function loadGrid1(page, size, params) {
+        params = params || (ctx.searchForm ? ctx.searchForm.getData() : {});
+        if (def.grids && def.grids.grid1 && def.grids.grid1.paging) {
+            params.page = page;
+            params.pageSize = size;
+        }
         platform.post(apiBase + '/selectGrid1', params, new Callback(function(result) {
             if (result.resultCode === RESULT_CODE.OK && ctx.grid1) {
-                ctx.grid1.setData(result.resultData);
+                if (result.resultData && result.resultData.data) {
+                    ctx.grid1.setData(result.resultData.data, result.resultData.totalCount);
+                } else {
+                    ctx.grid1.setData(result.resultData);
+                }
             }
         }));
-    };
+    }
 
-    // 5. 저장
+    function loadGrid2(masterRow, page, size) {
+        if (!masterRow || !ctx.grid2) return;
+        var params = {};
+        // 마스터 행의 모든 필드를 파라미터로 전달
+        for (var key in masterRow) {
+            if (masterRow.hasOwnProperty(key) && key !== 'gstat') {
+                params[key.toLowerCase()] = masterRow[key];
+                params[key] = masterRow[key];
+            }
+        }
+        platform.post(apiBase + '/selectGrid2', params, new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                if (result.resultData && result.resultData.data) {
+                    ctx.grid2.setData(result.resultData.data, result.resultData.totalCount);
+                } else {
+                    ctx.grid2.setData(result.resultData);
+                }
+            }
+        }));
+    }
+
+    // 6. 저장
     listener.button.save.click = function() {
-        if (!ctx.grid1) return;
-        var data = ctx.grid1.getCheckedData();
-        if (data.length === 0) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
-        if (!ctx.grid1.checkGridValidation()) return;
-        FormaPopup.confirm.show('저장하시겠습니까?', function(ok) {
-            if (ok) platform.post(apiBase + '/saveGrid1', data, new Callback(function(r) {
+        var targetGrid = getEditableGrid();
+        if (!targetGrid) return;
+
+        var data;
+        if (targetGrid.checkable) {
+            data = targetGrid.getCheckedData();
+        } else {
+            data = targetGrid.getModifiedData();
+        }
+        if (!data || data.length === 0) { FormaPopup.alert.show('저장할 항목이 없습니다.'); return; }
+        if (!targetGrid.checkGridValidation()) return;
+
+        // master-detail에서 마스터 폼 데이터와 병합
+        if (screenType === 'master-detail' && ctx.masterForm && targetGrid === ctx.grid2) {
+            var masterData = ctx.masterForm.getData();
+            data.forEach(function(row) {
+                for (var k in masterData) { if (!row[k]) row[k] = masterData[k]; }
+            });
+        }
+
+        // split-detail에서 grid2 저장 시 마스터 키 주입
+        if (screenType === 'split-detail' && ctx._selectedMaster && targetGrid === ctx.grid2) {
+            var master = ctx._selectedMaster;
+            data.forEach(function(row) {
+                for (var k in master) {
+                    if (master.hasOwnProperty(k) && k !== 'gstat' && !row[k]) {
+                        row[k] = master[k];
+                    }
+                }
+            });
+        }
+
+        var saveEndpoint = (targetGrid === ctx.grid2) ? '/saveGrid2' : '/saveGrid1';
+
+        FormaPopup.confirm.show('저장하시겠습니까?').then(function(ok) {
+            if (ok) platform.post(apiBase + saveEndpoint, data, new Callback(function(r) {
                 if (r.resultCode === RESULT_CODE.OK) {
                     FormaPopup.toast.success('저장되었습니다.');
-                    listener.button.search.click();
+                    if (targetGrid === ctx.grid2 && ctx._selectedMaster) {
+                        loadGrid2(ctx._selectedMaster);
+                    } else {
+                        listener.button.search.click();
+                    }
                 }
             }));
         });
     };
 
-    // 6. 삭제
+    // 7. 삭제
     listener.button.del.click = function() {
-        if (!ctx.grid1) return;
-        var data = ctx.grid1.getCheckedData();
+        var targetGrid = getEditableGrid();
+        if (!targetGrid) return;
+
+        var data;
+        if (targetGrid.checkable) {
+            data = targetGrid.getCheckedData();
+        } else {
+            var sel = targetGrid.getSelectedItem();
+            data = sel ? [sel] : [];
+        }
         if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
-        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?', function(ok) {
-            if (ok) platform.post(apiBase + '/deleteGrid1', data, new Callback(function(r) {
+
+        var deleteEndpoint = (targetGrid === ctx.grid2) ? '/deleteGrid2' : '/deleteGrid1';
+
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?').then(function(ok) {
+            if (ok) platform.post(apiBase + deleteEndpoint, data, new Callback(function(r) {
                 if (r.resultCode === RESULT_CODE.OK) {
                     FormaPopup.toast.success('삭제되었습니다.');
-                    listener.button.search.click();
+                    if (targetGrid === ctx.grid2 && ctx._selectedMaster) {
+                        loadGrid2(ctx._selectedMaster);
+                    } else {
+                        listener.button.search.click();
+                    }
                 }
             }));
         });
     };
 
-    // 7. 신규
+    // 8. 신규
     listener.button.news.click = function() {
-        if (!ctx.grid1) return;
+        var targetGrid = getEditableGrid();
+        if (!targetGrid) return;
+
+        // split-detail에서 grid2에 행 추가 시 마스터가 선택되어야 함
+        if (screenType === 'split-detail' && targetGrid === ctx.grid2 && !ctx._selectedMaster) {
+            FormaPopup.alert.show('좌측 목록에서 항목을 먼저 선택하세요.');
+            return;
+        }
+
         var defaults = {};
-        // 그리드 컬럼에서 기본값 설정 (USE_YN 등)
-        if (def.grids && def.grids.grid1 && def.grids.grid1.columns) {
-            def.grids.grid1.columns.forEach(function(col) {
+        var gridKey = (targetGrid === ctx.grid2) ? 'grid2' : 'grid1';
+        if (def.grids && def.grids[gridKey] && def.grids[gridKey].columns) {
+            def.grids[gridKey].columns.forEach(function(col) {
                 if (col.editor === 'check') defaults[col.field] = 'Y';
             });
         }
-        ctx.grid1.addRow(defaults);
+        targetGrid.addRow(defaults);
     };
 
-    // 8. 초기화
+    // 9. 초기화
     listener.button.init.click = function() {
         if (ctx.searchForm) ctx.searchForm.clear();
         if (ctx.grid1) ctx.grid1.clearData();
+        if (ctx.grid2) ctx.grid2.clearData();
+        if (ctx.masterForm) ctx.masterForm.clear();
+        ctx._selectedMaster = null;
     };
+
+    /**
+     * 편집 가능한 타겟 그리드 결정
+     */
+    function getEditableGrid() {
+        if (screenType === 'list') return ctx.grid1;
+        if (ctx.grid2 && def.grids.grid2.editable) return ctx.grid2;
+        if (ctx.grid1 && def.grids.grid1.editable) return ctx.grid1;
+        return ctx.grid1;
+    }
+
+    /**
+     * 레이아웃별 DOM 구조 생성
+     */
+    function buildLayout(root, type, def) {
+        root.innerHTML = '';
+        var searchDiv = el('div', 'search-area');
+        root.appendChild(searchDiv);
+
+        if (type === 'split-detail') {
+            // 좌우 분할: grid1 | grid2
+            var splitArea = el('div', 'split-area');
+            splitArea.style.display = 'flex';
+            splitArea.style.gap = '0';
+            splitArea.style.marginTop = '8px';
+
+            var leftPane = el('div', 'grid1-area');
+            leftPane.className = 'forma-split-left';
+            leftPane.style.width = (def.layout && def.layout.splitWidth || 400) + 'px';
+            leftPane.style.minWidth = '200px';
+            leftPane.style.flexShrink = '0';
+
+            var rightPane = el('div', 'grid2-area');
+            rightPane.className = 'forma-split-right';
+            rightPane.style.flex = '1';
+            rightPane.style.minWidth = '200px';
+
+            splitArea.appendChild(leftPane);
+            splitArea.appendChild(rightPane);
+            root.appendChild(splitArea);
+
+        } else if (type === 'master-detail') {
+            // 상하: grid1 → masterForm → grid2
+            var grid1Div = el('div', 'grid1-area');
+            grid1Div.style.marginTop = '8px';
+            root.appendChild(grid1Div);
+
+            if (def.form && def.form.masterForm) {
+                var formDiv = el('div', 'master-form-area');
+                formDiv.style.marginTop = '8px';
+                root.appendChild(formDiv);
+            }
+
+            var grid2Div = el('div', 'grid2-area');
+            grid2Div.style.marginTop = '8px';
+            root.appendChild(grid2Div);
+
+        } else {
+            // list (기본)
+            var grid1Div = el('div', 'grid1-area');
+            root.appendChild(grid1Div);
+        }
+    }
+
+    function el(tag, id) {
+        var e = document.createElement(tag);
+        e.id = id;
+        return e;
+    }
 
     // DOM이 이미 로드된 경우 바로 실행, 아니면 이벤트 대기
     if (document.readyState === 'loading') {

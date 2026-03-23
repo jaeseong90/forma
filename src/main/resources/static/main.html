@@ -135,6 +135,7 @@
 <script src="/assets/js/framework/forma.toolbar.js"></script>
 <script src="/assets/js/framework/forma.tab.js"></script>
 <script src="/assets/js/framework/forma.modal.js"></script>
+<script src="/assets/js/framework/forma.theme.js"></script>
 <script src="/assets/js/framework/forma.mdi.js"></script>
 <script src="/assets/js/framework/forma.menu.js"></script>
 <script>
@@ -170,6 +171,17 @@
     convertMenuUrls(menuData);
     FormaMenu.init('#menu-area', menuData);
 
+    // 즐겨찾기 로드
+    FormaMenu.reloadFavorites();
+
+    // 개인 설정 로드
+    var settingsRes = await platform.get('/api/user/settings');
+    if (settingsRes.resultCode === RESULT_CODE.OK && settingsRes.resultData) {
+        var settings = settingsRes.resultData;
+        if (settings.theme) FormaTheme.set(settings.theme);
+        if (settings.menuCollapsed === 'Y') document.getElementById('sidebar').classList.add('collapsed');
+    }
+
     function convertMenuUrls(items) {
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
@@ -185,7 +197,10 @@
     // 5. 이벤트
     document.getElementById('logoutBtn').onclick = function() { location.href = '/login/logout'; };
     document.getElementById('menuToggle').onclick = function() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
+        var sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('collapsed');
+        var collapsed = sidebar.classList.contains('collapsed') ? 'Y' : 'N';
+        platform.post('/api/user/settings', { menuCollapsed: collapsed }, { loading: false });
     };
 
     function buildMenuTree(flatMenus) {

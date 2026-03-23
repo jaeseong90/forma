@@ -247,3 +247,21 @@ CREATE TABLE IF NOT EXISTS tb_order_history (
     action_by VARCHAR(50),
     action_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 즐겨찾기 메뉴
+CREATE TABLE IF NOT EXISTS tb_user_favorite (
+    user_id VARCHAR(20) NOT NULL,
+    menu_id VARCHAR(20) NOT NULL,
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, menu_id)
+);
+
+-- 개인 설정
+CREATE TABLE IF NOT EXISTS tb_user_settings (
+    user_id VARCHAR(20) NOT NULL,
+    setting_key VARCHAR(50) NOT NULL,
+    setting_value VARCHAR(4000),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, setting_key)
+);

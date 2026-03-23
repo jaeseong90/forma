@@ -419,3 +419,17 @@ select.forma-filter-input { padding-right: 16px; }
 .forma-search-group .fc-combo-dd { min-width: 200px; }
 .forma-search-group .fc-date-wrap .forma-input { width: 120px; }
 .forma-search-group .fc-dr-container { flex: unset; }
+
+/* ═══ 즐겨찾기 메뉴 ═══ */
+.forma-menu-fav-section { }
+.forma-menu-fav-divider { height: 1px; background: #dde2e8; margin: 4px 12px 8px; }
+.forma-menu-fav-item { position: relative; }
+.forma-menu-fav-item .forma-menu-fav-remove {
+    display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; color: #bbb; cursor: pointer; line-height: 1;
+}
+.forma-menu-fav-item:hover .forma-menu-fav-remove { display: block; }
+.forma-menu-fav-item .forma-menu-fav-remove:hover { color: #e53935; }
+
+/* ═══ 팝업 페이지 ═══ */
+.forma-popup-page { padding: 12px; }

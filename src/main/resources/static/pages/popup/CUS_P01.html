@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>거래처 검색</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-popup-page">
+    <div id="search-area" style="margin-bottom: 8px;"></div>
+    <div id="grid-area"></div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+/**
+ * 거래처 검색 팝업 (CUS_P01)
+ * FormaModal에서 호출. 선택 결과를 modal.ok()로 반환.
+ */
+(function() {
+    var modal = FormaModal.current();
+    var param = FormaModal.getParam() || {};
+    var grid, searchForm;
+
+    searchForm = new FormaForm('#search-area', {
+        search: true,
+        elements: [
+            { field: 'keyword', label: '검색어', widget: 'text', placeholder: '거래처코드/거래처명' },
+            { field: 'cust_type', label: '구분', widget: 'combo', code: 'CUST_TYPE',
+              options: [{ value: '', label: '전체' }] }
+        ],
+        onEnter: function() { doSearch(); }
+    });
+
+    grid = new FormaGrid('#grid-area', {
+        sortable: true,
+        columns: [
+            { field: 'CUST_CD', label: '거래처코드', width: 100 },
+            { field: 'CUST_NM', label: '거래처명', width: 180 },
+            { field: 'CUST_TYPE', label: '구분', width: 80, align: 'center',
+              renderer: function(val) {
+                  var map = { DOMESTIC: '국내', OVERSEAS: '해외', INTERNAL: '내부' };
+                  return map[val] || val || '';
+              }
+            },
+            { field: 'TEL', label: '전화번호', width: 120 },
+            { field: 'ADDR', label: '주소', width: 200 }
+        ],
+        onRowDblClick: function(row) {
+            if (modal) modal.ok({ CUST_CD: row.CUST_CD, CUST_NM: row.CUST_NM });
+        }
+    });
+
+    // 초기 검색어 세팅
+    if (param.keyword) searchForm.setField('keyword', param.keyword);
+
+    function doSearch() {
+        var data = searchForm.getData();
+        platform.post('/api/popup/customer', data, new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                grid.setData(result.resultData);
+            }
+        }));
+    }
+
+    doSearch();
+})();
+</script>
+</body>
+</html>

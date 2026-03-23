@@ -81,4 +81,30 @@
                 #{before_data}, #{after_data}, #{user_id}, #{user_ip}, NOW())
     </insert>
 
+    <!-- ═══ 감사 로그 조회 ═══ -->
+
+    <sql id="whereAuditLog">
+        <if test="pgm_id != null and pgm_id != ''">AND a.pgm_id LIKE '%' || #{pgm_id} || '%'</if>
+        <if test="user_id != null and user_id != ''">AND a.user_id LIKE '%' || #{user_id} || '%'</if>
+        <if test="table_name != null and table_name != ''">AND a.table_name LIKE '%' || #{table_name} || '%'</if>
+        <if test="action != null and action != ''">AND a.action = #{action}</if>
+        <if test="audit_dt_from != null and audit_dt_from != ''">AND a.audit_dt &gt;= #{audit_dt_from}</if>
+        <if test="audit_dt_to != null and audit_dt_to != ''">AND a.audit_dt &lt;= #{audit_dt_to} || ' 23:59:59'</if>
+    </sql>
+
+    <select id="selectAuditLog" parameterType="map" resultType="map">
+        SELECT a.audit_seq, a.trace_id, a.pgm_id, a.table_name, a.action, a.row_key,
+               a.before_data, a.after_data, a.user_id, a.user_ip,
+               FORMATDATETIME(a.audit_dt, 'yyyy-MM-dd HH:mm:ss') AS audit_dt
+        FROM tb_audit_log a
+        <where><include refid="whereAuditLog"/></where>
+        ORDER BY a.audit_seq DESC
+        <if test="page != null">LIMIT #{pageSize} OFFSET #{_offset}</if>
+    </select>
+
+    <select id="selectAuditLogCount" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM tb_audit_log a
+        <where><include refid="whereAuditLog"/></where>
+    </select>
+
 </mapper>

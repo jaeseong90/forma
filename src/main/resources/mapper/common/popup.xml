@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="popup">
+
+    <select id="selectCustomer" parameterType="map" resultType="map">
+        SELECT cust_cd, cust_nm, cust_type, tel, addr
+        FROM tb_customer
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (cust_cd LIKE '%' || #{keyword} || '%' OR cust_nm LIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="cust_type != null and cust_type != ''">
+                AND cust_type = #{cust_type}
+            </if>
+        </where>
+        ORDER BY cust_cd
+    </select>
+
+    <select id="selectItem" parameterType="map" resultType="map">
+        SELECT item_cd, item_nm, item_grp, spec, unit_cd, unit_price
+        FROM tb_item
+        <where>
+            AND use_yn = 'Y'
+            <if test="keyword != null and keyword != ''">
+                AND (item_cd LIKE '%' || #{keyword} || '%' OR item_nm LIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="item_grp != null and item_grp != ''">
+                AND item_grp = #{item_grp}
+            </if>
+        </where>
+        ORDER BY item_cd
+    </select>
+
+</mapper>

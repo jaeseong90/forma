@@ -96,8 +96,13 @@ public class DynamicSqlExecutor {
             }
         }
 
-        // 검색 조건 동적 구성
+        // SQL 정의의 where 절 (selectGrid2 등에서 마스터 키 필터링)
         List<String> conditions = new ArrayList<>();
+        if (op != null && op.getWhere() != null && !op.getWhere().isEmpty()) {
+            conditions.add(convertWhereParams(op.getWhere()));
+        }
+
+        // 검색 조건 동적 구성
         if (def.getSearch() != null && param != null) {
             for (SearchField sf : def.getSearch()) {
                 String field = sf.getField().toLowerCase();
@@ -138,6 +143,14 @@ public class DynamicSqlExecutor {
      */
     private Map<String, Object> buildSelectParams(ScreenDefinition def, Map<String, Object> param) {
         Map<String, Object> params = new HashMap<>();
+
+        // 모든 요청 파라미터를 소문자로 매핑 (where 절 바인딩용)
+        if (param != null) {
+            for (Map.Entry<String, Object> e : param.entrySet()) {
+                params.put(e.getKey().toLowerCase(), e.getValue());
+                params.put(e.getKey(), e.getValue());
+            }
+        }
 
         if (def.getSearch() != null && param != null) {
             for (SearchField sf : def.getSearch()) {

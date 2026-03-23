@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userSettings">
+
+    <!-- ═══ 즐겨찾기 ═══ -->
+
+    <select id="selectFavorites" parameterType="map" resultType="map">
+        SELECT f.menu_id, m.menu_nm, m.pgm_id, m.url, m.icon, f.sort_order
+        FROM tb_user_favorite f
+        JOIN tb_menu m ON f.menu_id = m.menu_id
+        WHERE f.user_id = #{user_id}
+        ORDER BY f.sort_order, f.created_at
+    </select>
+
+    <select id="selectMenuIdByPgmId" parameterType="map" resultType="map">
+        SELECT menu_id FROM tb_menu WHERE pgm_id = #{pgm_id} AND use_yn = 'Y' LIMIT 1
+    </select>
+
+    <insert id="insertFavorite" parameterType="map">
+        INSERT INTO tb_user_favorite (user_id, menu_id, sort_order, created_at)
+        VALUES (#{user_id}, #{menu_id},
+                COALESCE((SELECT MAX(sort_order) + 1 FROM tb_user_favorite WHERE user_id = #{user_id}), 1),
+                NOW())
+    </insert>
+
+    <delete id="deleteFavorite" parameterType="map">
+        DELETE FROM tb_user_favorite WHERE user_id = #{user_id} AND menu_id = #{menu_id}
+    </delete>
+
+    <!-- ═══ 개인 설정 ═══ -->
+
+    <select id="selectSettings" parameterType="map" resultType="map">
+        SELECT setting_key, setting_value
+        FROM tb_user_settings
+        WHERE user_id = #{user_id}
+    </select>
+
+    <insert id="insertSetting" parameterType="map">
+        INSERT INTO tb_user_settings (user_id, setting_key, setting_value, updated_at)
+        VALUES (#{user_id}, #{setting_key}, #{setting_value}, NOW())
+    </insert>
+
+    <delete id="deleteSetting" parameterType="map">
+        DELETE FROM tb_user_settings WHERE user_id = #{user_id} AND setting_key = #{setting_key}
+    </delete>
+
+</mapper>
