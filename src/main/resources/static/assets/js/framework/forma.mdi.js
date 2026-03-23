@@ -478,7 +478,7 @@ const FormaMdi = {
         var self = this;
         var menu = document.createElement('div');
         menu.className = 'forma-tab-ctx';
-        menu.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:4px 0;font-size:12px;';
+        menu.style.cssText = 'position:fixed;z-index:9999;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;box-shadow:0 2px 8px var(--shadow);padding:4px 0;font-size:12px;';
         menu.style.left = e.clientX + 'px';
         menu.style.top = e.clientY + 'px';
 
@@ -492,7 +492,7 @@ const FormaMdi = {
             var div = document.createElement('div');
             div.textContent = item.label;
             div.style.cssText = 'padding:6px 16px;cursor:pointer;';
-            div.onmouseover = function() { div.style.background = '#f0f2f5'; };
+            div.onmouseover = function() { div.style.background = 'var(--bg-hover)'; };
             div.onmouseout = function() { div.style.background = ''; };
             div.onclick = function() { menu.remove(); item.fn(); };
             menu.appendChild(div);

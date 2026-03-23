@@ -48,12 +48,7 @@ INSERT INTO tb_menu VALUES ('M92', '프로그램관리', 'M90', 'P', 'SY020', '/
 INSERT INTO tb_menu VALUES ('M93', '역할/권한관리', 'M90', 'P', 'SY030', '/pages/admin/SY030.html', '🔑', 3, 'Y');
 INSERT INTO tb_menu VALUES ('M94', '사용자관리', 'M90', 'P', 'SY040', '/pages/admin/SY040.html', '👥', 4, 'Y');
 INSERT INTO tb_menu VALUES ('M95', '감사로그', 'M90', 'P', 'SY050', '/pages/admin/SY050.html', '📊', 5, 'Y');
-INSERT INTO tb_menu VALUES ('MD0', '개발자 도구', NULL, 'G', NULL, NULL, '🛠️', 10, 'Y');
-INSERT INTO tb_menu VALUES ('MD1', '그리드 데모', 'MD0', 'P', NULL, '/pages/dev/GRID_DEMO.html', '📊', 1, 'Y');
-INSERT INTO tb_menu VALUES ('MD2', '폼 데모', 'MD0', 'P', NULL, '/pages/dev/FORM_DEMO.html', '📝', 2, 'Y');
-INSERT INTO tb_menu VALUES ('MD3', '컴포넌트 데모', 'MD0', 'P', NULL, '/pages/dev/COMP_DEMO.html', '🧩', 3, 'Y');
-INSERT INTO tb_menu VALUES ('MD4', '프레임워크 데모', 'MD0', 'P', NULL, '/pages/dev/FRAMEWORK_DEMO.html', '🔧', 4, 'Y');
-INSERT INTO tb_menu VALUES ('MD5', 'AI 개발 가이드', 'MD0', 'P', NULL, '/pages/dev/AI_GUIDE.html', '🤖', 5, 'Y');
+-- 개발자 도구는 ERP 메뉴에 포함하지 않음 (개발자 포털 localhost:8081/ 에서 접근)
 
 -- 역할-메뉴 권한
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M11', 'Y','Y','Y','Y','Y','Y','Y');
@@ -66,11 +61,6 @@ INSERT INTO tb_role_menu VALUES ('ADMIN', 'M92', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M93', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M94', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('ADMIN', 'M95', 'Y','Y','Y','Y','Y','Y','Y');
-INSERT INTO tb_role_menu VALUES ('ADMIN', 'MD1', 'Y','Y','Y','Y','Y','Y','Y');
-INSERT INTO tb_role_menu VALUES ('ADMIN', 'MD2', 'Y','Y','Y','Y','Y','Y','Y');
-INSERT INTO tb_role_menu VALUES ('ADMIN', 'MD3', 'Y','Y','Y','Y','Y','Y','Y');
-INSERT INTO tb_role_menu VALUES ('ADMIN', 'MD4', 'Y','Y','Y','Y','Y','Y','Y');
-INSERT INTO tb_role_menu VALUES ('ADMIN', 'MD5', 'Y','Y','Y','Y','Y','Y','Y');
 INSERT INTO tb_role_menu VALUES ('USER', 'M11', 'Y','Y','Y','N','N','N','Y');
 INSERT INTO tb_role_menu VALUES ('USER', 'M21', 'Y','N','N','N','N','N','Y');
 INSERT INTO tb_role_menu VALUES ('MANAGER', 'M11', 'Y','Y','Y','Y','Y','Y','Y');

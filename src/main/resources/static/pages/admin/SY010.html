@@ -5,21 +5,21 @@
     <title>메뉴관리</title>
     <link rel="stylesheet" href="/assets/css/forma.css">
     <style>
-        .menu-tree { padding: 4px; font-size: 12px; white-space: nowrap; }
-        .menu-tree ul { list-style: none; padding-left: 18px; margin: 0; }
+        .menu-tree { padding: 4px; font-size: 12px; }
+        .menu-tree ul { list-style: none; padding-left: 20px; margin: 0; }
         .menu-tree > ul { padding-left: 0; }
         .menu-tree li { padding: 0; }
         .menu-tree-item {
-            display: inline-flex; align-items: center; gap: 3px;
+            display: flex; align-items: center; gap: 4px;
             padding: 3px 6px; cursor: pointer; border-radius: 3px;
-            border-left: 3px solid transparent; width: 100%; min-width: fit-content;
+            border-left: 3px solid transparent; white-space: nowrap;
         }
         .menu-tree-item:hover { background: var(--bg-hover); }
         .menu-tree-item.selected { background: var(--bg-selected); border-left-color: var(--primary); font-weight: 600; }
-        .menu-tree-item .toggle { width: 12px; min-width: 12px; text-align: center; font-size: 8px; color: #888; cursor: pointer; }
-        .menu-tree-item .icon { font-size: 12px; min-width: 14px; }
-        .menu-tree-item .label { white-space: nowrap; }
-        .menu-tree-item .id-badge { font-size: 10px; color: #aaa; margin-left: 2px; }
+        .menu-tree-item .toggle { width: 14px; min-width: 14px; text-align: center; font-size: 9px; color: var(--text-muted); cursor: pointer; }
+        .menu-tree-item .icon { font-size: 13px; min-width: 16px; }
+        .menu-tree-item .label { white-space: nowrap; color: var(--text); }
+        .menu-tree-item .id-badge { font-size: 10px; color: var(--text-muted); margin-left: 4px; }
         .menu-tree-item .type-badge { display: none; }
     </style>
 </head>
@@ -31,7 +31,7 @@
     </div>
     <div class="forma-content">
         <div class="forma-split-h" id="split-SY010" style="min-height:500px;">
-            <div class="forma-split-panel" style="width:280px;overflow-x:auto;">
+            <div class="forma-split-panel" style="width:340px;overflow:auto;">
                 <div class="forma-section" style="height:100%;overflow:auto;">
                     <div class="forma-section-title" style="display:flex;justify-content:space-between;align-items:center;">
                         메뉴 트리
@@ -242,7 +242,7 @@
 
         var div = document.createElement('div');
         div.className = 'menu-ctx';
-        div.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:4px 0;font-size:12px;min-width:160px;';
+        div.style.cssText = 'position:fixed;z-index:9999;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px var(--shadow);padding:4px 0;font-size:12px;min-width:160px;';
         div.style.left = e.clientX + 'px';
         div.style.top = e.clientY + 'px';
 
@@ -261,14 +261,14 @@
         items.forEach(function(item) {
             if (item.sep) {
                 var hr = document.createElement('div');
-                hr.style.cssText = 'height:1px;background:#eee;margin:4px 0;';
+                hr.style.cssText = 'height:1px;background:var(--border-light);margin:4px 0;';
                 div.appendChild(hr);
                 return;
             }
             var row = document.createElement('div');
             row.style.cssText = 'padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;' + (item.danger ? 'color:#e53935;' : '');
             row.innerHTML = (item.icon ? '<span>' + item.icon + '</span>' : '') + '<span>' + item.label + '</span>';
-            row.onmouseover = function() { row.style.background = '#f0f7ff'; };
+            row.onmouseover = function() { row.style.background = 'var(--bg-hover)'; };
             row.onmouseout = function() { row.style.background = ''; };
             row.onclick = function() { div.remove(); item.action(); };
             div.appendChild(row);
