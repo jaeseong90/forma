@@ -157,7 +157,7 @@
         ctx.selectedRole = null;
     };
 
-    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); }); } else { platform.startPage(PGM, listener); }
 })();
 </script>
 </body>

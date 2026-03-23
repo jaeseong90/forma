@@ -12,9 +12,9 @@
 body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 13px; color: var(--text); background: var(--bg); }
 
 /* Layout */
-.forma-page { max-width: 1400px; margin: 0 auto; padding: 16px; }
-.forma-page-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #333; }
-.forma-content { display: flex; flex-direction: column; gap: 8px; }
+.forma-page { margin: 0; padding: 4px 6px; }
+.forma-page-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 2px solid #333; }
+.forma-content { display: flex; flex-direction: column; gap: 4px; }
 .forma-section { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; }
 .forma-section-title { font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; }
 
