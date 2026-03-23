@@ -35,7 +35,11 @@
         <div class="forma-split-h" id="split-SY010" style="min-height:500px;">
             <div class="forma-split-panel" style="width:320px;">
                 <div class="forma-section" style="height:100%;overflow:auto;">
-                    <div class="forma-section-title">메뉴 트리</div>
+                    <div class="forma-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                        메뉴 트리
+                        <button type="button" class="forma-btn" style="font-size:11px;height:22px;padding:0 8px;" onclick="document.dispatchEvent(new CustomEvent('sy010-add-root'))">+ 최상위 그룹</button>
+                    </div>
+                    <div style="font-size:11px;color:#888;margin-bottom:6px;">메뉴 우클릭 → 하위 추가/이동/삭제</div>
                     <div id="menu-tree-SY010" class="menu-tree"></div>
                 </div>
             </div>
@@ -189,6 +193,13 @@
         // 클릭
         div.onclick = function() { selectMenu(m.MENU_ID); };
 
+        // 우클릭 → 컨텍스트 메뉴
+        div.oncontextmenu = function(e) {
+            e.preventDefault();
+            selectMenu(m.MENU_ID);
+            showTreeContextMenu(e, m);
+        };
+
         li.appendChild(div);
 
         // 하위
@@ -224,6 +235,107 @@
         // 트리 하이라이트
         var items = document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item');
         items.forEach(function(el) { el.classList.toggle('selected', el.dataset.menuId === menuId); });
+    }
+
+    // ═══ 우클릭 컨텍스트 메뉴 ═══
+    function showTreeContextMenu(e, menu) {
+        var old = document.querySelector('.menu-ctx');
+        if (old) old.remove();
+
+        var div = document.createElement('div');
+        div.className = 'menu-ctx';
+        div.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:4px 0;font-size:12px;min-width:160px;';
+        div.style.left = e.clientX + 'px';
+        div.style.top = e.clientY + 'px';
+
+        var items = [
+            { label: '+ 하위 그룹 추가', icon: '📁', action: function() { addChild(menu, 'G'); } },
+            { label: '+ 하위 화면 추가', icon: '📄', action: function() { addChild(menu, 'P'); } },
+            { sep: true },
+            { label: '+ 같은 레벨에 추가', icon: '➕', action: function() { addSibling(menu); } },
+            { sep: true },
+            { label: '▲ 위로 이동', action: function() { moveMenu(menu, -1); } },
+            { label: '▼ 아래로 이동', action: function() { moveMenu(menu, 1); } },
+            { sep: true },
+            { label: '삭제', icon: '🗑️', action: function() { listener.button.del.click(); }, danger: true }
+        ];
+
+        items.forEach(function(item) {
+            if (item.sep) {
+                var hr = document.createElement('div');
+                hr.style.cssText = 'height:1px;background:#eee;margin:4px 0;';
+                div.appendChild(hr);
+                return;
+            }
+            var row = document.createElement('div');
+            row.style.cssText = 'padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;' + (item.danger ? 'color:#e53935;' : '');
+            row.innerHTML = (item.icon ? '<span>' + item.icon + '</span>' : '') + '<span>' + item.label + '</span>';
+            row.onmouseover = function() { row.style.background = '#f0f7ff'; };
+            row.onmouseout = function() { row.style.background = ''; };
+            row.onclick = function() { div.remove(); item.action(); };
+            div.appendChild(row);
+        });
+
+        document.body.appendChild(div);
+        setTimeout(function() {
+            document.addEventListener('click', function handler() { div.remove(); document.removeEventListener('click', handler); });
+        }, 0);
+    }
+
+    function addChild(parentMenu, type) {
+        ctx._isNew = true;
+        ctx.selectedMenu = null;
+        var maxSort = 0;
+        ctx.allMenus.filter(function(m) { return m.PARENT_ID === parentMenu.MENU_ID; }).forEach(function(m) {
+            if (m.SORT_ORDER > maxSort) maxSort = m.SORT_ORDER;
+        });
+        ctx.menuForm.clear();
+        ctx.menuForm.setData({
+            parent_id: parentMenu.MENU_ID,
+            menu_type: type,
+            use_yn: 'Y',
+            sort_order: maxSort + 1
+        });
+        ctx.menuForm.setReadonly('menu_id', false);
+        ctx.menuForm.focus('menu_id');
+        document.getElementById('detail-title-' + S).textContent = (type === 'G' ? '신규 그룹' : '신규 화면') + ' (상위: ' + parentMenu.MENU_NM + ')';
+    }
+
+    function addSibling(menu) {
+        ctx._isNew = true;
+        ctx.selectedMenu = null;
+        var siblings = ctx.allMenus.filter(function(m) { return m.PARENT_ID === menu.PARENT_ID; });
+        var maxSort = 0;
+        siblings.forEach(function(m) { if (m.SORT_ORDER > maxSort) maxSort = m.SORT_ORDER; });
+        ctx.menuForm.clear();
+        ctx.menuForm.setData({
+            parent_id: menu.PARENT_ID || '',
+            menu_type: 'P',
+            use_yn: 'Y',
+            sort_order: maxSort + 1
+        });
+        ctx.menuForm.setReadonly('menu_id', false);
+        ctx.menuForm.focus('menu_id');
+        document.getElementById('detail-title-' + S).textContent = '신규 메뉴 (같은 레벨)';
+    }
+
+    async function moveMenu(menu, direction) {
+        var siblings = ctx.allMenus.filter(function(m) { return m.PARENT_ID === (menu.PARENT_ID || null); });
+        siblings.sort(function(a, b) { return (a.SORT_ORDER || 0) - (b.SORT_ORDER || 0); });
+        var idx = siblings.findIndex(function(m) { return m.MENU_ID === menu.MENU_ID; });
+        var targetIdx = idx + direction;
+        if (targetIdx < 0 || targetIdx >= siblings.length) return;
+
+        // 정렬순서 교환
+        var mySort = siblings[idx].SORT_ORDER;
+        var targetSort = siblings[targetIdx].SORT_ORDER;
+        if (mySort === targetSort) targetSort = mySort + direction;
+
+        await platform.post('/api/admin/menus/save', [
+            { gstat: 'U', menu_id: siblings[idx].MENU_ID, menu_nm: siblings[idx].MENU_NM, parent_id: siblings[idx].PARENT_ID, menu_type: siblings[idx].MENU_TYPE, pgm_id: siblings[idx].PGM_ID, url: siblings[idx].URL, icon: siblings[idx].ICON, sort_order: targetSort, use_yn: siblings[idx].USE_YN },
+            { gstat: 'U', menu_id: siblings[targetIdx].MENU_ID, menu_nm: siblings[targetIdx].MENU_NM, parent_id: siblings[targetIdx].PARENT_ID, menu_type: siblings[targetIdx].MENU_TYPE, pgm_id: siblings[targetIdx].PGM_ID, url: siblings[targetIdx].URL, icon: siblings[targetIdx].ICON, sort_order: mySort, use_yn: siblings[targetIdx].USE_YN }
+        ]);
+        listener.button.search.click();
     }
 
     function updateGroupOptions() {
@@ -317,6 +429,22 @@
         document.getElementById('detail-title-' + S).textContent = '메뉴 상세 (메뉴를 선택하세요)';
         document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item').forEach(function(el) { el.classList.remove('selected'); });
     };
+
+    // 최상위 그룹 추가 버튼
+    document.addEventListener('sy010-add-root', function() {
+        ctx._isNew = true;
+        ctx.selectedMenu = null;
+        var maxSort = 0;
+        ctx.allMenus.filter(function(m) { return !m.PARENT_ID; }).forEach(function(m) {
+            if (m.SORT_ORDER > maxSort) maxSort = m.SORT_ORDER;
+        });
+        ctx.menuForm.clear();
+        ctx.menuForm.setData({ parent_id: '', menu_type: 'G', use_yn: 'Y', sort_order: maxSort + 1 });
+        ctx.menuForm.setReadonly('menu_id', false);
+        ctx.menuForm.focus('menu_id');
+        document.getElementById('detail-title-' + S).textContent = '신규 최상위 그룹';
+        document.querySelectorAll('#menu-tree-' + S + ' .menu-tree-item').forEach(function(el) { el.classList.remove('selected'); });
+    });
 
     // 초기 로드
     listener.button.search.click();
