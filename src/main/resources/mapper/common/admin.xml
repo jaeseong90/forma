@@ -44,6 +44,10 @@
         UPDATE tb_user SET user_pw = #{user_pw} WHERE user_id = #{user_id}
     </update>
 
+    <delete id="deleteUser" parameterType="map">
+        DELETE FROM tb_user WHERE user_id = #{user_id}
+    </delete>
+
     <!-- ═══ 사용자-역할 매핑 ═══ -->
 
     <select id="selectUserRoles" parameterType="map" resultType="map">
@@ -80,6 +84,10 @@
         SET role_nm = #{role_nm}, description = #{description}, use_yn = #{use_yn}
         WHERE role_cd = #{role_cd}
     </update>
+
+    <delete id="deleteRole" parameterType="map">
+        DELETE FROM tb_role WHERE role_cd = #{role_cd}
+    </delete>
 
     <!-- ═══ 역할-메뉴 권한 ═══ -->
 

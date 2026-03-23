@@ -113,7 +113,7 @@
     };
 
     function loadDepts() {
-        platform.post('/api/admin/depts', {}, new Callback(function(r) {
+        platform.get('/api/admin/depts').then(function(r) {
             if (r.resultCode === RESULT_CODE.OK) {
                 var options = [{ value: '', label: '선택' }];
                 r.resultData.forEach(function(d) {
@@ -121,7 +121,7 @@
                 });
                 ctx.userForm.setOptions('dept_code', options);
             }
-        }));
+        });
     }
 
     function loadUserRoles(userId) {

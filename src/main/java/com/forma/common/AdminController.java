@@ -84,6 +84,16 @@ public class AdminController extends BaseController {
         return BaseResponse.Ok("비밀번호가 초기화되었습니다.");
     }
 
+    @PostMapping("/users/delete")
+    @Transactional
+    public BaseResponse<?> deleteUsers(@RequestBody List<Map<String, Object>> rows) {
+        for (Map<String, Object> row : rows) {
+            sql.delete("admin.deleteUserRoles", row);
+            sql.delete("admin.deleteUser", row);
+        }
+        return BaseResponse.Ok();
+    }
+
     // ═══ 사용자-역할 매핑 ═══
 
     @PostMapping("/userRoles")
@@ -122,6 +132,15 @@ public class AdminController extends BaseController {
             } else {
                 sql.update("admin.updateRole", row);
             }
+        }
+        return BaseResponse.Ok();
+    }
+
+    @PostMapping("/roles/delete")
+    @Transactional
+    public BaseResponse<?> deleteRoles(@RequestBody List<Map<String, Object>> rows) {
+        for (Map<String, Object> row : rows) {
+            sql.delete("admin.deleteRole", row);
         }
         return BaseResponse.Ok();
     }
