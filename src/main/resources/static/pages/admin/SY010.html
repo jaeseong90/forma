@@ -30,7 +30,6 @@
     var listener = platform.initListener(PGM);
     var ctx = {};
 
-    // Manual init (no startPage - avoids #forma-toolbar ID conflict in MDI)
     try {
         var res = await platform.get('/api/pgm/' + PGM + '/init');
         if (res.resultCode === 'OK') {
@@ -40,72 +39,84 @@
     } catch(e) { listener.pgmInfo = {}; listener.pgmAuth = {}; }
 
     if (typeof FormaToolbar !== 'undefined') {
-        FormaToolbar.render('#toolbar-' + S, {
-            listener: listener,
-            pgmInfo: listener.pgmInfo,
-            pgmAuth: listener.pgmAuth
-        });
+        FormaToolbar.render('#toolbar-' + S, { listener: listener, pgmInfo: listener.pgmInfo, pgmAuth: listener.pgmAuth });
     }
 
     ctx.grid1 = new FormaGrid('#grid-' + S, {
         editable: true,
         checkable: true,
-        rowNum: true,
+        treeField: 'MENU_NM',
+        treeIdField: 'MENU_ID',
+        treeParentField: 'PARENT_ID',
         columns: [
-            { field: 'MENU_ID', label: '메뉴ID', width: 120, editor: 'text' },
-            { field: 'MENU_NM', label: '메뉴명', width: 180, editor: 'text' },
-            { field: 'PARENT_ID', label: '상위메뉴ID', width: 120, editor: 'text' },
-            { field: 'MENU_TYPE', label: '메뉴유형', width: 100, editor: 'select', options: [
-                { value: 'G', label: '그룹' },
-                { value: 'P', label: '화면' }
-            ]},
-            { field: 'PGM_ID', label: '프로그램ID', width: 120, editor: 'text' },
-            { field: 'URL', label: 'URL', width: 200, editor: 'text' },
-            { field: 'ICON', label: '아이콘', width: 100, editor: 'text' },
-            { field: 'SORT_ORDER', label: '정렬순서', width: 80, type: 'number', editor: 'text', align: 'center' },
-            { field: 'USE_YN', label: '사용', width: 70, editor: 'check', align: 'center' }
+            { field: 'MENU_ID', label: '메뉴ID', width: 80, editor: 'text' },
+            { field: 'MENU_NM', label: '메뉴명', width: 200, editor: 'text', required: true },
+            { field: 'PARENT_ID', label: '상위메뉴', width: 80 },
+            { field: 'MENU_TYPE', label: '유형', width: 60, editor: 'select', align: 'center',
+              options: [{ value: 'G', label: '그룹' }, { value: 'P', label: '화면' }] },
+            { field: 'PGM_ID', label: '프로그램ID', width: 100, editor: 'codeHelp',
+              nameField: 'PGM_NM',
+              popup: {
+                  url: '/pages/popup/PGM_P01.html',
+                  title: '프로그램 검색',
+                  codeField: 'PGM_ID',
+                  nameField: 'PGM_NM',
+                  width: 600, height: 400
+              }
+            },
+            { field: 'URL', label: 'URL', width: 250, editor: 'text' },
+            { field: 'ICON', label: '아이콘', width: 50, editor: 'text', align: 'center' },
+            { field: 'SORT_ORDER', label: '정렬', width: 50, editor: 'text', type: 'number', align: 'center' },
+            { field: 'USE_YN', label: '사용', width: 50, editor: 'check', align: 'center' }
         ]
     });
 
     listener.button.search.click = function() {
-        platform.post('/api/admin/menus', {}, new Callback(function(result) {
-            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        platform.post('/api/admin/menus', {}, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) {
+                ctx.grid1.setData(r.resultData);
+                if (ctx.grid1.expandAllTree) ctx.grid1.expandAllTree();
+            }
         }));
     };
 
     listener.button.news.click = function() {
-        ctx.grid1.addRow({ MENU_TYPE: 'P', USE_YN: 'Y', SORT_ORDER: 0 });
+        var selected = ctx.grid1.getSelectedItem();
+        var defaults = { MENU_TYPE: 'P', USE_YN: 'Y', SORT_ORDER: 0 };
+        if (selected && selected.MENU_TYPE === 'G') {
+            defaults.PARENT_ID = selected.MENU_ID;
+        }
+        ctx.grid1.addRow(defaults);
     };
 
-    listener.button.save.click = function() {
+    listener.button.save.click = async function() {
         var data = ctx.grid1.getModifiedData();
-        if (data.length === 0) { FormaPopup.alert.show('변경된 데이터가 없습니다.'); return; }
-        FormaPopup.confirm.show('저장하시겠습니까?').then(function(ok) {
-            if (ok) platform.post('/api/admin/menus/save', data, new Callback(function(r) {
-                if (r.resultCode === RESULT_CODE.OK) {
-                    FormaPopup.toast.success('저장되었습니다.');
-                    listener.button.search.click();
-                }
-            }));
+        if (!data.length) { FormaPopup.alert.show('변경사항이 없습니다.'); return; }
+        if (!ctx.grid1.checkGridValidation()) return;
+        data.forEach(function(row) {
+            if (row.PGM_ID && (!row.URL || row.URL === '')) {
+                row.URL = '/pages/screen.html?id=' + row.PGM_ID;
+            }
         });
+        var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
+        if (ok) {
+            await platform.post('/api/admin/menus/save', data);
+            FormaPopup.toast.success('저장되었습니다.');
+            listener.button.search.click();
+        }
     };
 
-    listener.button.del.click = function() {
+    listener.button.del.click = async function() {
         var data = ctx.grid1.getCheckedData();
-        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
-        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?').then(function(ok) {
-            if (ok) platform.post('/api/admin/menus/delete', data, new Callback(function(r) {
-                if (r.resultCode === RESULT_CODE.OK) {
-                    FormaPopup.toast.success('삭제되었습니다.');
-                    listener.button.search.click();
-                }
-            }));
-        });
+        if (!data.length) { FormaPopup.alert.show('삭제할 메뉴를 선택하세요.'); return; }
+        var ok = await FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?');
+        if (!ok) return;
+        await platform.post('/api/admin/menus/delete', data);
+        FormaPopup.toast.success('삭제되었습니다.');
+        listener.button.search.click();
     };
 
-    listener.button.init.click = function() {
-        ctx.grid1.clearData();
-    };
+    listener.button.init.click = function() { ctx.grid1.clearData(); };
 
     listener.button.search.click();
     listener.initializedPgm = true;

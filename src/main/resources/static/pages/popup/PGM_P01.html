@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>프로그램 검색</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-popup-page">
+    <div id="search-area" style="margin-bottom: 8px;"></div>
+    <div id="grid-area"></div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    var modal = FormaModal.current();
+    var param = FormaModal.getParam() || {};
+
+    var searchForm = new FormaForm('#search-area', {
+        search: true,
+        elements: [
+            { field: 'keyword', label: '검색어', widget: 'text', placeholder: '프로그램ID / 프로그램명' }
+        ],
+        onEnter: function() { doSearch(); }
+    });
+
+    var grid = new FormaGrid('#grid-area', {
+        sortable: true,
+        columns: [
+            { field: 'PGM_ID', label: '프로그램ID', width: 120 },
+            { field: 'PGM_NM', label: '프로그램명', width: 200 }
+        ],
+        onRowDblClick: function(row) {
+            if (modal) modal.ok({ PGM_ID: row.PGM_ID, PGM_NM: row.PGM_NM });
+        }
+    });
+
+    if (param.keyword) searchForm.setField('keyword', param.keyword);
+
+    function doSearch() {
+        platform.post('/api/admin/programs', searchForm.getData(), new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) grid.setData(r.resultData);
+        }));
+    }
+
+    doSearch();
+})();
+</script>
+</body>
+</html>
