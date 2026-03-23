@@ -172,6 +172,35 @@ public class AdminController extends BaseController {
         return BaseResponse.Ok();
     }
 
+    // ═══ 프로그램 관리 ═══
+
+    @PostMapping("/programs")
+    public BaseResponse<List<Map<String, Object>>> selectPrograms(@RequestBody Map<String, Object> param) {
+        return BaseResponse.Ok(sql.selectList("admin.selectPrograms", param));
+    }
+
+    @PostMapping("/programs/save")
+    @Transactional
+    public BaseResponse<?> savePrograms(@RequestBody List<Map<String, Object>> rows) {
+        for (Map<String, Object> row : rows) {
+            if ("I".equals(row.get("gstat"))) {
+                sql.insert("admin.insertProgram", row);
+            } else {
+                sql.update("admin.updateProgram", row);
+            }
+        }
+        return BaseResponse.Ok();
+    }
+
+    @PostMapping("/programs/delete")
+    @Transactional
+    public BaseResponse<?> deletePrograms(@RequestBody List<Map<String, Object>> rows) {
+        for (Map<String, Object> row : rows) {
+            sql.delete("admin.deleteProgram", row);
+        }
+        return BaseResponse.Ok();
+    }
+
     // ═══ 부서 목록 (콤보용) ═══
 
     @GetMapping("/depts")

@@ -133,6 +133,39 @@
         DELETE FROM tb_menu WHERE menu_id = #{menu_id}
     </delete>
 
+    <!-- ═══ 프로그램 관리 ═══ -->
+
+    <select id="selectPrograms" parameterType="map" resultType="map">
+        SELECT pgm_id, pgm_nm, srch_yn, new_yn, save_yn, del_yn, prnt_yn, upld_yn, init_yn,
+               etc_desc1, etc_desc2, etc_desc3, etc_desc4, etc_desc5
+        FROM tb_pgm_info
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (pgm_id LIKE '%' || #{keyword} || '%' OR pgm_nm LIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY pgm_id
+    </select>
+
+    <insert id="insertProgram" parameterType="map">
+        INSERT INTO tb_pgm_info (pgm_id, pgm_nm, srch_yn, new_yn, save_yn, del_yn, prnt_yn, upld_yn, init_yn,
+                                  etc_desc1, etc_desc2, etc_desc3, etc_desc4, etc_desc5)
+        VALUES (#{pgm_id}, #{pgm_nm}, #{srch_yn}, #{new_yn}, #{save_yn}, #{del_yn}, #{prnt_yn}, #{upld_yn}, #{init_yn},
+                #{etc_desc1}, #{etc_desc2}, #{etc_desc3}, #{etc_desc4}, #{etc_desc5})
+    </insert>
+
+    <update id="updateProgram" parameterType="map">
+        UPDATE tb_pgm_info
+        SET pgm_nm=#{pgm_nm}, srch_yn=#{srch_yn}, new_yn=#{new_yn}, save_yn=#{save_yn}, del_yn=#{del_yn},
+            prnt_yn=#{prnt_yn}, upld_yn=#{upld_yn}, init_yn=#{init_yn},
+            etc_desc1=#{etc_desc1}, etc_desc2=#{etc_desc2}, etc_desc3=#{etc_desc3}, etc_desc4=#{etc_desc4}, etc_desc5=#{etc_desc5}
+        WHERE pgm_id = #{pgm_id}
+    </update>
+
+    <delete id="deleteProgram" parameterType="map">
+        DELETE FROM tb_pgm_info WHERE pgm_id = #{pgm_id}
+    </delete>
+
     <!-- ═══ 부서 목록 ═══ -->
 
     <select id="selectDepts" resultType="map">

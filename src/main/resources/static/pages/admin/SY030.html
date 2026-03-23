@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>역할/권한관리</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">역할/권한관리 (SY030)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div class="forma-split-h" id="split-area" style="min-height:500px">
+            <div class="forma-split-panel" style="width:400px">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">역할 목록</div>
+                    <div id="grid1-area"></div>
+                </div>
+            </div>
+            <div class="forma-split-handle"></div>
+            <div class="forma-split-panel" style="flex:1">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">메뉴별 권한</div>
+                    <div id="grid2-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    var PGM = 'SY030';
+    var listener = platform.initListener(PGM);
+    var ctx = { selectedRole: null };
+
+    listener.initPgm = function() {
+        FormaUtil.initSplit('#split-area');
+
+        ctx.grid1 = new FormaGrid('#grid1-area', {
+            editable: true,
+            checkable: true,
+            columns: [
+                { field: 'ROLE_CD', label: '역할코드', width: 100, editor: 'text' },
+                { field: 'ROLE_NM', label: '역할명', width: 140, editor: 'text' },
+                { field: 'DESCRIPTION', label: '설명', width: 160, editor: 'text' },
+                { field: 'USE_YN', label: '사용', width: 60, editor: 'check', align: 'center' }
+            ],
+            onRowClick: function(row) {
+                ctx.selectedRole = row;
+                loadRoleMenus(row.ROLE_CD);
+            }
+        });
+
+        ctx.grid2 = new FormaGrid('#grid2-area', {
+            editable: true,
+            checkable: true,
+            columns: [
+                { field: 'MENU_ID', label: '메뉴ID', width: 100 },
+                { field: 'MENU_NM', label: '메뉴명', width: 160 },
+                { field: 'SRCH_YN', label: '조회', width: 60, editor: 'check', align: 'center' },
+                { field: 'NEW_YN', label: '신규', width: 60, editor: 'check', align: 'center' },
+                { field: 'SAVE_YN', label: '저장', width: 60, editor: 'check', align: 'center' },
+                { field: 'DEL_YN', label: '삭제', width: 60, editor: 'check', align: 'center' },
+                { field: 'PRNT_YN', label: '출력', width: 60, editor: 'check', align: 'center' },
+                { field: 'UPLD_YN', label: '업로드', width: 60, editor: 'check', align: 'center' },
+                { field: 'INIT_YN', label: '초기화', width: 60, editor: 'check', align: 'center' }
+            ]
+        });
+
+        listener.button.search.click();
+    };
+
+    function loadRoleMenus(roleCd) {
+        platform.post('/api/admin/roleMenus', { role_cd: roleCd }, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) ctx.grid2.setData(r.resultData);
+        }));
+    }
+
+    listener.button.search.click = function() {
+        platform.post('/api/admin/roles', {}, new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                ctx.grid1.setData(result.resultData);
+                ctx.grid2.clearData();
+                ctx.selectedRole = null;
+            }
+        }));
+    };
+
+    listener.button.news.click = function() {
+        ctx.grid1.addRow({ USE_YN: 'Y' });
+    };
+
+    listener.button.save.click = function() {
+        var roleData = ctx.grid1.getModifiedData();
+        var menuData = ctx.grid2.getModifiedData();
+
+        if (roleData.length === 0 && menuData.length === 0) {
+            FormaPopup.alert.show('변경된 데이터가 없습니다.');
+            return;
+        }
+
+        FormaPopup.confirm.show('저장하시겠습니까?').then(function(ok) {
+            if (!ok) return;
+
+            var saveCount = 0;
+            var totalSaves = (roleData.length > 0 ? 1 : 0) + (menuData.length > 0 ? 1 : 0);
+
+            function onSaved() {
+                saveCount++;
+                if (saveCount >= totalSaves) {
+                    FormaPopup.toast.success('저장되었습니다.');
+                    listener.button.search.click();
+                }
+            }
+
+            if (roleData.length > 0) {
+                platform.post('/api/admin/roles/save', roleData, new Callback(function(r) {
+                    if (r.resultCode === RESULT_CODE.OK) onSaved();
+                }));
+            }
+
+            if (menuData.length > 0 && ctx.selectedRole) {
+                menuData.forEach(function(item) { item.ROLE_CD = ctx.selectedRole.ROLE_CD; });
+                platform.post('/api/admin/roleMenus/save', menuData, new Callback(function(r) {
+                    if (r.resultCode === RESULT_CODE.OK) onSaved();
+                }));
+            }
+        });
+    };
+
+    listener.button.del.click = function() {
+        var data = ctx.grid1.getCheckedData();
+        if (data.length === 0) { FormaPopup.alert.show('삭제할 역할을 선택하세요.'); return; }
+        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?').then(function(ok) {
+            if (ok) platform.post('/api/admin/roles/delete', data, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('삭제되었습니다.');
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    listener.button.init.click = function() {
+        ctx.grid1.clearData();
+        ctx.grid2.clearData();
+        ctx.selectedRole = null;
+    };
+
+    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+})();
+</script>
+</body>
+</html>

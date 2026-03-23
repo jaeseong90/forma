@@ -19,3 +19,9 @@ uploads/
 # Env
 .env
 *.log
+
+# Claude Code
+.claude/
+
+# Project-internal prompts (not for distribution)
+FORMA-*.md

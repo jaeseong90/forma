@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>사용자관리</title>
+    <link rel="stylesheet" href="/assets/css/forma.css">
+</head>
+<body>
+<div class="forma-page">
+    <div class="forma-page-header">
+        <h1 class="forma-page-title">사용자관리 (SY040)</h1>
+        <div id="forma-toolbar"></div>
+    </div>
+    <div class="forma-content">
+        <div id="search-area"></div>
+        <div class="forma-split-h" id="split-area" style="min-height:500px">
+            <div class="forma-split-panel" style="width:450px">
+                <div class="forma-section" style="height:100%">
+                    <div class="forma-section-title">사용자 목록</div>
+                    <div id="grid1-area"></div>
+                </div>
+            </div>
+            <div class="forma-split-handle"></div>
+            <div class="forma-split-panel" style="flex:1">
+                <div class="forma-section">
+                    <div class="forma-section-title">사용자 정보</div>
+                    <div id="form-area"></div>
+                </div>
+                <div class="forma-section" style="margin-top:10px">
+                    <div class="forma-section-title">역할 배정</div>
+                    <div id="grid2-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/framework/forma.core.js"></script>
+<script src="/assets/js/framework/forma.popup.js"></script>
+<script src="/assets/js/framework/forma.util.js"></script>
+<script src="/assets/js/framework/forma.grid.js"></script>
+<script src="/assets/js/framework/forma.form.js"></script>
+<script src="/assets/js/framework/forma.toolbar.js"></script>
+<script src="/assets/js/framework/forma.tab.js"></script>
+<script src="/assets/js/framework/forma.modal.js"></script>
+<script>
+(function() {
+    var PGM = 'SY040';
+    var listener = platform.initListener(PGM);
+    var ctx = { selectedUserId: null, isNew: false };
+
+    listener.initPgm = function() {
+        FormaUtil.initSplit('#split-area');
+
+        ctx.searchForm = new FormaForm('#search-area', {
+            search: true,
+            elements: [
+                { field: 'keyword', label: '검색어', placeholder: '사용자ID 또는 사용자명' },
+                { field: 'use_yn', label: '사용여부', widget: 'combo', options: [
+                    { value: '', label: '전체' },
+                    { value: 'Y', label: '사용' },
+                    { value: 'N', label: '미사용' }
+                ]}
+            ]
+        });
+
+        ctx.grid1 = new FormaGrid('#grid1-area', {
+            columns: [
+                { field: 'USER_ID', label: '사용자ID', width: 100 },
+                { field: 'USER_NM', label: '사용자명', width: 100 },
+                { field: 'DEPT_NAME', label: '부서', width: 100 },
+                { field: 'ROLE_CDS', label: '역할', width: 120 },
+                { field: 'ADMIN_YN', label: '관리자', width: 60, align: 'center' },
+                { field: 'USE_YN', label: '사용', width: 60, align: 'center' }
+            ],
+            onRowClick: function(row) {
+                ctx.selectedUserId = row.USER_ID;
+                ctx.isNew = false;
+                ctx.userForm.setData(row);
+                ctx.userForm.setReadonly('user_id', true);
+                loadUserRoles(row.USER_ID);
+            }
+        });
+
+        ctx.userForm = new FormaForm('#form-area', {
+            columns: 2,
+            elements: [
+                { field: 'user_id', label: '사용자ID', required: true, readOnly: true },
+                { field: 'user_nm', label: '사용자명', required: true },
+                { field: 'dept_code', label: '부서', widget: 'combo', options: [] },
+                { field: 'admin_yn', label: '관리자', widget: 'combo', options: [
+                    { value: 'Y', label: 'Y' },
+                    { value: 'N', label: 'N' }
+                ]},
+                { field: 'use_yn', label: '사용여부', widget: 'combo', options: [
+                    { value: 'Y', label: '사용' },
+                    { value: 'N', label: '미사용' }
+                ]}
+            ]
+        });
+
+        ctx.grid2 = new FormaGrid('#grid2-area', {
+            editable: true,
+            checkable: true,
+            columns: [
+                { field: 'ROLE_CD', label: '역할코드', width: 120 },
+                { field: 'ROLE_NM', label: '역할명', width: 160 },
+                { field: 'ASSIGNED', label: '배정', width: 70, editor: 'check', align: 'center' }
+            ]
+        });
+
+        loadDepts();
+        listener.button.search.click();
+    };
+
+    function loadDepts() {
+        platform.post('/api/admin/depts', {}, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) {
+                var options = [{ value: '', label: '선택' }];
+                r.resultData.forEach(function(d) {
+                    options.push({ value: d.DEPT_CODE, label: d.DEPT_NAME });
+                });
+                ctx.userForm.setOptions('dept_code', options);
+            }
+        }));
+    }
+
+    function loadUserRoles(userId) {
+        platform.post('/api/admin/roles', {}, new Callback(function(rAll) {
+            if (rAll.resultCode !== RESULT_CODE.OK) return;
+            platform.post('/api/admin/userRoles', { user_id: userId }, new Callback(function(rUser) {
+                if (rUser.resultCode !== RESULT_CODE.OK) return;
+                var assignedMap = {};
+                rUser.resultData.forEach(function(r) { assignedMap[r.ROLE_CD] = true; });
+                var roles = rAll.resultData.map(function(r) {
+                    return {
+                        ROLE_CD: r.ROLE_CD,
+                        ROLE_NM: r.ROLE_NM,
+                        ASSIGNED: assignedMap[r.ROLE_CD] ? 'Y' : 'N'
+                    };
+                });
+                ctx.grid2.setData(roles);
+            }));
+        }));
+    }
+
+    listener.button.search.click = function() {
+        platform.post('/api/admin/users', ctx.searchForm.getData(), new Callback(function(result) {
+            if (result.resultCode === RESULT_CODE.OK) {
+                ctx.grid1.setData(result.resultData);
+                ctx.userForm.clear();
+                ctx.grid2.clearData();
+                ctx.selectedUserId = null;
+                ctx.isNew = false;
+            }
+        }));
+    };
+
+    listener.button.news.click = function() {
+        ctx.selectedUserId = null;
+        ctx.isNew = true;
+        ctx.userForm.clear();
+        ctx.userForm.setData({ admin_yn: 'N', use_yn: 'Y' });
+        ctx.userForm.setReadonly('user_id', false);
+        ctx.grid2.clearData();
+        ctx.userForm.focus('user_id');
+
+        platform.post('/api/admin/roles', {}, new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) {
+                var roles = r.resultData.map(function(role) {
+                    return { ROLE_CD: role.ROLE_CD, ROLE_NM: role.ROLE_NM, ASSIGNED: 'N' };
+                });
+                ctx.grid2.setData(roles);
+            }
+        }));
+    };
+
+    listener.button.save.click = function() {
+        if (!ctx.userForm.validate()) return;
+        var formData = ctx.userForm.getData();
+        var assignedRoles = ctx.grid2.getData().filter(function(r) { return r.ASSIGNED === 'Y'; });
+        var roleCds = assignedRoles.map(function(r) { return r.ROLE_CD; });
+
+        FormaPopup.confirm.show('저장하시겠습니까?').then(function(ok) {
+            if (!ok) return;
+            platform.post('/api/admin/users/save', formData, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    var userId = formData.user_id;
+                    platform.post('/api/admin/userRoles/save', { user_id: userId, roles: roleCds }, new Callback(function(r2) {
+                        if (r2.resultCode === RESULT_CODE.OK) {
+                            FormaPopup.toast.success('저장되었습니다.');
+                            ctx.selectedUserId = userId;
+                            ctx.isNew = false;
+                            ctx.userForm.setReadonly('user_id', true);
+                            listener.button.search.click();
+                        }
+                    }));
+                }
+            }));
+        });
+    };
+
+    listener.button.del.click = function() {
+        if (!ctx.selectedUserId) { FormaPopup.alert.show('삭제할 사용자를 선택하세요.'); return; }
+        FormaPopup.confirm.show('사용자를 삭제하시겠습니까?').then(function(ok) {
+            if (ok) platform.post('/api/admin/users/delete', [{ user_id: ctx.selectedUserId }], new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('삭제되었습니다.');
+                    ctx.selectedUserId = null;
+                    ctx.userForm.clear();
+                    ctx.grid2.clearData();
+                    listener.button.search.click();
+                }
+            }));
+        });
+    };
+
+    listener.button.etc1.click = function() {
+        if (!ctx.selectedUserId) { FormaPopup.alert.show('사용자를 선택하세요.'); return; }
+        FormaPopup.confirm.show('비밀번호를 초기화하시겠습니까?').then(function(ok) {
+            if (ok) platform.post('/api/admin/users/resetPassword', { user_id: ctx.selectedUserId }, new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) {
+                    FormaPopup.toast.success('비밀번호가 초기화되었습니다.');
+                }
+            }));
+        });
+    };
+
+    listener.button.init.click = function() {
+        ctx.searchForm.clear();
+        ctx.grid1.clearData();
+        ctx.userForm.clear();
+        ctx.grid2.clearData();
+        ctx.selectedUserId = null;
+        ctx.isNew = false;
+    };
+
+    document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+})();
+</script>
+</body>
+</html>
