@@ -358,7 +358,7 @@ class FormaGrid {
     }
     _applyFrozenTh(th, colIdx) { if (!this._hasFrozen || !this.columns[colIdx].frozen) return; this._applySticky(th, this._calcFrozenLeft(colIdx)); }
     _applyFrozenTd(td, colIdx) { if (!this._hasFrozen || !this.columns[colIdx].frozen) return; this._applySticky(td, this._calcFrozenLeft(colIdx)); td.style.background = td.style.background || 'var(--bg-card)'; }
-    _applySticky(el, left) { el.style.position = 'sticky'; el.style.left = left + 'px'; el.style.zIndex = '2'; if (!el.style.background || el.style.background === 'transparent') el.style.background = '#f8f8f8'; }
+    _applySticky(el, left) { el.style.position = 'sticky'; el.style.left = left + 'px'; el.style.zIndex = '2'; if (!el.style.background || el.style.background === 'transparent') el.style.background = 'var(--bg-header)'; }
 
     // ══════════════════════════════════════════════════════════
     //  컬럼 리사이즈 + 자동맞춤
