@@ -357,7 +357,7 @@ class FormaGrid {
         return left;
     }
     _applyFrozenTh(th, colIdx) { if (!this._hasFrozen || !this.columns[colIdx].frozen) return; this._applySticky(th, this._calcFrozenLeft(colIdx)); }
-    _applyFrozenTd(td, colIdx) { if (!this._hasFrozen || !this.columns[colIdx].frozen) return; this._applySticky(td, this._calcFrozenLeft(colIdx)); td.style.background = td.style.background || '#fff'; }
+    _applyFrozenTd(td, colIdx) { if (!this._hasFrozen || !this.columns[colIdx].frozen) return; this._applySticky(td, this._calcFrozenLeft(colIdx)); td.style.background = td.style.background || 'var(--bg-card)'; }
     _applySticky(el, left) { el.style.position = 'sticky'; el.style.left = left + 'px'; el.style.zIndex = '2'; if (!el.style.background || el.style.background === 'transparent') el.style.background = '#f8f8f8'; }
 
     // ══════════════════════════════════════════════════════════
@@ -913,7 +913,7 @@ class FormaGrid {
 
         if (this.checkable) {
             const td = document.createElement('td'); td.style.textAlign = 'center';
-            if (this._hasFrozen) { this._applySticky(td, 0); td.style.background = '#fff'; }
+            if (this._hasFrozen) { this._applySticky(td, 0); td.style.background = 'var(--bg-card)'; }
             const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!row._checked;
             cb.onclick = (e) => e.stopPropagation();
             cb.onchange = () => { row._checked = cb.checked; };
@@ -922,7 +922,7 @@ class FormaGrid {
 
         if (this.rowNum) {
             const td = document.createElement('td'); td.style.textAlign = 'center'; td.textContent = i + 1;
-            if (this._hasFrozen) { const left = this.checkable ? 36 : 0; this._applySticky(td, left); td.style.background = '#fff'; }
+            if (this._hasFrozen) { const left = this.checkable ? 36 : 0; this._applySticky(td, left); td.style.background = 'var(--bg-card)'; }
             tr.appendChild(td);
         }
 

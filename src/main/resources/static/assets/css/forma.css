@@ -35,7 +35,7 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-top-buttons { display: flex; gap: 6px; padding: 8px 0; justify-content: flex-end; }
 
 /* Search */
-.forma-search { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px 12px; }
+.forma-search { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
 .forma-search-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .forma-search-group { display: flex; align-items: center; gap: 4px; }
 .forma-search-group label { font-size: 12px; font-weight: 500; color: var(--text-sub); white-space: nowrap; min-width: 50px; }
@@ -125,12 +125,12 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-sort-icon { font-size: 10px; color: #4a90d9; }
 
 /* Grid Select Editor */
-select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px solid #4a90d9; background: #fff; font-size: 12px; outline: none; }
+select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px solid var(--primary); background: var(--bg-input); color: var(--text); font-size: 12px; outline: none; font-size: 12px; outline: none; }
 
 /* Grid Combo Editor */
 .fg-combo-wrap { position: relative; }
-.fg-combo-dd { position: absolute; top: -2px; left: -1px; right: -1px; background: #fff; border: 1px solid #4a90d9; border-radius: 0 0 4px 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 160px; }
-.fg-combo-dd .fc-combo-search { display: block; width: calc(100% - 8px); margin: 4px; height: 24px; padding: 0 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; outline: none; }
+.fg-combo-dd { position: absolute; top: -2px; left: -1px; right: -1px; background: var(--bg-card); border: 1px solid #4a90d9; border-radius: 0 0 4px 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 160px; }
+.fg-combo-dd .fc-combo-search { display: block; width: calc(100% - 8px); margin: 4px; height: 24px; padding: 0 6px; border: 1px solid var(--border); border-radius: 3px; font-size: 12px; outline: none; background: var(--bg-input); color: var(--text); }
 .fg-combo-dd .fc-combo-list { max-height: 180px; overflow-y: auto; padding: 2px 0; }
 
 /* Grid Textarea Editor */
@@ -142,7 +142,7 @@ select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px
 .forma-grid td .forma-switch-track.on .forma-switch-thumb { left: 16px; }
 
 /* Grid Context Menu */
-.forma-ctx-menu { position: fixed; background: #fff; border: 1px solid #d0d0d0; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.15); z-index: 9999; min-width: 180px; padding: 4px 0; font-size: 12px; }
+.forma-ctx-menu { position: fixed; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,0.15); z-index: 9999; min-width: 180px; padding: 4px 0; font-size: 12px; }
 .forma-ctx-item { padding: 6px 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .forma-ctx-item:hover { background: #f0f7ff; }
 .forma-ctx-item.disabled { color: #bbb; cursor: default; pointer-events: none; }
@@ -176,7 +176,7 @@ select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px
 .forma-detail-row:last-child td { border-bottom: 1px solid #eee !important; }
 
 /* Grid Merged Cell */
-.forma-grid td[rowspan] { background: #fafbfc; font-weight: 500; }
+.forma-grid td[rowspan] { background: var(--bg-alt); font-weight: 500; }
 
 /* Grid Group Row */
 .forma-group-row td { background: #f0f4f8; padding: 6px 12px !important; cursor: pointer; font-size: 12px; border-bottom: 1px solid #d0d8e0; }
@@ -190,13 +190,13 @@ select.forma-grid-input { width: 100%; height: 24px; padding: 0 2px; border: 1px
 .forma-grid-scroll:focus { outline: none; }
 
 /* Grid Alternating Rows */
-.forma-row-alt { background: #fafbfc; }
+.forma-row-alt { background: var(--bg-alt); }
 .forma-grid tbody tr.forma-row-alt:hover { background: #f0f7ff; }
 .forma-grid tbody tr.forma-row-alt.selected { background: #e3effa; }
 
 /* Grid Filter Row */
 .forma-filter-row th { background: #f0f4f8 !important; border-bottom: 1px solid #d0d8e0 !important; padding: 3px 4px !important; }
-.forma-filter-input { width: 100%; height: 22px; padding: 0 4px; border: 1px solid #d0d8e0; border-radius: 2px; font-size: 11px; outline: none; background: #fff; }
+.forma-filter-input { width: 100%; height: 22px; padding: 0 4px; border: 1px solid var(--border); border-radius: 2px; font-size: 11px; outline: none; background: var(--bg-input); color: var(--text); }
 .forma-filter-input:focus { border-color: #4a90d9; }
 select.forma-filter-input { padding-right: 16px; }
 
@@ -223,8 +223,8 @@ select.forma-filter-input { padding-right: 16px; }
 
 /* Paging */
 .forma-grid-paging { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-top: 1px solid #e0e0e0; font-size: 12px; }
-.forma-grid-paging button { min-width: 28px; height: 24px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; border-radius: 3px; margin: 0 1px; }
-.forma-grid-paging button.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.forma-grid-paging button { min-width: 28px; height: 24px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; font-size: 11px; border-radius: 3px; margin: 0 1px; cursor: pointer; font-size: 11px; border-radius: 3px; margin: 0 1px; }
+.forma-grid-paging button.active { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
 .forma-grid-paging button:hover:not(.active):not(:disabled) { background: #f0f0f0; }
 .forma-grid-paging button:disabled { opacity: 0.4; cursor: default; }
 .forma-grid-paging .forma-paging-info { color: #666; }
@@ -285,7 +285,7 @@ select.forma-filter-input { padding-right: 16px; }
 .forma-multicb-pill { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; background: #e3effa; border-radius: 10px; font-size: 11px; color: #333; white-space: nowrap; }
 .forma-multicb-pill-x { cursor: pointer; color: #999; font-size: 13px; line-height: 1; margin-left: 2px; }
 .forma-multicb-pill-x:hover { color: #e24b4a; }
-.forma-multicb-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 100; max-height: 200px; overflow-y: auto; padding: 4px 0; }
+.forma-multicb-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; box-shadow: 0 4px 12px var(--shadow); z-index: 100; max-height: 200px; overflow-y: auto; padding: 4px 0; border: 1px solid #ccc; border-radius: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 100; max-height: 200px; overflow-y: auto; padding: 4px 0; }
 .forma-multicb-item { display: flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
 .forma-multicb-item:hover { background: #f0f7ff; }
 .forma-multicb-all { font-weight: 600; color: #4a90d9; }
@@ -320,14 +320,14 @@ select.forma-filter-input { padding-right: 16px; }
 
 /* Autocomplete */
 .forma-ac-wrap { position: relative; flex: 1; }
-.forma-ac-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; max-height: 200px; overflow-y: auto; padding: 2px 0; }
+.forma-ac-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 16px var(--shadow); z-index: 200; max-height: 200px; overflow-y: auto; padding: 2px 0; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; max-height: 200px; overflow-y: auto; padding: 2px 0; }
 .forma-ac-item { padding: 5px 12px; cursor: pointer; font-size: 12px; }
 .forma-ac-item:hover, .forma-ac-item.fc-hl { background: #f0f7ff; }
 
 /* Switch Toggle */
 .forma-switch-wrap { display: inline-flex; align-items: center; gap: 6px; }
 .forma-switch-label { font-size: 12px; color: #555; }
-.forma-switch-track { position: relative; width: 36px; height: 20px; background: #ccc; border-radius: 10px; cursor: pointer; transition: background 0.2s; outline: none; }
+.forma-switch-track { position: relative; width: 36px; height: 20px; background: var(--border); border-radius: 10px; cursor: pointer; transition: background 0.2s; outline: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; outline: none; }
 .forma-switch-track.on { background: #4a90d9; }
 .forma-switch-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 .forma-switch-track.on .forma-switch-thumb { left: 18px; }
@@ -355,7 +355,7 @@ select.forma-filter-input { padding-right: 16px; }
 /* ══════════════════════════════════════════════════════════════
    Calendar Dropdown
    ══════════════════════════════════════════════════════════════ */
-.fc-cal { background: #fff; border: 1px solid #d0d0d0; border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.14); width: 268px; font-size: 12px; user-select: none; }
+.fc-cal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.14); width: 268px; font-size: 12px; user-select: none; }
 .fc-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #eee; }
 .fc-nav { background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 3px; font-size: 16px; color: #555; line-height: 1; }
 .fc-nav:hover { background: #f0f0f0; }
@@ -371,9 +371,9 @@ select.forma-filter-input { padding-right: 16px; }
 .fc-d.fc-sel { background: #4a90d9 !important; color: #fff !important; box-shadow: none; }
 .fc-d.fc-sun:not(.fc-sel):not(.fc-ot) { color: #e24b4a; }
 .fc-d.fc-sat:not(.fc-sel):not(.fc-ot) { color: #4a90d9; }
-.fc-d.fc-ot { color: #ccc; cursor: default; }
+.fc-d.fc-ot { color: var(--text-muted); cursor: default; }
 .fc-ft { display: flex; gap: 6px; padding: 6px 8px; border-top: 1px solid #eee; justify-content: center; }
-.fc-btn { padding: 3px 14px; border: 1px solid #ddd; border-radius: 3px; background: #fff; cursor: pointer; font-size: 11px; color: #555; }
+.fc-btn { padding: 3px 14px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg-card); cursor: pointer; font-size: 11px; color: var(--text-sub); }
 .fc-btn:hover { background: #f0f0f0; border-color: #bbb; }
 /* Month picker */
 .fc-ms { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 12px; }
@@ -385,7 +385,7 @@ select.forma-filter-input { padding-right: 16px; }
 .fc-y { display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 .fc-y:hover:not(.fc-ot) { background: #e8f0fe; }
 .fc-y.fc-today { font-weight: 700; color: #4a90d9; }
-.fc-y.fc-ot { color: #ccc; }
+.fc-y.fc-ot { color: var(--text-muted); }
 
 /* Date Input (calendar trigger) */
 .fc-date-wrap { display: inline-flex; align-items: center; position: relative; flex: 1; }
@@ -396,26 +396,26 @@ select.forma-filter-input { padding-right: 16px; }
 /* DateRange */
 .fc-dr-container { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .fc-dr-presets { display: flex; gap: 3px; flex-wrap: wrap; }
-.fc-preset { padding: 2px 8px; border: 1px solid #ddd; border-radius: 10px; background: #fff; cursor: pointer; font-size: 10px; color: #666; transition: all 0.15s; white-space: nowrap; }
+.fc-preset { padding: 2px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); cursor: pointer; font-size: 10px; color: var(--text-sub); transition: all 0.15s; white-space: nowrap; }
 .fc-preset:hover { border-color: #4a90d9; color: #4a90d9; background: #f0f7ff; }
-.fc-preset.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.fc-preset.active { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
 .fc-dr-row { display: inline-flex; align-items: center; gap: 4px; }
 .fc-dr-sep { color: #999; font-size: 12px; margin: 0 2px; }
 
 /* Searchable Combo */
 .fc-combo-wrap { position: relative; flex: 1; }
 .fc-combo-display { display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 28px; padding: 0 8px !important; gap: 4px; }
-.fc-combo-display.fc-disabled { background: #f5f5f5; cursor: default; color: #999; }
-.fc-combo-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-.fc-combo-arrow { font-size: 10px; color: #999; flex-shrink: 0; }
-.fc-combo-dd { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 180px; }
-.fc-combo-search { display: block; width: calc(100% - 12px); margin: 6px; height: 26px; padding: 0 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; outline: none; }
-.fc-combo-search:focus { border-color: #4a90d9; }
+.fc-combo-display.fc-disabled { background: var(--bg-alt); cursor: default; color: var(--text-muted); }
+.fc-combo-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text); }
+.fc-combo-arrow { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+.fc-combo-dd { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 16px var(--shadow); z-index: 200; min-width: 180px; }
+.fc-combo-search { display: block; width: calc(100% - 12px); margin: 6px; height: 26px; padding: 0 8px; border: 1px solid var(--border); border-radius: 3px; font-size: 12px; outline: none; background: var(--bg-input); color: var(--text); }
+.fc-combo-search:focus { border-color: var(--primary); }
 .fc-combo-list { max-height: 200px; overflow-y: auto; padding: 2px 0; }
-.fc-combo-item { padding: 5px 12px; cursor: pointer; font-size: 12px; transition: background 0.1s; }
-.fc-combo-item:hover, .fc-combo-item.fc-hl { background: #f0f7ff; }
-.fc-combo-item.fc-sel { background: #e3effa; font-weight: 500; }
-.fc-combo-empty { padding: 16px; text-align: center; color: #999; font-size: 12px; }
+.fc-combo-item { padding: 5px 12px; cursor: pointer; font-size: 12px; transition: background 0.1s; color: var(--text); }
+.fc-combo-item:hover, .fc-combo-item.fc-hl { background: var(--bg-hover); }
+.fc-combo-item.fc-sel { background: var(--bg-selected); font-weight: 500; }
+.fc-combo-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 12px; }
 .forma-search-group .fc-combo-wrap { width: 130px; }
 .forma-search-group .fc-combo-dd { min-width: 200px; }
 .forma-search-group .fc-date-wrap .forma-input { width: 120px; }
