@@ -156,6 +156,30 @@ src/main/resources/mapper/domain/{module}/{pgmId}.xml
 src/main/resources/static/pages/{module}/{PGMID}.html
 ```
 
+## AI 코딩 도구와 함께 사용
+
+FORMA는 AI 코딩 도구(Claude Code, Cursor, ChatGPT, Copilot 등)와 함께 사용할 때 최대 효과를 발휘합니다.
+
+| 파일 | 용도 |
+|------|------|
+| `CLAUDE.md` | 프레임워크 전체 명세 — AI 도구에 컨텍스트로 제공 |
+| `prompts/screen-generator.md` | "요구사항 → 화면 코드" 자동 생성 프롬프트 |
+| `prompts/review-checklist.md` | 생성된 코드 품질 검증 체크리스트 |
+| `docs/getting-started.html` | 인터랙티브 튜토리얼 (10분) |
+| `docs/components.html` | 컴포넌트 API 레퍼런스 |
+
+```
+# 예시: Cursor에서
+1. FORMA 프로젝트 열기
+2. CLAUDE.md가 자동으로 컨텍스트에 포함됨
+3. "발주관리 화면 만들어줘" → AI가 YAML 또는 커스텀 코드 생성
+
+# 예시: ChatGPT/기타 AI에서
+1. CLAUDE.md 내용을 대화에 붙여넣기
+2. prompts/screen-generator.md 내용 붙여넣기
+3. 요구사항 전달 → 코드 생성
+```
+
 ## License
 
 MIT

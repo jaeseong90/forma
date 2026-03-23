@@ -1,10 +1,14 @@
 # FORMA 화면 생성 프롬프트
 
-이 프롬프트는 Claude Code 또는 다른 AI 도구에서 FORMA 화면을 자동 생성할 때 사용합니다.
+이 프롬프트는 AI 코딩 도구(Claude Code, Cursor, ChatGPT, Copilot 등)에서 FORMA 화면을 자동 생성할 때 사용합니다.
 
 ## 사용법
 
-Claude Code에서 이 파일을 컨텍스트로 제공하고, 아래 형식으로 요구사항을 전달하세요:
+AI 코딩 도구에 이 파일을 컨텍스트로 제공하고, 아래 형식으로 요구사항을 전달하세요:
+
+- **Claude Code**: `@prompts/screen-generator.md` 로 참조
+- **Cursor**: 프로젝트에 포함되어 자동 인식
+- **ChatGPT 등**: 이 파일 내용을 대화에 붙여넣기
 
 ```
 @prompts/screen-generator.md
