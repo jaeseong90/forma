@@ -104,6 +104,7 @@
         <div class="erp-header-logo">FORMA</div>
         <div class="erp-header-spacer"></div>
         <div class="erp-header-user" id="headerUser"></div>
+        <button class="erp-header-btn" id="themeBtn" title="테마 전환">🌙</button>
         <button class="erp-header-btn" id="logoutBtn">로그아웃</button>
     </div>
 
@@ -201,6 +202,17 @@
 
     // 5. 이벤트
     document.getElementById('logoutBtn').onclick = function() { location.href = '/login/logout'; };
+    document.getElementById('themeBtn').onclick = function() {
+        FormaTheme.toggle();
+        var theme = FormaTheme.get();
+        var icons = { light: '🌙', dark: '☀️', blue: '💧' };
+        document.getElementById('themeBtn').textContent = icons[theme] || '🌙';
+        platform.post('/api/user/settings', { theme: theme }, { loading: false });
+    };
+    // 테마 버튼 초기 아이콘
+    var themeIcons = { light: '🌙', dark: '☀️', blue: '💧' };
+    document.getElementById('themeBtn').textContent = themeIcons[FormaTheme.get()] || '🌙';
+
     document.getElementById('menuToggle').onclick = function() {
         var sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('collapsed');
