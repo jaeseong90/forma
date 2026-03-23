@@ -9,21 +9,21 @@
 <div class="forma-page">
     <div class="forma-page-header">
         <h1 class="forma-page-title">역할/권한관리 (SY030)</h1>
-        <div id="forma-toolbar"></div>
+        <div id="toolbar-SY030"></div>
     </div>
     <div class="forma-content">
-        <div class="forma-split-h" id="split-area" style="min-height:500px">
+        <div class="forma-split-h" id="split-SY030" style="min-height:500px">
             <div class="forma-split-panel" style="width:400px">
                 <div class="forma-section" style="height:100%">
                     <div class="forma-section-title">역할 목록</div>
-                    <div id="grid1-area"></div>
+                    <div id="role-grid-SY030"></div>
                 </div>
             </div>
             <div class="forma-split-handle"></div>
             <div class="forma-split-panel" style="flex:1">
                 <div class="forma-section" style="height:100%">
                     <div class="forma-section-title">메뉴별 권한</div>
-                    <div id="grid2-area"></div>
+                    <div id="perm-grid-SY030"></div>
                 </div>
             </div>
         </div>
@@ -38,71 +38,85 @@
 <script src="/assets/js/framework/forma.tab.js"></script>
 <script src="/assets/js/framework/forma.modal.js"></script>
 <script>
-(function() {
+(async function() {
     var PGM = 'SY030';
+    var S = PGM;
     var listener = platform.initListener(PGM);
     var ctx = { selectedRole: null };
 
-    listener.initPgm = function() {
-        FormaUtil.initSplit('#split-area');
+    // Manual init (no startPage - avoids #forma-toolbar ID conflict in MDI)
+    try {
+        var res = await platform.get('/api/pgm/' + PGM + '/init');
+        if (res.resultCode === 'OK') {
+            listener.pgmInfo = res.resultData.pgmInfo;
+            listener.pgmAuth = res.resultData.pgmAuth;
+        }
+    } catch(e) { listener.pgmInfo = {}; listener.pgmAuth = {}; }
 
-        ctx.grid1 = new FormaGrid('#grid1-area', {
-            editable: true,
-            checkable: true,
-            columns: [
-                { field: 'ROLE_CD', label: '역할코드', width: 100, editor: 'text' },
-                { field: 'ROLE_NM', label: '역할명', width: 140, editor: 'text' },
-                { field: 'DESCRIPTION', label: '설명', width: 160, editor: 'text' },
-                { field: 'USE_YN', label: '사용', width: 60, editor: 'check', align: 'center' }
-            ],
-            onRowClick: function(row) {
-                ctx.selectedRole = row;
-                loadRoleMenus(row.ROLE_CD);
-            }
+    if (typeof FormaToolbar !== 'undefined') {
+        FormaToolbar.render('#toolbar-' + S, {
+            listener: listener,
+            pgmInfo: listener.pgmInfo,
+            pgmAuth: listener.pgmAuth
         });
+    }
 
-        ctx.grid2 = new FormaGrid('#grid2-area', {
-            editable: true,
-            checkable: true,
-            columns: [
-                { field: 'MENU_ID', label: '메뉴ID', width: 100 },
-                { field: 'MENU_NM', label: '메뉴명', width: 160 },
-                { field: 'SRCH_YN', label: '조회', width: 60, editor: 'check', align: 'center' },
-                { field: 'NEW_YN', label: '신규', width: 60, editor: 'check', align: 'center' },
-                { field: 'SAVE_YN', label: '저장', width: 60, editor: 'check', align: 'center' },
-                { field: 'DEL_YN', label: '삭제', width: 60, editor: 'check', align: 'center' },
-                { field: 'PRNT_YN', label: '출력', width: 60, editor: 'check', align: 'center' },
-                { field: 'UPLD_YN', label: '업로드', width: 60, editor: 'check', align: 'center' },
-                { field: 'INIT_YN', label: '초기화', width: 60, editor: 'check', align: 'center' }
-            ]
-        });
+    FormaUtil.initSplit('#split-' + S);
 
-        listener.button.search.click();
-    };
+    ctx.roleGrid = new FormaGrid('#role-grid-' + S, {
+        editable: true,
+        checkable: true,
+        columns: [
+            { field: 'ROLE_CD', label: '역할코드', width: 100, editor: 'text' },
+            { field: 'ROLE_NM', label: '역할명', width: 140, editor: 'text' },
+            { field: 'DESCRIPTION', label: '설명', width: 160, editor: 'text' },
+            { field: 'USE_YN', label: '사용', width: 60, editor: 'check', align: 'center' }
+        ],
+        onRowClick: function(row) {
+            ctx.selectedRole = row;
+            loadRoleMenus(row.ROLE_CD);
+        }
+    });
+
+    ctx.permGrid = new FormaGrid('#perm-grid-' + S, {
+        editable: true,
+        checkable: true,
+        columns: [
+            { field: 'MENU_ID', label: '메뉴ID', width: 100 },
+            { field: 'MENU_NM', label: '메뉴명', width: 160 },
+            { field: 'SRCH_YN', label: '조회', width: 60, editor: 'check', align: 'center' },
+            { field: 'NEW_YN', label: '신규', width: 60, editor: 'check', align: 'center' },
+            { field: 'SAVE_YN', label: '저장', width: 60, editor: 'check', align: 'center' },
+            { field: 'DEL_YN', label: '삭제', width: 60, editor: 'check', align: 'center' },
+            { field: 'PRNT_YN', label: '출력', width: 60, editor: 'check', align: 'center' },
+            { field: 'UPLD_YN', label: '업로드', width: 60, editor: 'check', align: 'center' },
+            { field: 'INIT_YN', label: '초기화', width: 60, editor: 'check', align: 'center' }
+        ]
+    });
 
     function loadRoleMenus(roleCd) {
         platform.post('/api/admin/roleMenus', { role_cd: roleCd }, new Callback(function(r) {
-            if (r.resultCode === RESULT_CODE.OK) ctx.grid2.setData(r.resultData);
+            if (r.resultCode === RESULT_CODE.OK) ctx.permGrid.setData(r.resultData);
         }));
     }
 
     listener.button.search.click = function() {
         platform.post('/api/admin/roles', {}, new Callback(function(result) {
             if (result.resultCode === RESULT_CODE.OK) {
-                ctx.grid1.setData(result.resultData);
-                ctx.grid2.clearData();
+                ctx.roleGrid.setData(result.resultData);
+                ctx.permGrid.clearData();
                 ctx.selectedRole = null;
             }
         }));
     };
 
     listener.button.news.click = function() {
-        ctx.grid1.addRow({ USE_YN: 'Y' });
+        ctx.roleGrid.addRow({ USE_YN: 'Y' });
     };
 
     listener.button.save.click = function() {
-        var roleData = ctx.grid1.getModifiedData();
-        var menuData = ctx.grid2.getModifiedData();
+        var roleData = ctx.roleGrid.getModifiedData();
+        var menuData = ctx.permGrid.getModifiedData();
 
         if (roleData.length === 0 && menuData.length === 0) {
             FormaPopup.alert.show('변경된 데이터가 없습니다.');
@@ -139,7 +153,7 @@
     };
 
     listener.button.del.click = function() {
-        var data = ctx.grid1.getCheckedData();
+        var data = ctx.roleGrid.getCheckedData();
         if (data.length === 0) { FormaPopup.alert.show('삭제할 역할을 선택하세요.'); return; }
         FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?').then(function(ok) {
             if (ok) platform.post('/api/admin/roles/delete', data, new Callback(function(r) {
@@ -152,12 +166,13 @@
     };
 
     listener.button.init.click = function() {
-        ctx.grid1.clearData();
-        ctx.grid2.clearData();
+        ctx.roleGrid.clearData();
+        ctx.permGrid.clearData();
         ctx.selectedRole = null;
     };
 
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); }); } else { platform.startPage(PGM, listener); }
+    listener.button.search.click();
+    listener.initializedPgm = true;
 })();
 </script>
 </body>

@@ -9,10 +9,10 @@
 <div class="forma-page">
     <div class="forma-page-header">
         <h1 class="forma-page-title">감사로그/트레이스 (SY050)</h1>
-        <div id="forma-toolbar"></div>
+        <div id="toolbar-SY050"></div>
     </div>
     <div class="forma-content">
-        <div id="tab-area"></div>
+        <div id="tab-SY050"></div>
     </div>
 </div>
 <script src="/assets/js/framework/forma.core.js"></script>
@@ -24,125 +24,139 @@
 <script src="/assets/js/framework/forma.tab.js"></script>
 <script src="/assets/js/framework/forma.modal.js"></script>
 <script>
-(function() {
+(async function() {
     var PGM = 'SY050';
+    var S = PGM;
     var listener = platform.initListener(PGM);
-    var ctx = { activeTab: 'tab-audit' };
+    var ctx = { activeTab: 'audit-tab-' + S, traceLoaded: false };
 
-    listener.initPgm = function() {
-        ctx.tab = new FormaTab('#tab-area', {
-            tabs: [
-                { id: 'tab-audit', label: '감사로그' },
-                { id: 'tab-trace', label: '서비스트레이스' }
-            ],
+    // Manual init (no startPage - avoids #forma-toolbar ID conflict in MDI)
+    try {
+        var res = await platform.get('/api/pgm/' + PGM + '/init');
+        if (res.resultCode === 'OK') {
+            listener.pgmInfo = res.resultData.pgmInfo;
+            listener.pgmAuth = res.resultData.pgmAuth;
+        }
+    } catch(e) { listener.pgmInfo = {}; listener.pgmAuth = {}; }
+
+    if (typeof FormaToolbar !== 'undefined') {
+        FormaToolbar.render('#toolbar-' + S, {
             listener: listener,
-            onTabChange: function(tabId) {
-                ctx.activeTab = tabId;
-                if (tabId === 'tab-trace') {
-                    loadTrace();
-                }
+            pgmInfo: listener.pgmInfo,
+            pgmAuth: listener.pgmAuth
+        });
+    }
+
+    ctx.tab = new FormaTab('#tab-' + S, {
+        tabs: [
+            { id: 'audit-tab-' + S, label: '감사로그' },
+            { id: 'trace-tab-' + S, label: '서비스트레이스' }
+        ],
+        listener: listener,
+        onTabChange: function(tabId) {
+            ctx.activeTab = tabId;
+            if (tabId === 'trace-tab-' + S && !ctx.traceLoaded) {
+                loadTrace();
             }
-        });
+        }
+    });
 
-        // --- Audit Log Tab ---
-        var auditPanel = ctx.tab.getContentEl('tab-audit');
+    // --- Audit Log Tab ---
+    var auditPanel = ctx.tab.getContentEl('audit-tab-' + S);
 
-        var searchDiv = document.createElement('div');
-        searchDiv.id = 'audit-search-area';
-        auditPanel.appendChild(searchDiv);
+    var searchDiv = document.createElement('div');
+    searchDiv.id = 'audit-search-' + S;
+    auditPanel.appendChild(searchDiv);
 
-        var gridDiv = document.createElement('div');
-        gridDiv.id = 'audit-grid-area';
-        auditPanel.appendChild(gridDiv);
+    var gridDiv = document.createElement('div');
+    gridDiv.id = 'audit-grid-' + S;
+    auditPanel.appendChild(gridDiv);
 
-        var detailDiv = document.createElement('div');
-        detailDiv.id = 'audit-detail-area';
-        detailDiv.style.cssText = 'display:none; margin-top:10px; gap:10px;';
-        detailDiv.innerHTML =
-            '<div style="display:flex; gap:10px;">' +
-                '<div style="flex:1">' +
-                    '<label style="font-weight:bold; display:block; margin-bottom:4px;">변경 전 (Before)</label>' +
-                    '<textarea id="audit-before" readonly style="width:100%; height:150px; font-family:monospace; font-size:12px; resize:vertical;"></textarea>' +
-                '</div>' +
-                '<div style="flex:1">' +
-                    '<label style="font-weight:bold; display:block; margin-bottom:4px;">변경 후 (After)</label>' +
-                    '<textarea id="audit-after" readonly style="width:100%; height:150px; font-family:monospace; font-size:12px; resize:vertical;"></textarea>' +
-                '</div>' +
-            '</div>';
-        auditPanel.appendChild(detailDiv);
+    var detailDiv = document.createElement('div');
+    detailDiv.id = 'audit-detail-' + S;
+    detailDiv.style.cssText = 'display:none; margin-top:10px;';
+    detailDiv.innerHTML =
+        '<div style="display:flex; gap:10px;">' +
+            '<div style="flex:1">' +
+                '<label style="font-weight:bold; display:block; margin-bottom:4px;">변경 전 (Before)</label>' +
+                '<textarea id="audit-before-' + S + '" readonly style="width:100%; height:150px; font-family:monospace; font-size:12px; resize:vertical;"></textarea>' +
+            '</div>' +
+            '<div style="flex:1">' +
+                '<label style="font-weight:bold; display:block; margin-bottom:4px;">변경 후 (After)</label>' +
+                '<textarea id="audit-after-' + S + '" readonly style="width:100%; height:150px; font-family:monospace; font-size:12px; resize:vertical;"></textarea>' +
+            '</div>' +
+        '</div>';
+    auditPanel.appendChild(detailDiv);
 
-        ctx.auditSearchForm = new FormaForm('#audit-search-area', {
-            search: true,
-            elements: [
-                { field: 'audit_dt', label: '감사일자', widget: 'dateRange', default: 'THIS_MONTH' },
-                { field: 'pgm_id', label: '프로그램ID', placeholder: '프로그램ID' },
-                { field: 'user_id', label: '사용자ID', placeholder: '사용자ID' },
-                { field: 'action', label: '액션', widget: 'combo', options: [
-                    { value: '', label: '전체' },
-                    { value: 'INSERT', label: 'INSERT' },
-                    { value: 'UPDATE', label: 'UPDATE' },
-                    { value: 'DELETE', label: 'DELETE' }
-                ]}
-            ]
-        });
+    ctx.auditSearchForm = new FormaForm('#audit-search-' + S, {
+        search: true,
+        elements: [
+            { field: 'audit_dt', label: '감사일자', widget: 'dateRange', default: 'THIS_MONTH' },
+            { field: 'pgm_id', label: '프로그램ID', placeholder: '프로그램ID' },
+            { field: 'user_id', label: '사용자ID', placeholder: '사용자ID' },
+            { field: 'action', label: '액션', widget: 'combo', options: [
+                { value: '', label: '전체' },
+                { value: 'INSERT', label: 'INSERT' },
+                { value: 'UPDATE', label: 'UPDATE' },
+                { value: 'DELETE', label: 'DELETE' }
+            ]}
+        ]
+    });
 
-        ctx.auditGrid = new FormaGrid('#audit-grid-area', {
-            paging: true,
-            pageSize: 50,
-            columns: [
-                { field: 'AUDIT_SEQ', label: '순번', width: 70, align: 'center' },
-                { field: 'AUDIT_DT', label: '감사일시', width: 150 },
-                { field: 'PGM_ID', label: '프로그램ID', width: 100 },
-                { field: 'TABLE_NAME', label: '테이블', width: 140 },
-                { field: 'ACTION', label: '액션', width: 80, align: 'center', renderer: function(val) {
-                    var colors = { INSERT: '#27ae60', UPDATE: '#2980b9', DELETE: '#e74c3c' };
-                    var color = colors[val] || '#666';
-                    return '<span style="color:' + color + '; font-weight:bold;">' + (val || '') + '</span>';
-                }},
-                { field: 'ROW_KEY', label: 'ROW KEY', width: 140 },
-                { field: 'USER_ID', label: '사용자ID', width: 100 },
-                { field: 'USER_IP', label: 'IP', width: 120 }
-            ],
-            onRowClick: function(row) {
-                var detailArea = document.getElementById('audit-detail-area');
-                detailArea.style.display = 'block';
-                document.getElementById('audit-before').value = row.BEFORE_DATA ? JSON.stringify(JSON.parse(row.BEFORE_DATA), null, 2) : '';
-                document.getElementById('audit-after').value = row.AFTER_DATA ? JSON.stringify(JSON.parse(row.AFTER_DATA), null, 2) : '';
-            },
-            onPageChange: function(page, size) {
-                loadAuditLog(page, size);
-            }
-        });
+    ctx.auditGrid = new FormaGrid('#audit-grid-' + S, {
+        paging: true,
+        pageSize: 50,
+        columns: [
+            { field: 'AUDIT_SEQ', label: '순번', width: 70, align: 'center' },
+            { field: 'AUDIT_DT', label: '감사일시', width: 150 },
+            { field: 'PGM_ID', label: '프로그램ID', width: 100 },
+            { field: 'TABLE_NAME', label: '테이블', width: 140 },
+            { field: 'ACTION', label: '액션', width: 80, align: 'center', renderer: function(val) {
+                var colors = { INSERT: '#27ae60', UPDATE: '#2980b9', DELETE: '#e74c3c' };
+                var color = colors[val] || '#666';
+                return '<span style="color:' + color + '; font-weight:bold;">' + (val || '') + '</span>';
+            }},
+            { field: 'ROW_KEY', label: 'ROW KEY', width: 140 },
+            { field: 'USER_ID', label: '사용자ID', width: 100 },
+            { field: 'USER_IP', label: 'IP', width: 120 }
+        ],
+        onRowClick: function(row) {
+            var detailArea = document.getElementById('audit-detail-' + S);
+            detailArea.style.display = 'block';
+            document.getElementById('audit-before-' + S).value = row.BEFORE_DATA ? JSON.stringify(JSON.parse(row.BEFORE_DATA), null, 2) : '';
+            document.getElementById('audit-after-' + S).value = row.AFTER_DATA ? JSON.stringify(JSON.parse(row.AFTER_DATA), null, 2) : '';
+        },
+        onPageChange: function(page, size) {
+            loadAuditLog(page, size);
+        }
+    });
 
-        // --- Trace Tab ---
-        var tracePanel = ctx.tab.getContentEl('tab-trace');
+    // --- Trace Tab ---
+    var tracePanel = ctx.tab.getContentEl('trace-tab-' + S);
 
-        var traceGridDiv = document.createElement('div');
-        traceGridDiv.id = 'trace-grid-area';
-        tracePanel.appendChild(traceGridDiv);
+    var traceGridDiv = document.createElement('div');
+    traceGridDiv.id = 'trace-grid-' + S;
+    tracePanel.appendChild(traceGridDiv);
 
-        ctx.traceGrid = new FormaGrid('#trace-grid-area', {
-            columns: [
-                { field: 'traceId', label: 'Trace ID', width: 140 },
-                { field: 'pgmId', label: '프로그램ID', width: 100 },
-                { field: 'type', label: '유형', width: 80 },
-                { field: 'name', label: '이름', width: 200 },
-                { field: 'detail', label: '상세', width: 250 },
-                { field: 'elapsedMs', label: '소요시간(ms)', width: 100, align: 'right', renderer: function(val) {
-                    var num = Number(val);
-                    var color = num > 1000 ? '#e74c3c' : (num > 500 ? '#e67e22' : '#333');
-                    return '<span style="color:' + color + '; font-weight:' + (num > 500 ? 'bold' : 'normal') + ';">' + (val || '0') + '</span>';
-                }},
-                { field: 'error', label: '에러', width: 200, renderer: function(val) {
-                    if (!val) return '';
-                    return '<span style="color:#e74c3c;">' + val + '</span>';
-                }},
-                { field: 'ts', label: '시간', width: 160, format: 'date' }
-            ]
-        });
-
-        listener.button.search.click();
-    };
+    ctx.traceGrid = new FormaGrid('#trace-grid-' + S, {
+        columns: [
+            { field: 'traceId', label: 'Trace ID', width: 140 },
+            { field: 'pgmId', label: '프로그램ID', width: 100 },
+            { field: 'type', label: '유형', width: 80 },
+            { field: 'name', label: '이름', width: 200 },
+            { field: 'detail', label: '상세', width: 250 },
+            { field: 'elapsedMs', label: '소요시간(ms)', width: 100, align: 'right', renderer: function(val) {
+                var num = Number(val);
+                var color = num > 1000 ? '#e74c3c' : (num > 500 ? '#e67e22' : '#333');
+                return '<span style="color:' + color + '; font-weight:' + (num > 500 ? 'bold' : 'normal') + ';">' + (val || '0') + '</span>';
+            }},
+            { field: 'error', label: '에러', width: 200, renderer: function(val) {
+                if (!val) return '';
+                return '<span style="color:#e74c3c;">' + val + '</span>';
+            }},
+            { field: 'ts', label: '시간', width: 160, format: 'date' }
+        ]
+    });
 
     function loadAuditLog(page, size) {
         var param = ctx.auditSearchForm.getData();
@@ -151,7 +165,7 @@
         platform.post('/api/admin/auditLog', param, new Callback(function(result) {
             if (result.resultCode === RESULT_CODE.OK) {
                 ctx.auditGrid.setData(result.resultData.data, result.resultData.totalCount);
-                var detailArea = document.getElementById('audit-detail-area');
+                var detailArea = document.getElementById('audit-detail-' + S);
                 if (detailArea) detailArea.style.display = 'none';
             }
         }));
@@ -161,12 +175,13 @@
         platform.get('/api/trace/recent?count=200', new Callback(function(result) {
             if (result.resultCode === RESULT_CODE.OK) {
                 ctx.traceGrid.setData(result.resultData);
+                ctx.traceLoaded = true;
             }
         }));
     }
 
     listener.button.search.click = function() {
-        if (ctx.activeTab === 'tab-audit') {
+        if (ctx.activeTab === 'audit-tab-' + S) {
             loadAuditLog(1, 50);
         } else {
             loadTrace();
@@ -174,17 +189,19 @@
     };
 
     listener.button.init.click = function() {
-        if (ctx.activeTab === 'tab-audit') {
+        if (ctx.activeTab === 'audit-tab-' + S) {
             ctx.auditSearchForm.clear();
             ctx.auditGrid.clearData();
-            var detailArea = document.getElementById('audit-detail-area');
+            var detailArea = document.getElementById('audit-detail-' + S);
             if (detailArea) detailArea.style.display = 'none';
         } else {
             ctx.traceGrid.clearData();
+            ctx.traceLoaded = false;
         }
     };
 
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); }); } else { platform.startPage(PGM, listener); }
+    listener.button.search.click();
+    listener.initializedPgm = true;
 })();
 </script>
 </body>

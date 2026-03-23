@@ -9,11 +9,11 @@
 <div class="forma-page">
     <div class="forma-page-header">
         <h1 class="forma-page-title">프로그램관리 (SY020)</h1>
-        <div id="forma-toolbar"></div>
+        <div id="toolbar-SY020"></div>
     </div>
     <div class="forma-content">
-        <div id="search-area"></div>
-        <div id="grid-area"></div>
+        <div id="search-SY020"></div>
+        <div id="grid-SY020"></div>
     </div>
 </div>
 <script src="/assets/js/framework/forma.core.js"></script>
@@ -25,86 +25,86 @@
 <script src="/assets/js/framework/forma.tab.js"></script>
 <script src="/assets/js/framework/forma.modal.js"></script>
 <script>
-(function() {
+(async function() {
     var PGM = 'SY020';
+    var S = PGM;
     var listener = platform.initListener(PGM);
     var ctx = {};
 
-    listener.initPgm = function() {
-        ctx.searchForm = new FormaForm('#search-area', {
-            search: true,
-            elements: [
-                { field: 'keyword', label: '검색어', placeholder: '프로그램ID 또는 프로그램명' }
-            ]
-        });
+    try {
+        var res = await platform.get('/api/pgm/' + PGM + '/init');
+        if (res.resultCode === 'OK') {
+            listener.pgmInfo = res.resultData.pgmInfo;
+            listener.pgmAuth = res.resultData.pgmAuth;
+        }
+    } catch(e) { listener.pgmInfo = {}; listener.pgmAuth = {}; }
 
-        ctx.grid1 = new FormaGrid('#grid-area', {
-            editable: true,
-            checkable: true,
-            columns: [
-                { field: 'PGM_ID', label: '프로그램ID', width: 120, editor: 'text' },
-                { field: 'PGM_NM', label: '프로그램명', width: 200, editor: 'text' },
-                { field: 'SRCH_YN', label: '조회', width: 60, editor: 'check', align: 'center' },
-                { field: 'NEW_YN', label: '신규', width: 60, editor: 'check', align: 'center' },
-                { field: 'SAVE_YN', label: '저장', width: 60, editor: 'check', align: 'center' },
-                { field: 'DEL_YN', label: '삭제', width: 60, editor: 'check', align: 'center' },
-                { field: 'PRNT_YN', label: '출력', width: 60, editor: 'check', align: 'center' },
-                { field: 'UPLD_YN', label: '업로드', width: 60, editor: 'check', align: 'center' },
-                { field: 'INIT_YN', label: '초기화', width: 60, editor: 'check', align: 'center' },
-                { field: 'ETC_DESC1', label: '기타버튼1', width: 120, editor: 'text' },
-                { field: 'ETC_DESC2', label: '기타버튼2', width: 120, editor: 'text' },
-                { field: 'ETC_DESC3', label: '기타버튼3', width: 120, editor: 'text' }
-            ]
-        });
+    if (typeof FormaToolbar !== 'undefined') {
+        FormaToolbar.render('#toolbar-' + S, { listener: listener, pgmInfo: listener.pgmInfo, pgmAuth: listener.pgmAuth });
+    }
 
-        listener.button.search.click();
-    };
+    ctx.searchForm = new FormaForm('#search-' + S, {
+        search: true,
+        elements: [
+            { field: 'keyword', label: '검색어', placeholder: '프로그램ID / 프로그램명' }
+        ]
+    });
+
+    ctx.grid1 = new FormaGrid('#grid-' + S, {
+        editable: true,
+        checkable: true,
+        columns: [
+            { field: 'PGM_ID', label: '프로그램ID', width: 100, editor: 'text' },
+            { field: 'PGM_NM', label: '프로그램명', width: 180, editor: 'text' },
+            { field: 'SRCH_YN', label: '조회', width: 50, editor: 'check', align: 'center' },
+            { field: 'NEW_YN', label: '신규', width: 50, editor: 'check', align: 'center' },
+            { field: 'SAVE_YN', label: '저장', width: 50, editor: 'check', align: 'center' },
+            { field: 'DEL_YN', label: '삭제', width: 50, editor: 'check', align: 'center' },
+            { field: 'PRNT_YN', label: '출력', width: 50, editor: 'check', align: 'center' },
+            { field: 'UPLD_YN', label: '업로드', width: 55, editor: 'check', align: 'center' },
+            { field: 'INIT_YN', label: '초기화', width: 55, editor: 'check', align: 'center' },
+            { field: 'ETC_DESC1', label: '기타1', width: 100, editor: 'text' },
+            { field: 'ETC_DESC2', label: '기타2', width: 100, editor: 'text' },
+            { field: 'ETC_DESC3', label: '기타3', width: 100, editor: 'text' }
+        ]
+    });
 
     listener.button.search.click = function() {
-        platform.post('/api/admin/programs', ctx.searchForm.getData(), new Callback(function(result) {
-            if (result.resultCode === RESULT_CODE.OK) ctx.grid1.setData(result.resultData);
+        platform.post('/api/admin/programs', ctx.searchForm.getData(), new Callback(function(r) {
+            if (r.resultCode === RESULT_CODE.OK) ctx.grid1.setData(r.resultData);
         }));
     };
 
     listener.button.news.click = function() {
-        ctx.grid1.addRow({
-            SRCH_YN: 'Y', NEW_YN: 'Y', SAVE_YN: 'Y', DEL_YN: 'Y',
-            PRNT_YN: 'N', UPLD_YN: 'N', INIT_YN: 'Y'
-        });
+        ctx.grid1.addRow({ SRCH_YN: 'Y', NEW_YN: 'Y', SAVE_YN: 'Y', DEL_YN: 'Y', PRNT_YN: 'N', UPLD_YN: 'N', INIT_YN: 'Y' });
     };
 
-    listener.button.save.click = function() {
+    listener.button.save.click = async function() {
         var data = ctx.grid1.getModifiedData();
-        if (data.length === 0) { FormaPopup.alert.show('변경된 데이터가 없습니다.'); return; }
-        FormaPopup.confirm.show('저장하시겠습니까?').then(function(ok) {
-            if (ok) platform.post('/api/admin/programs/save', data, new Callback(function(r) {
-                if (r.resultCode === RESULT_CODE.OK) {
-                    FormaPopup.toast.success('저장되었습니다.');
-                    listener.button.search.click();
-                }
-            }));
-        });
+        if (!data.length) { FormaPopup.alert.show('변경사항이 없습니다.'); return; }
+        var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
+        if (ok) {
+            await platform.post('/api/admin/programs/save', data);
+            FormaPopup.toast.success('저장되었습니다.');
+            listener.button.search.click();
+        }
     };
 
-    listener.button.del.click = function() {
+    listener.button.del.click = async function() {
         var data = ctx.grid1.getCheckedData();
-        if (data.length === 0) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
-        FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?').then(function(ok) {
-            if (ok) platform.post('/api/admin/programs/delete', data, new Callback(function(r) {
-                if (r.resultCode === RESULT_CODE.OK) {
-                    FormaPopup.toast.success('삭제되었습니다.');
-                    listener.button.search.click();
-                }
-            }));
-        });
+        if (!data.length) { FormaPopup.alert.show('삭제할 항목을 선택하세요.'); return; }
+        var ok = await FormaPopup.confirm.show(data.length + '건 삭제하시겠습니까?');
+        if (ok) {
+            await platform.post('/api/admin/programs/delete', data);
+            FormaPopup.toast.success('삭제되었습니다.');
+            listener.button.search.click();
+        }
     };
 
-    listener.button.init.click = function() {
-        ctx.searchForm.clear();
-        ctx.grid1.clearData();
-    };
+    listener.button.init.click = function() { ctx.searchForm.clear(); ctx.grid1.clearData(); };
 
-    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); }); } else { platform.startPage(PGM, listener); }
+    listener.button.search.click();
+    listener.initializedPgm = true;
 })();
 </script>
 </body>
