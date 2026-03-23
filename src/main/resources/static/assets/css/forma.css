@@ -13,10 +13,10 @@ body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 13px; co
 
 /* Layout */
 .forma-page { margin: 0; padding: 4px 6px; }
-.forma-page-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 2px solid #333; }
+.forma-page-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 2px solid var(--text); color: var(--text); }
 .forma-content { display: flex; flex-direction: column; gap: 4px; }
-.forma-section { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; }
-.forma-section-title { font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; }
+.forma-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
+.forma-section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
 
 /* Input */
 .forma-input { height: 28px; padding: 0 8px; border: 1px solid var(--border); border-radius: 3px; font-size: 12px; outline: none; background: var(--bg-input); color: var(--text); }
@@ -38,12 +38,12 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-search { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px 12px; }
 .forma-search-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .forma-search-group { display: flex; align-items: center; gap: 4px; }
-.forma-search-group label { font-size: 12px; font-weight: 500; color: #555; white-space: nowrap; min-width: 50px; }
+.forma-search-group label { font-size: 12px; font-weight: 500; color: var(--text-sub); white-space: nowrap; min-width: 50px; }
 .forma-search-group .forma-input { width: 130px; }
 
 /* Grid */
 .forma-grid-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; }
-.forma-grid-toolbar { padding: 6px 8px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 4px; }
+.forma-grid-toolbar { padding: 6px 8px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; }
 .forma-grid-scroll { overflow-x: auto; position: relative; }
 .forma-grid { border-collapse: collapse; }
 .forma-grid th { background: var(--bg-header); padding: 6px 8px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-sub); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -51,32 +51,32 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-grid td.fg-wrap { white-space: pre-wrap; word-break: break-word; overflow: visible; text-overflow: unset; line-height: 1.4; vertical-align: top; }
 .forma-grid tbody tr:hover { background: var(--bg-hover); }
 .forma-grid tbody tr.selected { background: var(--bg-selected); }
-.forma-grid-empty { text-align: center; padding: 60px 20px !important; color: #aaa; font-size: 13px; }
-.forma-grid-input { width: 100%; height: 24px; padding: 0 4px; border: 1px solid #4a90d9; background: #fff; font-size: 12px; outline: none; }
-.forma-row-modified td:first-child { border-left: 3px solid #4caf50; }
+.forma-grid-empty { text-align: center; padding: 60px 20px !important; color: var(--text-muted); font-size: 13px; }
+.forma-grid-input { width: 100%; height: 24px; padding: 0 4px; border: 1px solid var(--primary); background: var(--bg-input); color: var(--text); font-size: 12px; outline: none; }
+.forma-row-modified td:first-child { border-left: 3px solid var(--success); }
 
 /* Form */
 .forma-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
 .forma-search { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
 .forma-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
 .forma-form-row { display: flex; align-items: center; gap: 8px; }
-.forma-form-row label { font-size: 12px; font-weight: 500; color: #555; min-width: 80px; white-space: nowrap; }
-.forma-form-row label.required::after { content: ' *'; color: #e24b4a; }
+.forma-form-row label { font-size: 12px; font-weight: 500; color: var(--text-sub); min-width: 80px; white-space: nowrap; }
+.forma-form-row label.required::after { content: ' *'; color: var(--danger); }
 .forma-form-row .forma-input { flex: 1; }
-.forma-form-error .forma-input, .forma-form-error select.forma-input { border-color: #e24b4a !important; background: #fff8f8; }
-.forma-form-error label { color: #e24b4a !important; }
+.forma-form-error .forma-input, .forma-form-error select.forma-input { border-color: var(--danger) !important; }
+.forma-form-error label { color: var(--danger) !important; }
 
 /* Radio */
 .forma-radio-wrap { display: inline-flex; align-items: center; gap: 12px; }
-.forma-radio-label { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: #555; cursor: pointer; white-space: nowrap; }
+.forma-radio-label { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: var(--text-sub); cursor: pointer; white-space: nowrap; }
 
 /* Checkbox enhanced */
 .forma-checkbox-wrap { display: inline-flex; align-items: center; gap: 4px; }
-.forma-checkbox-label { font-size: 12px; color: #555; }
+.forma-checkbox-label { font-size: 12px; color: var(--text-sub); }
 
 /* Loading */
 .forma-loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.5); z-index: 9999; align-items: center; justify-content: center; }
-.forma-loading-spinner { width: 32px; height: 32px; border: 3px solid #e0e0e0; border-top-color: #4a90d9; border-radius: 50%; animation: forma-spin 0.7s linear infinite; }
+.forma-loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: forma-spin 0.7s linear infinite; }
 @keyframes forma-spin { to { transform: rotate(360deg); } }
 
 /* Toast */
@@ -90,36 +90,36 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 
 /* Dialog */
 .forma-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 10001; }
-.forma-dialog { background: #fff; border-radius: 8px; min-width: 320px; max-width: 480px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.forma-dialog { background: var(--bg-card); border-radius: 8px; min-width: 320px; max-width: 480px; box-shadow: 0 8px 32px var(--shadow); color: var(--text); }
 .forma-dialog-body { padding: 24px 24px 16px; font-size: 14px; line-height: 1.6; }
 .forma-dialog-footer { padding: 12px 24px 16px; display: flex; justify-content: flex-end; gap: 8px; }
 
 /* Tab */
 .forma-tab-wrap { display: flex; flex-direction: column; flex: 1; }
-.forma-tab-header { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; background: #fff; }
-.forma-tab-btn { padding: 8px 20px; border: none; background: #f5f5f5; cursor: pointer; font-size: 12px; font-weight: 500; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
-.forma-tab-btn:hover { background: #eee; }
-.forma-tab-btn.active { background: #fff; color: #333; border-bottom-color: #4a90d9; }
-.forma-tab-body { flex: 1; background: #fff; }
+.forma-tab-header { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--bg-card); }
+.forma-tab-btn { padding: 8px 20px; border: none; background: var(--bg-alt); cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-sub); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+.forma-tab-btn:hover { background: var(--bg-hover); }
+.forma-tab-btn.active { background: var(--bg-card); color: var(--text); border-bottom-color: var(--primary); }
+.forma-tab-body { flex: 1; background: var(--bg-card); }
 .forma-tab-panel { padding: 8px 0; height: 100%; }
 
 /* Modal */
 .forma-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 5000; }
-.forma-modal { background: #fff; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2); overflow: hidden; }
-.forma-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 14px; background: #f8f8f8; }
-.forma-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
-.forma-modal-close:hover { color: #333; }
+.forma-modal { background: var(--bg-card); border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 8px 32px var(--shadow); overflow: hidden; color: var(--text); }
+.forma-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; background: var(--bg-header); color: var(--text); }
+.forma-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+.forma-modal-close:hover { color: var(--text); }
 .forma-modal-body { flex: 1; overflow: auto; padding: 12px; }
 
 /* Toolbar */
 .forma-toolbar { display: flex; gap: 4px; justify-content: flex-end; }
 
 /* Grid Footer */
-.forma-grid tfoot td { background: #f5f5f5; font-weight: 600; border-top: 2px solid #e0e0e0; padding: 4px 8px; font-size: 12px; }
+.forma-grid tfoot td { background: var(--bg-header); font-weight: 600; border-top: 2px solid var(--border); padding: 4px 8px; font-size: 12px; }
 
 /* Grid Multi-header */
-.forma-grid thead th { text-align: center; border-bottom: 1px solid #e0e0e0; }
-.forma-grid thead tr:last-child th { border-bottom: 2px solid #e0e0e0; }
+.forma-grid thead th { text-align: center; border-bottom: 1px solid var(--border); }
+.forma-grid thead tr:last-child th { border-bottom: 2px solid var(--border); }
 
 /* Grid Sort Icon */
 .forma-sort-icon { font-size: 10px; color: #4a90d9; }
@@ -423,7 +423,7 @@ select.forma-filter-input { padding-right: 16px; }
 
 /* ═══ 즐겨찾기 메뉴 ═══ */
 .forma-menu-fav-section { }
-.forma-menu-fav-divider { height: 1px; background: #dde2e8; margin: 4px 12px 8px; }
+.forma-menu-fav-divider { height: 1px; background: var(--border); margin: 4px 12px 8px; }
 .forma-menu-fav-item { position: relative; }
 .forma-menu-fav-item .forma-menu-fav-remove {
     display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
