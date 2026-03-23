@@ -206,7 +206,7 @@
 <script>
 let tabBasic, tabDynamic, modalForm;
 
-document.addEventListener('DOMContentLoaded', function() {
+(function _demoInit() { if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _demoInit); return; }
 
     // ── 1. 기본 탭 ──
     tabBasic = new FormaTab('#tab-basic', {
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { field: 'tel', label: '전화번호', readOnly: true },
         ]
     });
-});
+})();
 
 // ── 5. 인라인 모달 ──
 function openInlineModal(size) {

@@ -132,7 +132,7 @@
 const grids = {};
 let charts = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+(function _demoInit() { if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _demoInit); return; }
 
     // ── 2. i18n 미리보기 ──
     setLangDemo('ko');
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { item_cd: 'ITM-002', item_nm: '스텐판 1.5T', spec: '1000×2000', qty: 50, price: 25000, amount: 1250000 },
         { item_cd: 'ITM-003', item_nm: '볼트 M8', spec: 'STS304', qty: 1000, price: 150, amount: 150000 },
     ]);
-});
+})();
 
 function setLangDemo(lang) {
     FormaI18n.setLang(lang);

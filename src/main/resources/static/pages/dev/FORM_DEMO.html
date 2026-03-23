@@ -374,7 +374,7 @@
 <script>
 const forms = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+(function _demoInit() { if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _demoInit); return; }
 
     // 1. 검색폼
     forms.search = new FormaForm('#demo-search', {
@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
         ]
     });
-});
+})();
 
 // 헬퍼 함수
 function demoGetData(key) {

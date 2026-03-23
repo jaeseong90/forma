@@ -415,7 +415,7 @@ const grids = {};
 const forms = {};
 let splitH = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+(function _demoInit() { if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _demoInit); return; }
 
     // ── 1. 셀 병합 (merge: true) ──
     grids.merge = new FormaGrid('#grid-merge', {
@@ -1126,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ]);
     // 음수 금액 초기 CSS
     grids.events.addCellCss(2, 'amount', 'text-red');
-});
+})();
 
 // ── 헬퍼 ──
 function showData(key, type) {
