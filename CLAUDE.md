@@ -34,12 +34,11 @@ com.forma/
 │   ├── screen/model/   # ScreenDefinition (YAML 파싱 모델)
 │   ├── file/           # FileController, FileService (파일 첨부)
 │   ├── trace/          # TraceFilter, ServiceTraceAspect, TraceStore
-│   ├── sse/            # SseBroadcaster, SseRegistry
 │   ├── mvc/            # WebMvcConfig (인터셉터 등록), GlobalExceptionAdvice
 │   ├── excel/          # ExcelController, ExcelService (XLSX 서버사이드 다운로드)
 │   ├── log/            # FormaLogService, FormaLogType
 │   ├── exception/      # FormaException
-│   └── util/           # Constants, SeqGenerator, StringUtil, OptimisticLockUtil
+│   └── util/           # Constants, SeqGenerator, OptimisticLockUtil
 ├── common/             # 공통 (PgmController, CodeController, CommonService, PopupController, UserSettingsController, AdminController)
 ├── login/              # 로그인 (LoginController, LoginService, LoginUserVo)
 └── domain/             # 업무 코드 (AI가 생성하거나 YAML로 대체)

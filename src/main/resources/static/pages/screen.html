@@ -321,6 +321,39 @@
             splitArea.appendChild(rightPane);
             root.appendChild(splitArea);
 
+        } else if (type === 'split-tab') {
+            // 좌우 분할: grid1 | 탭(form + grid2 + grid3)
+            var splitArea = el('div', 'split-area');
+            splitArea.style.display = 'flex';
+            splitArea.style.gap = '0';
+            splitArea.style.marginTop = '8px';
+
+            var leftPane = el('div', 'grid1-area');
+            leftPane.className = 'forma-split-left';
+            leftPane.style.width = (def.layout && def.layout.splitWidth || 380) + 'px';
+            leftPane.style.minWidth = '200px';
+            leftPane.style.flexShrink = '0';
+
+            var rightPane = document.createElement('div');
+            rightPane.className = 'forma-split-right';
+            rightPane.style.flex = '1';
+            rightPane.style.minWidth = '300px';
+
+            var tabDiv = el('div', 'tab-area');
+            rightPane.appendChild(tabDiv);
+
+            if (def.form && def.form.masterForm) {
+                var formDiv = el('div', 'master-form-area');
+                rightPane.appendChild(formDiv);
+            }
+
+            var grid2Div = el('div', 'grid2-area');
+            rightPane.appendChild(grid2Div);
+
+            splitArea.appendChild(leftPane);
+            splitArea.appendChild(rightPane);
+            root.appendChild(splitArea);
+
         } else if (type === 'master-detail') {
             // 상하: grid1 → masterForm → grid2
             var grid1Div = el('div', 'grid1-area');

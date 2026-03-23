@@ -166,9 +166,13 @@
     // 4. MDI + 메뉴 초기화
     FormaMdi.init('#mdi-tabs', '#content-area');
 
-    // YAML 등록 화면은 screen.html 경로로 변환
+    // YAML 등록 화면만 screen.html 경로로 변환 (커스텀 HTML 화면은 원본 URL 유지)
     var screenRes = await platform.get('/api/screen/_reload');
-    convertMenuUrls(menuData);
+    var yamlScreenIds = (screenRes.resultCode === RESULT_CODE.OK && screenRes.resultData)
+        ? (screenRes.resultData.screenIds || []) : [];
+    var yamlSet = {};
+    yamlScreenIds.forEach(function(id) { yamlSet[id] = true; });
+    convertMenuUrls(menuData, yamlSet);
     FormaMenu.init('#menu-area', menuData);
 
     // 즐겨찾기 로드
@@ -182,15 +186,16 @@
         if (settings.menuCollapsed === 'Y') document.getElementById('sidebar').classList.add('collapsed');
     }
 
-    function convertMenuUrls(items) {
+    function convertMenuUrls(items, yamlSet) {
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             if (item.children && item.children.length > 0) {
-                convertMenuUrls(item.children);
-            } else if (item.url && item.id) {
-                // 모든 리프 화면을 YAML 엔진 URL로 변환
+                convertMenuUrls(item.children, yamlSet);
+            } else if (item.url && item.id && yamlSet[item.id]) {
+                // YAML 정의가 있는 화면만 screen.html로 변환
                 item.url = '/pages/screen.html?id=' + item.id;
             }
+            // YAML이 없는 화면(SYS010, SYS020, SDB010 등)은 원본 URL 유지
         }
     }
 

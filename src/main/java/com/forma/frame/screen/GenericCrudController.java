@@ -90,9 +90,12 @@ public class GenericCrudController extends BaseController {
     }
 
     @GetMapping("/_reload")
-    public BaseResponse<Integer> reload() {
+    public BaseResponse<java.util.Map<String, Object>> reload() {
         int count = registry.reload();
-        return BaseResponse.Ok(count);
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("count", count);
+        result.put("screenIds", new java.util.ArrayList<>(registry.getScreenIds()));
+        return BaseResponse.Ok(result);
     }
 
     private ScreenDefinition getDefinitionOrThrow(String screenId) {

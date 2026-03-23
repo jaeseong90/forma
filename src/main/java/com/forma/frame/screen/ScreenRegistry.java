@@ -52,6 +52,13 @@ public class ScreenRegistry {
     }
 
     /**
+     * 등록된 screen ID 목록
+     */
+    public java.util.Set<String> getScreenIds() {
+        return screens.keySet();
+    }
+
+    /**
      * 개발 모드: YAML 재로딩
      */
     public int reload() {
