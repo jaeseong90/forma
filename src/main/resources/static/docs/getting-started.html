@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>FORMA — Getting Started</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 14px; color: #333; background: #f8fafc; }
+        .gs-header { background: #1a2332; color: #fff; padding: 20px 0; text-align: center; }
+        .gs-header h1 { font-size: 28px; font-weight: 800; }
+        .gs-header h1 span { color: #5b9ef4; }
+        .gs-header p { color: #a0b8d0; margin-top: 6px; font-size: 14px; }
+        .gs-nav { background: #fff; border-bottom: 1px solid #e0e4e8; padding: 0; position: sticky; top: 0; z-index: 10; }
+        .gs-nav-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 0; overflow-x: auto; }
+        .gs-nav a { padding: 12px 20px; font-size: 13px; color: #666; text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
+        .gs-nav a:hover { color: #333; }
+        .gs-nav a.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+        .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+        .step { padding: 32px 0; border-bottom: 1px solid #e8ecf0; }
+        .step:last-child { border-bottom: none; }
+        .step-badge { display: inline-block; background: #2563eb; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+        .step h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+        .step h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: #555; }
+        .step p { line-height: 1.7; margin-bottom: 8px; color: #444; }
+        pre { background: #1e1e2e; color: #e0e0e0; padding: 16px; border-radius: 8px; font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; margin: 10px 0 16px; position: relative; }
+        pre .comment { color: #6a737d; }
+        pre .key { color: #ff6b6b; }
+        pre .val { color: #a8e6cf; }
+        pre .file { color: #ffd93d; }
+        code { background: #f0f2f5; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; color: #d63384; }
+        .result-box { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+        .result-box h4 { font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 6px; }
+        .result-box p { font-size: 12px; color: #15803d; margin: 0; }
+        .warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+        .warn-box p { font-size: 12px; color: #92400e; margin: 0; }
+        .file-tree { background: #f8fafc; border: 1px solid #e0e4e8; border-radius: 8px; padding: 14px 16px; margin: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.8; color: #555; }
+        .file-tree .new { color: #16a34a; font-weight: 600; }
+        .tip { background: #eff6ff; border-left: 3px solid #3b82f6; padding: 10px 14px; margin: 12px 0; border-radius: 0 4px 4px 0; font-size: 12px; color: #1e40af; }
+        .copy-btn { position: absolute; top: 6px; right: 8px; background: #3a3a50; color: #aaa; border: none; padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer; }
+        .copy-btn:hover { color: #fff; background: #5b9ef4; }
+        .time-badge { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; margin-left: 8px; }
+        a { color: #2563eb; }
+        .footer { text-align: center; padding: 24px; color: #999; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="gs-header">
+    <h1><span>FORMA</span> Getting Started</h1>
+    <p>10분 안에 첫 화면 만들기</p>
+</div>
+
+<div class="gs-nav">
+    <div class="gs-nav-inner">
+        <a href="#step0" class="active">준비</a>
+        <a href="#step1">Step 1: YAML 화면</a>
+        <a href="#step2">Step 2: 메뉴 등록</a>
+        <a href="#step3">Step 3: 커스텀 확장</a>
+        <a href="#step4">Step 4: 그리드 고급</a>
+        <a href="#step5">Step 5: 기존 DB</a>
+        <a href="#next">다음 단계</a>
+    </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step0">
+    <span class="step-badge">준비</span>
+    <h2>서버 실행 확인</h2>
+    <p>이 페이지가 보인다면 서버는 이미 실행 중입니다.</p>
+<pre><span class="comment"># 아직 실행 안 했다면:</span>
+git clone https://github.com/jaeseong90/forma.git
+cd forma
+./gradlew bootRun</pre>
+    <p><a href="/login.html" target="_blank">ERP 메인 열기</a> (admin / 빈 비밀번호) — 이 창은 열어두세요.</p>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step1">
+    <span class="step-badge">STEP 1</span>
+    <h2>YAML로 화면 만들기 <span class="time-badge">3분</span></h2>
+    <p>부서관리 화면을 YAML 1파일로 만듭니다. Controller, Service, Mapper, HTML — 전부 불필요.</p>
+
+    <h3>1-1. YAML 파일 생성</h3>
+    <p><code>design/screens/TUT010.yml</code> 파일을 만드세요:</p>
+<pre><span class="comment"># design/screens/TUT010.yml</span>
+<span class="key">screen:</span>
+  <span class="key">id:</span> <span class="val">TUT010</span>
+  <span class="key">name:</span> <span class="val">부서관리</span>
+  <span class="key">type:</span> <span class="val">list</span>
+
+<span class="key">auth:</span>
+  <span class="key">search:</span> <span class="val">true</span>
+  <span class="key">new:</span> <span class="val">true</span>
+  <span class="key">save:</span> <span class="val">true</span>
+  <span class="key">delete:</span> <span class="val">true</span>
+  <span class="key">init:</span> <span class="val">true</span>
+
+<span class="key">search:</span>
+  - <span class="key">field:</span> <span class="val">dept_name</span>
+    <span class="key">label:</span> <span class="val">부서명</span>
+    <span class="key">widget:</span> <span class="val">text</span>
+    <span class="key">placeholder:</span> <span class="val">부서명 검색</span>
+
+<span class="key">grids:</span>
+  <span class="key">grid1:</span>
+    <span class="key">editable:</span> <span class="val">true</span>
+    <span class="key">checkable:</span> <span class="val">true</span>
+    <span class="key">rowNum:</span> <span class="val">true</span>
+    <span class="key">columns:</span>
+      - { <span class="key">field:</span> <span class="val">DEPT_CODE</span>,   <span class="key">label:</span> <span class="val">부서코드</span>,   <span class="key">width:</span> <span class="val">100</span>, <span class="key">editor:</span> <span class="val">text</span> }
+      - { <span class="key">field:</span> <span class="val">DEPT_NAME</span>,   <span class="key">label:</span> <span class="val">부서명</span>,     <span class="key">width:</span> <span class="val">200</span>, <span class="key">editor:</span> <span class="val">text</span>, <span class="key">required:</span> <span class="val">true</span> }
+      - { <span class="key">field:</span> <span class="val">PARENT_CODE</span>, <span class="key">label:</span> <span class="val">상위부서코드</span>, <span class="key">width:</span> <span class="val">100</span>, <span class="key">editor:</span> <span class="val">text</span> }
+      - { <span class="key">field:</span> <span class="val">DEPT_LEVEL</span>,  <span class="key">label:</span> <span class="val">레벨</span>,       <span class="key">width:</span> <span class="val">60</span>,  <span class="key">type:</span> <span class="val">number</span>, <span class="key">align:</span> <span class="val">center</span> }
+      - { <span class="key">field:</span> <span class="val">SORT_ORDER</span>,  <span class="key">label:</span> <span class="val">정렬순서</span>,   <span class="key">width:</span> <span class="val">70</span>,  <span class="key">editor:</span> <span class="val">text</span>, <span class="key">type:</span> <span class="val">number</span>, <span class="key">align:</span> <span class="val">center</span> }
+      - { <span class="key">field:</span> <span class="val">USE_YN</span>,      <span class="key">label:</span> <span class="val">사용</span>,       <span class="key">width:</span> <span class="val">60</span>,  <span class="key">editor:</span> <span class="val">check</span>, <span class="key">align:</span> <span class="val">center</span> }
+
+<span class="key">sql:</span>
+  <span class="key">tables:</span>
+    - { <span class="key">name:</span> <span class="val">tb_dept</span> }
+  <span class="key">selectGrid1:</span>
+    <span class="key">table:</span> <span class="val">tb_dept</span>
+    <span class="key">columns:</span> <span class="val">dept_code, dept_name, parent_code, dept_level, sort_order, use_yn</span>
+    <span class="key">orderBy:</span> <span class="val">sort_order, dept_code</span></pre>
+
+    <h3>1-2. YAML 리로드</h3>
+    <p>서버 재시작 없이 브라우저에서 리로드:</p>
+<pre>브라우저 주소창에 입력:
+<span class="val">http://localhost:8081/api/screen/_reload</span>
+
+<span class="comment">→ {"resultCode":"OK","resultData":{"count":6,"screenIds":[...,"TUT010"]}}</span></pre>
+
+    <h3>1-3. 화면 확인</h3>
+<pre>브라우저 주소창에 입력:
+<span class="val">http://localhost:8081/pages/screen.html?id=TUT010</span></pre>
+
+    <div class="result-box">
+        <h4>결과</h4>
+        <p>검색폼 + 편집 가능 그리드가 표시됩니다. 조회 버튼(F3)을 누르면 샘플 부서 데이터 10건이 로딩됩니다.<br>
+        신규(F4) → 행 추가, 편집(더블클릭) → 값 수정, 저장(F9) → DB 반영. YAML 1파일로 완성.</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step2">
+    <span class="step-badge">STEP 2</span>
+    <h2>메뉴에 등록하기 <span class="time-badge">2분</span></h2>
+    <p>만든 화면을 ERP 메인의 좌측 메뉴에 추가합니다.</p>
+
+    <h3>방법 A: SY010 메뉴관리 화면에서 (권장)</h3>
+    <p>ERP 메인 → 시스템관리 → 메뉴관리(SY010) → 신규 행 추가:</p>
+<pre>메뉴ID:     <span class="val">M99</span>
+메뉴명:     <span class="val">튜토리얼</span>
+상위메뉴ID: <span class="val">(비워두면 최상위)</span>
+유형:       <span class="val">G (그룹)</span>
+정렬순서:   <span class="val">8</span>
+사용:       <span class="val">Y</span></pre>
+    <p>한 행 더 추가:</p>
+<pre>메뉴ID:     <span class="val">M99A</span>
+메뉴명:     <span class="val">부서관리</span>
+상위메뉴ID: <span class="val">M99</span>
+유형:       <span class="val">P (화면)</span>
+프로그램ID: <span class="val">TUT010</span>
+URL:        <span class="val">/pages/screen.html?id=TUT010</span>
+아이콘:     <span class="val">🏢</span>
+정렬순서:   <span class="val">1</span>
+사용:       <span class="val">Y</span></pre>
+    <p>저장(F9) 후 → SY030(역할/권한관리) → ADMIN 역할 클릭 → 부서관리 메뉴의 권한 체크 → 저장</p>
+    <p>브라우저 새로고침하면 좌측 메뉴에 "튜토리얼 > 부서관리"가 표시됩니다.</p>
+
+    <h3>방법 B: SQL 직접 (개발 시)</h3>
+<pre><span class="comment">-- H2 콘솔 (http://localhost:8081/h2) 에서 실행</span>
+INSERT INTO tb_menu VALUES ('M99', '튜토리얼', NULL, 'G', NULL, NULL, '📚', 8, 'Y');
+INSERT INTO tb_menu VALUES ('M99A', '부서관리', 'M99', 'P', 'TUT010',
+    '/pages/screen.html?id=TUT010', '🏢', 1, 'Y');
+INSERT INTO tb_role_menu VALUES ('ADMIN','M99A','Y','Y','Y','Y','Y','Y','Y');</pre>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step3">
+    <span class="step-badge">STEP 3</span>
+    <h2>커스텀 코드로 확장 <span class="time-badge">10분</span></h2>
+    <p>YAML로 안 되는 것: 계산 로직, 트랜잭션, 외부 API 연동, 승인 프로세스 등.<br>
+    이런 화면은 4개 파일을 작성합니다.</p>
+
+    <h3>예시: 공지사항 관리 (TUT020)</h3>
+
+    <div class="file-tree">
+        <span class="new">src/main/java/com/forma/domain/tutorial/</span><br>
+        &nbsp;&nbsp;<span class="new">Tut020Controller.java</span><br>
+        &nbsp;&nbsp;<span class="new">Tut020Service.java</span><br>
+        <span class="new">src/main/resources/mapper/domain/tutorial/tut020.xml</span><br>
+        <span class="new">src/main/resources/static/pages/tutorial/TUT020.html</span>
+    </div>
+
+    <h3>3-1. 테이블 (H2 콘솔에서)</h3>
+<pre>CREATE TABLE IF NOT EXISTS tb_notice (
+    notice_no   INT AUTO_INCREMENT PRIMARY KEY,
+    title       VARCHAR(200) NOT NULL,
+    content     VARCHAR(4000),
+    important   VARCHAR(1) DEFAULT 'N',
+    view_count  INT DEFAULT 0,
+    created_by  VARCHAR(50),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by  VARCHAR(50),
+    updated_at  TIMESTAMP
+);
+INSERT INTO tb_notice (title, content, important, created_by)
+VALUES ('FORMA 프레임워크 도입', '신규 ERP 프레임워크를 도입합니다.', 'Y', 'admin');
+INSERT INTO tb_notice (title, content, created_by)
+VALUES ('개발 가이드 공유', '첨부 문서를 참고하세요.', 'admin');</pre>
+
+    <h3>3-2. Controller</h3>
+<pre><span class="comment">// src/main/java/com/forma/domain/tutorial/Tut020Controller.java</span>
+<span class="key">package</span> com.forma.domain.tutorial;
+
+<span class="key">import</span> com.forma.frame.annotation.*;
+<span class="key">import</span> com.forma.frame.base.*;
+<span class="key">import</span> com.forma.frame.mybatis.FormaSqlSession;
+<span class="key">import</span> lombok.RequiredArgsConstructor;
+<span class="key">import</span> org.springframework.web.bind.annotation.*;
+<span class="key">import</span> java.util.*;
+
+<span class="val">@FormaController</span>(value = "/tut020", pgmId = "TUT020", description = "공지사항")
+@RequiredArgsConstructor
+<span class="key">public class</span> Tut020Controller <span class="key">extends</span> BaseController {
+    <span class="key">private final</span> Tut020Service service;
+
+    @PostMapping("/selectGrid1")
+    <span class="key">public</span> BaseResponse&lt;List&lt;Map&lt;String,Object&gt;&gt;&gt; selectGrid1(
+            @RequestBody Map&lt;String,Object&gt; param) {
+        <span class="key">return</span> BaseResponse.Ok(service.selectGrid1(param));
+    }
+
+    <span class="val">@AddUserInfo</span>
+    @PostMapping("/saveGrid1")
+    <span class="key">public</span> BaseResponse&lt;?&gt; saveGrid1(@RequestBody List&lt;Map&lt;String,Object&gt;&gt; param) {
+        service.saveGrid1(param);
+        <span class="key">return</span> BaseResponse.Ok(param);
+    }
+}</pre>
+
+    <h3>3-3. Service</h3>
+<pre><span class="comment">// src/main/java/com/forma/domain/tutorial/Tut020Service.java</span>
+<span class="val">@FormaService</span>(pgmId = "TUT020", description = "공지사항")
+<span class="key">public class</span> Tut020Service <span class="key">extends</span> BaseService {
+    <span class="key">private final</span> FormaSqlSession sql;
+    <span class="key">private final</span> String ns = "tut020";
+
+    <span class="key">public</span> Tut020Service(FormaSqlSession sql) { <span class="key">this</span>.sql = sql; }
+
+    <span class="key">public</span> List&lt;Map&lt;String,Object&gt;&gt; selectGrid1(Map&lt;String,Object&gt; param) {
+        <span class="key">return</span> sql.selectList(ns + ".selectGrid1", param);
+    }
+
+    @Transactional
+    <span class="key">public void</span> saveGrid1(List&lt;Map&lt;String,Object&gt;&gt; param) {
+        <span class="key">for</span> (Map&lt;String,Object&gt; item : param) {
+            <span class="key">if</span> (Constants.GSTAT_INSERT.equals(item.get(Constants.GSTAT))) {
+                sql.insert(ns + ".insertGrid1", item);
+            } <span class="key">else</span> {
+                sql.update(ns + ".updateGrid1", item);
+            }
+        }
+    }
+}</pre>
+
+    <h3>3-4. Mapper XML</h3>
+<pre><span class="comment">&lt;!-- src/main/resources/mapper/domain/tutorial/tut020.xml --&gt;</span>
+&lt;mapper namespace="tut020"&gt;
+    &lt;select id="selectGrid1" parameterType="map" resultType="map"&gt;
+        SELECT notice_no, title, content, important, view_count,
+               created_by, created_at
+        FROM tb_notice
+        &lt;where&gt;
+            &lt;if test="keyword != null and keyword != ''"&gt;
+                AND (title LIKE '%' || #{keyword} || '%'
+                  OR content LIKE '%' || #{keyword} || '%')
+            &lt;/if&gt;
+        &lt;/where&gt;
+        ORDER BY important DESC, notice_no DESC
+    &lt;/select&gt;
+
+    &lt;insert id="insertGrid1" parameterType="map"&gt;
+        INSERT INTO tb_notice (title, content, important,
+                               created_by, created_at)
+        VALUES (#{title}, #{content}, #{important},
+                #{user_id}, NOW())
+    &lt;/insert&gt;
+
+    &lt;update id="updateGrid1" parameterType="map"&gt;
+        UPDATE tb_notice
+        SET title=#{title}, content=#{content}, important=#{important},
+            updated_by=#{user_id}, updated_at=NOW()
+        WHERE notice_no = #{notice_no}
+    &lt;/update&gt;
+&lt;/mapper&gt;</pre>
+
+    <h3>3-5. HTML</h3>
+<pre><span class="comment">&lt;!-- src/main/resources/static/pages/tutorial/TUT020.html --&gt;</span>
+&lt;div class="forma-page"&gt;
+  &lt;div class="forma-page-header"&gt;
+    &lt;h1 class="forma-page-title"&gt;공지사항 (TUT020)&lt;/h1&gt;
+    &lt;div id="forma-toolbar"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="forma-content"&gt;
+    &lt;div id="search-area"&gt;&lt;/div&gt;
+    &lt;div id="grid-area"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function() {
+    var PGM = 'TUT020';
+    var listener = platform.initListener(PGM);
+    var ctx = {};
+
+    listener.initPgm = function() {
+        ctx.searchForm = new FormaForm('#search-area', {
+            search: true,
+            elements: [
+                { field: 'keyword', label: '검색어', placeholder: '제목/내용' }
+            ]
+        });
+        ctx.grid1 = new FormaGrid('#grid-area', {
+            editable: true, checkable: true,
+            columns: [
+                { field: 'NOTICE_NO', label: '번호', width: 60, readOnly: true, align: 'center' },
+                { field: 'TITLE', label: '제목', width: 300, editor: 'text', required: true },
+                { field: 'CONTENT', label: '내용', width: 400, editor: 'textarea' },
+                { field: 'IMPORTANT', label: '중요', width: 50, editor: 'check', align: 'center' },
+                { field: 'VIEW_COUNT', label: '조회수', width: 70, type: 'number', align: 'right' },
+                { field: 'CREATED_BY', label: '작성자', width: 80, readOnly: true },
+                { field: 'CREATED_AT', label: '작성일', width: 140, readOnly: true }
+            ]
+        });
+        listener.button.search.click();
+    };
+
+    listener.button.search.click = function() {
+        platform.post('/tut020/selectGrid1', ctx.searchForm.getData(),
+            new Callback(function(r) {
+                if (r.resultCode === RESULT_CODE.OK) ctx.grid1.setData(r.resultData);
+            }));
+    };
+
+    listener.button.news.click = function() {
+        ctx.grid1.addRow({ IMPORTANT: 'N' });
+    };
+
+    listener.button.save.click = async function() {
+        var data = ctx.grid1.getCheckedData();
+        if (!data.length) { FormaPopup.alert.show('저장할 항목을 선택하세요.'); return; }
+        if (!ctx.grid1.checkGridValidation()) return;
+        var ok = await FormaPopup.confirm.show('저장하시겠습니까?');
+        if (ok) {
+            await platform.post('/tut020/saveGrid1', data);
+            FormaPopup.toast.success('저장되었습니다.');
+            listener.button.search.click();
+        }
+    };
+
+    listener.button.init.click = function() {
+        ctx.searchForm.clear();
+        ctx.grid1.clearData();
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { platform.startPage(PGM, listener); });
+    } else { platform.startPage(PGM, listener); }
+})();
+&lt;/script&gt;</pre>
+
+    <div class="tip">서버 재시작(./gradlew bootRun) 후 확인. 커스텀 코드는 YAML과 달리 핫 리로드가 안 됩니다.</div>
+
+    <div class="result-box">
+        <h4>결과</h4>
+        <p>공지사항 CRUD가 동작합니다. <code>@FormaService</code> 덕분에 감사 로그 + 서비스 트레이스가 자동 기록됩니다.<br>
+        내용(CONTENT) 컬럼은 <code>editor: 'textarea'</code>로 줄바꿈이 보존되고 높이가 자동 조정됩니다.</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step4">
+    <span class="step-badge">STEP 4</span>
+    <h2>그리드 고급 기능 <span class="time-badge">참조</span></h2>
+
+    <h3>코드헬프 (codeHelp 에디터)</h3>
+    <p>그리드 셀에서 돋보기 버튼 → 팝업 검색 → 코드/이름 자동 세팅:</p>
+<pre>{ field: 'CUST_CD', label: '거래처', width: 120, <span class="key">editor: 'codeHelp'</span>,
+  <span class="key">nameField:</span> 'CUST_NM',  <span class="comment">// 이름 표시 필드</span>
+  <span class="key">popup:</span> {
+      url: '/pages/popup/CUS_P01.html',
+      codeField: 'CUST_CD',
+      nameField: 'CUST_NM',
+      width: 800, height: 600
+  }
+},
+{ field: 'CUST_NM', label: '거래처명', width: 150, <span class="key">readOnly: true</span> }</pre>
+
+    <h3>셀 병합 (merge)</h3>
+<pre>{ field: 'DEPT', label: '부서', width: 100, <span class="key">merge: true</span> }
+<span class="comment">// 같은 값이 연속되면 자동 rowspan 병합</span></pre>
+
+    <h3>서버 페이징</h3>
+<pre>ctx.grid1 = new FormaGrid('#grid-area', {
+    <span class="key">paging: true, pageSize: 50,</span>
+    <span class="key">onPageChange:</span> function(page, size) { loadGrid1(page, size); },
+    columns: [...]
+});
+function loadGrid1(page, size) {
+    platform.post('/api/data', { page: page, pageSize: size }, new Callback(function(r) {
+        ctx.grid1.setData(r.resultData.data, r.resultData.totalCount);
+    }));
+}</pre>
+
+    <h3>Footer 합계</h3>
+<pre>{ field: 'AMOUNT', label: '금액', format: 'currency', <span class="key">footer: 'sum'</span> }
+<span class="comment">// 'sum', 'count', 'avg' 지원</span></pre>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="step5">
+    <span class="step-badge">STEP 5</span>
+    <h2>기존 DB 테이블 연동 <span class="time-badge">3분</span></h2>
+    <p>이미 있는 테이블에 YAML을 연결하는 방법입니다.</p>
+
+<pre><span class="comment"># 기존 테이블: tb_product (prod_cd, prod_nm, category, price, stock_qty)</span>
+
+<span class="key">screen:</span>
+  <span class="key">id:</span> <span class="val">PRD010</span>
+  <span class="key">name:</span> <span class="val">제품관리</span>
+  <span class="key">type:</span> <span class="val">list</span>
+
+<span class="key">search:</span>
+  - { <span class="key">field:</span> <span class="val">prod_nm</span>, <span class="key">label:</span> <span class="val">제품명</span>, <span class="key">widget:</span> <span class="val">text</span> }
+  - { <span class="key">field:</span> <span class="val">category</span>, <span class="key">label:</span> <span class="val">카테고리</span>, <span class="key">widget:</span> <span class="val">combo</span>,
+      <span class="key">options:</span> [{ <span class="key">value:</span> <span class="val">A</span>, <span class="key">label:</span> <span class="val">전자</span> }, { <span class="key">value:</span> <span class="val">B</span>, <span class="key">label:</span> <span class="val">기계</span> }] }
+
+<span class="key">grids:</span>
+  <span class="key">grid1:</span>
+    <span class="key">editable:</span> <span class="val">true</span>
+    <span class="key">checkable:</span> <span class="val">true</span>
+    <span class="key">columns:</span>
+      - { <span class="key">field:</span> <span class="val">PROD_CD</span>,   <span class="key">label:</span> <span class="val">제품코드</span>, <span class="key">width:</span> <span class="val">100</span> }
+      - { <span class="key">field:</span> <span class="val">PROD_NM</span>,   <span class="key">label:</span> <span class="val">제품명</span>,   <span class="key">width:</span> <span class="val">200</span>, <span class="key">editor:</span> <span class="val">text</span> }
+      - { <span class="key">field:</span> <span class="val">CATEGORY</span>,  <span class="key">label:</span> <span class="val">카테고리</span>, <span class="key">width:</span> <span class="val">80</span>,  <span class="key">editor:</span> <span class="val">select</span>,
+          <span class="key">options:</span> [{ <span class="key">value:</span> <span class="val">A</span>, <span class="key">label:</span> <span class="val">전자</span> }, { <span class="key">value:</span> <span class="val">B</span>, <span class="key">label:</span> <span class="val">기계</span> }] }
+      - { <span class="key">field:</span> <span class="val">PRICE</span>,     <span class="key">label:</span> <span class="val">단가</span>,     <span class="key">width:</span> <span class="val">110</span>, <span class="key">editor:</span> <span class="val">currency</span> }
+      - { <span class="key">field:</span> <span class="val">STOCK_QTY</span>, <span class="key">label:</span> <span class="val">재고</span>,     <span class="key">width:</span> <span class="val">80</span>,  <span class="key">type:</span> <span class="val">number</span>, <span class="key">align:</span> <span class="val">right</span> }
+
+<span class="key">sql:</span>
+  <span class="key">tables:</span>
+    - { <span class="key">name:</span> <span class="val">tb_product</span> }
+  <span class="key">selectGrid1:</span>
+    <span class="key">table:</span> <span class="val">tb_product</span>
+    <span class="key">columns:</span> <span class="val">prod_cd, prod_nm, category, price, stock_qty</span>
+    <span class="key">orderBy:</span> <span class="val">prod_cd</span>
+  <span class="key">updateGrid1:</span>
+    <span class="key">table:</span> <span class="val">tb_product</span>
+    <span class="key">where:</span> <span class="val">"prod_cd = #{prod_cd}"</span></pre>
+
+    <div class="warn-box">
+        <p><strong>주의:</strong> H2는 resultType=map에서 컬럼명을 대문자로 반환합니다. 그리드 컬럼 <code>field</code>는 <strong>대문자</strong>로 지정하세요. (PROD_CD, 아니고 prod_cd X)</p>
+    </div>
+</div>
+
+<!-- ═══════════════════════ -->
+<div class="step" id="next">
+    <span class="step-badge">NEXT</span>
+    <h2>다음 단계</h2>
+
+    <h3>참고 자료</h3>
+    <p>
+        <a href="/docs/components.html">API Reference</a> — 전체 컴포넌트 상세 문서<br>
+        <a href="/pages/dev/GRID_DEMO.html" target="_blank">Grid Demo</a> — FormaGrid 전체 기능 데모<br>
+        <a href="/pages/dev/FORM_DEMO.html" target="_blank">Form Demo</a> — FormaForm 21종 위젯 데모
+    </p>
+
+    <h3>AI로 화면 생성</h3>
+    <p>Claude Code에서 <code>prompts/screen-generator.md</code>를 컨텍스트로 제공하면 요구사항만으로 화면을 자동 생성합니다:</p>
+<pre><span class="comment"># Claude Code에서:</span>
+@prompts/screen-generator.md
+
+거래처별 매출현황 화면을 만들어줘.
+- 화면ID: SLA010
+- 검색: 기간(dateRange), 거래처(codePopup)
+- 그리드: 거래처코드, 거래처명, 매출액(currency, footer sum), 건수
+- 레이아웃: list</pre>
+
+    <h3>화면 유형 가이드</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;">
+        <tr style="background:#f5f7fa;"><th style="padding:8px;border:1px solid #e0e4e8;text-align:left;">유형</th><th style="padding:8px;border:1px solid #e0e4e8;">사용 시점</th><th style="padding:8px;border:1px solid #e0e4e8;">방식</th></tr>
+        <tr><td style="padding:8px;border:1px solid #e0e4e8;font-weight:600;">list</td><td style="padding:8px;border:1px solid #e0e4e8;">단일 테이블 CRUD</td><td style="padding:8px;border:1px solid #e0e4e8;">YAML</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e0e4e8;font-weight:600;">split-detail</td><td style="padding:8px;border:1px solid #e0e4e8;">마스터-디테일 (좌우)</td><td style="padding:8px;border:1px solid #e0e4e8;">YAML</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e0e4e8;font-weight:600;">master-detail</td><td style="padding:8px;border:1px solid #e0e4e8;">마스터+폼+디테일 (상하)</td><td style="padding:8px;border:1px solid #e0e4e8;">YAML</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e0e4e8;font-weight:600;">복합 화면</td><td style="padding:8px;border:1px solid #e0e4e8;">탭, 계산, 승인 등</td><td style="padding:8px;border:1px solid #e0e4e8;">커스텀 코드</td></tr>
+    </table>
+</div>
+
+</div>
+
+<div class="footer">
+    <a href="/">FORMA 홈</a> &middot;
+    <a href="/docs/components.html">API Reference</a> &middot;
+    <a href="https://github.com/jaeseong90/forma" target="_blank">GitHub</a>
+</div>
+
+<script>
+// 네비게이션 하이라이트
+var navLinks = document.querySelectorAll('.gs-nav a');
+window.addEventListener('scroll', function() {
+    var steps = document.querySelectorAll('.step');
+    var scrollPos = window.scrollY + 60;
+    steps.forEach(function(step, i) {
+        if (step.offsetTop <= scrollPos && step.offsetTop + step.offsetHeight > scrollPos) {
+            navLinks.forEach(function(a) { a.classList.remove('active'); });
+            if (navLinks[i]) navLinks[i].classList.add('active');
+        }
+    });
+});
+</script>
+</body>
+</html>
