@@ -23,6 +23,7 @@ class FormaGrid {
         this.onPageChange = options.onPageChange || null;
         this.onRowReorder = options.onRowReorder || null;
         this.rows = [];
+        this._deleted = [];
         this.selectedIdx = -1;
         this._cellCss = {};
         this._rowCss = {};
@@ -470,6 +471,7 @@ class FormaGrid {
 
     setData(data, totalCount) {
         this.rows = (data || []).map(r => ({ ...r }));
+        this._deleted = [];
         if (this.filterable) { this._allRows = this.rows.map(r => r); }
         this._totalCount = (totalCount !== undefined) ? totalCount : this.rows.length;
         this.selectedIdx = -1; this._focusRow = -1; this._focusCol = -1;
@@ -483,10 +485,11 @@ class FormaGrid {
 
     getData() { return this.rows; }
     getCheckedData() { return this.rows.filter(r => r._checked); }
-    getModifiedData() { return this.rows.filter(r => r.gstat === 'I' || r.gstat === 'U'); }
+    getModifiedData() { return [...this.rows.filter(r => r.gstat === 'I' || r.gstat === 'U'), ...this._deleted]; }
+    getDeletedData() { return this._deleted; }
 
     clearData() {
-        this.rows = []; if (this.filterable) this._allRows = [];
+        this.rows = []; this._deleted = []; if (this.filterable) this._allRows = [];
         this.selectedIdx = -1; this._focusRow = -1; this._focusCol = -1;
         this._cellCss = {}; this._rowCss = {}; this._totalCount = 0; this._currentPage = 1;
         this._render(); if (this.paging) this._renderPaging();
@@ -501,10 +504,19 @@ class FormaGrid {
 
     addRow(defaultData = {}) { const row = { ...defaultData, gstat: 'I', _checked: false }; this.rows.push(row); if (this._allRows) this._allRows.push(row); this._render(); }
     deleteRow() {
-        const checked = this.rows.filter(r => r._checked);
-        if (checked.length === 0 && this.selectedIdx >= 0) this.rows.splice(this.selectedIdx, 1);
-        else this.rows = this.rows.filter(r => !r._checked);
-        if (this._allRows) { if (checked.length === 0 && this.selectedIdx >= 0) {} else this._allRows = this._allRows.filter(r => !r._checked); }
+        const targets = this.rows.filter(r => r._checked);
+        if (targets.length === 0 && this.selectedIdx >= 0) targets.push(this.rows[this.selectedIdx]);
+        if (targets.length === 0) return;
+        const keep = [], remove = [];
+        for (const row of this.rows) {
+            if (targets.includes(row)) {
+                if (row.gstat === 'I') { /* 신규행은 완전 제거 */ }
+                else { row.gstat = 'D'; row._checked = false; this._deleted.push(row); }
+                remove.push(row);
+            } else { keep.push(row); }
+        }
+        this.rows = keep;
+        if (this._allRows) this._allRows = this._allRows.filter(r => !remove.includes(r) || r.gstat === 'D');
         this.selectedIdx = -1; this._focusRow = -1; this._render();
     }
 
