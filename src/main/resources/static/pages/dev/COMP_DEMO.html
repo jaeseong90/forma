@@ -5,15 +5,10 @@
     <title>탭 / 팝업 / 레이아웃 데모</title>
     <link rel="stylesheet" href="/assets/css/forma.css">
     <style>
-        .demo-section { margin-bottom: 20px; }
-        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
-        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
-        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
-        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
-        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
-        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; }
-        .ref-tbl tr:hover td { background: #f8fafc; }
+        .ref-tbl th { background: var(--bg-group); padding: 4px 8px; text-align: left; border: 1px solid var(--border-group); font-weight: 600; white-space: nowrap; color: var(--text); }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid var(--border-light); color: var(--text); }
+        .ref-tbl tr:hover td { background: var(--bg-alt); }
         details summary { outline: none; cursor: pointer; }
     </style>
 </head>
@@ -21,7 +16,7 @@
 <div class="forma-page" style="max-width:1200px">
     <div class="forma-page-header">
         <h1 class="forma-page-title">FormaTab / FormaModal / FormaPopup 데모</h1>
-        <div style="font-size:12px;color:#666;margin-top:4px">
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
             <a href="/pages/dev/GRID_DEMO.html">Grid 데모</a> |
             <a href="/pages/dev/FORM_DEMO.html">Form 데모</a> |
             <a href="/">홈</a>
@@ -30,7 +25,7 @@
     <div class="forma-content">
 
         <!-- API 레퍼런스 -->
-        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+        <div class="demo-section" style="background:var(--bg-card);border:1px solid var(--border-group);border-radius:6px;padding:16px;">
             <details open>
                 <summary style="font-weight:700;font-size:14px;margin-bottom:10px">FormaTab API</summary>
                 <table class="ref-tbl">
@@ -92,7 +87,7 @@
         <div class="demo-section">
             <div class="demo-title">1. 기본 탭 (FormaTab)</div>
             <div class="demo-desc">탭 클릭으로 패널 전환. onTabChange 콜백. 각 탭에 폼/그리드 배치 가능.</div>
-            <div id="tab-basic" style="border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;"></div>
+            <div id="tab-basic" style="border:1px solid var(--border);border-radius:4px;overflow:hidden;"></div>
             <div class="demo-btn-row">
                 <button class="forma-btn" onclick="tabBasic.selectTab('tab-info')">기본정보 탭</button>
                 <button class="forma-btn" onclick="tabBasic.selectTab('tab-items')">품목명세 탭</button>
@@ -106,7 +101,7 @@
         <div class="demo-section">
             <div class="demo-title">2. 탭 동적 제어 (hideTab / showTab)</div>
             <div class="demo-desc">런타임에 탭 숨기기/표시. 권한에 따라 탭 제어 시 활용.</div>
-            <div id="tab-dynamic" style="border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;"></div>
+            <div id="tab-dynamic" style="border:1px solid var(--border);border-radius:4px;overflow:hidden;"></div>
             <div class="demo-btn-row">
                 <button class="forma-btn" onclick="tabDynamic.hideTab('tab-d-secret')">비밀탭 숨기기</button>
                 <button class="forma-btn" onclick="tabDynamic.showTab('tab-d-secret')">비밀탭 표시</button>
@@ -119,12 +114,12 @@
         <div class="demo-section">
             <div class="demo-title">3. 좌우 스플릿 + 우측 탭 (ERP 복합 레이아웃)</div>
             <div class="demo-desc">좌측 목록 그리드 | 우측 탭(기본정보 폼 + 품목 그리드). 행 클릭 시 우측 연동. SDB010 패턴.</div>
-            <div class="forma-split-h" id="split-tab-area" style="height:380px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
-                <div class="forma-split-panel" style="width:380px;background:#fff;">
+            <div class="forma-split-h" id="split-tab-area" style="height:380px;border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="width:380px;background:var(--bg-card);">
                     <div id="split-tab-grid"></div>
                 </div>
                 <div class="forma-split-handle"></div>
-                <div class="forma-split-panel" style="flex:1;background:#fff;">
+                <div class="forma-split-panel" style="flex:1;background:var(--bg-card);">
                     <div id="split-tab-tabs"></div>
                 </div>
             </div>
@@ -271,9 +266,9 @@ let tabBasic, tabDynamic, modalForm;
             { id: 'tab-d-admin', label: '관리자' },
         ]
     });
-    tabDynamic.getContentEl('tab-d-basic').innerHTML = '<div style="padding:16px;color:#555">일반 사용자 탭입니다.</div>';
-    tabDynamic.getContentEl('tab-d-secret').innerHTML = '<div style="padding:16px;color:#e24b4a;font-weight:600">비밀 정보 탭 — 권한에 따라 숨길 수 있습니다.</div>';
-    tabDynamic.getContentEl('tab-d-admin').innerHTML = '<div style="padding:16px;color:#4a90d9;font-weight:600">관리자 전용 탭입니다.</div>';
+    tabDynamic.getContentEl('tab-d-basic').innerHTML = '<div style="padding:16px;color:var(--text-sub)">일반 사용자 탭입니다.</div>';
+    tabDynamic.getContentEl('tab-d-secret').innerHTML = '<div style="padding:16px;color:var(--danger);font-weight:600">비밀 정보 탭 — 권한에 따라 숨길 수 있습니다.</div>';
+    tabDynamic.getContentEl('tab-d-admin').innerHTML = '<div style="padding:16px;color:var(--primary);font-weight:600">관리자 전용 탭입니다.</div>';
 
     // ── 3. 좌우 스플릿 + 우측 탭 ──
     FormaUtil.initSplit('#split-tab-area', { minSize: 250, collapsible: true });

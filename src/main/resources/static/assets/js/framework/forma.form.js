@@ -1,8 +1,8 @@
 /**
  * FormaForm - ERP 폼 빌더 (Widget Pattern)
  *
- * 위젯: text, number, combo, date, dateRange, codePopup, textarea, checkbox, radio, hidden,
- *        currency, multiCombo, yearMonth, year, switch, divider, display, password
+ * 위젯: text, number, combo, select, date, dateRange, codePopup, textarea, checkbox, radio, hidden,
+ *        currency, multiCombo, yearMonth, year, switch, divider, display, password, address
  */
 
 // ══════════════════════════════════════════════════════════════
@@ -428,10 +428,14 @@ class _WRadio extends _FormaWidget {
 }
 _FormaWidgets['radio'] = _WRadio;
 
-// ── combo (검색 가능 커스텀 드롭다운) ──
+// ── combo (검색 가능 커스텀 드롭다운 + popup 지원) ──
 class _WCombo extends _FormaWidget {
     build(group) {
         const el = this.el, form = this.form;
+        const hasPopup = !el.readOnly && el.popup;
+        const outerWrap = hasPopup ? document.createElement('div') : null;
+        if (outerWrap) outerWrap.className = 'fc-combo-popup-wrap';
+
         const wrap = document.createElement('div'); wrap.className = 'fc-combo-wrap';
 
         const display = document.createElement('div');
@@ -496,7 +500,6 @@ class _WCombo extends _FormaWidget {
             displayText.textContent = opt.label; hidden.value = opt.value;
             closeDD();
             this._fireChange(opt.value, old);
-            form._handleDependents(this.field, opt.value);
         };
         const openDD = () => {
             if (el.readOnly) return;
@@ -524,7 +527,42 @@ class _WCombo extends _FormaWidget {
         this._addDocListener('mousedown', (e) => { if (state.isOpen && !wrap.contains(e.target)) closeDD(); });
         this._closeDD = closeDD;
 
-        this._wrapWithFix(group, wrap);
+        // popup 지원: 돋보기 버튼 + 더블클릭
+        if (hasPopup) {
+            outerWrap.appendChild(wrap);
+            const popupBtn = document.createElement('button');
+            popupBtn.type = 'button'; popupBtn.className = 'fc-combo-popup-btn'; popupBtn.textContent = '🔍';
+            popupBtn.title = el.popup.title || '검색';
+            const openPopup = () => {
+                if (typeof FormaModal === 'undefined') return;
+                closeDD();
+                const modal = new FormaModal({
+                    title: el.popup.title || el.label || '검색',
+                    url: el.popup.url, width: el.popup.width || 800, height: el.popup.height || 600,
+                    okCallback: (result) => {
+                        if (!result) return;
+                        const code = result[el.popup.codeField] || '';
+                        const name = result[el.popup.nameField] || '';
+                        // 옵션 목록에 있으면 해당 옵션 선택, 없으면 동적 추가
+                        const existing = state.options.find(o => o.value === code);
+                        if (existing) {
+                            selectOpt(existing);
+                        } else {
+                            const newOpt = { value: code, label: name || code };
+                            state.options.push(newOpt);
+                            selectOpt(newOpt);
+                        }
+                    }
+                });
+                modal.show({ currentValue: state.value });
+            };
+            popupBtn.addEventListener('click', (e) => { e.stopPropagation(); openPopup(); });
+            display.addEventListener('dblclick', (e) => { e.stopPropagation(); openPopup(); });
+            outerWrap.appendChild(popupBtn);
+            this._wrapWithFix(group, outerWrap);
+        } else {
+            this._wrapWithFix(group, wrap);
+        }
     }
     _loadCode(code, params) {
         const fetcher = params
@@ -572,6 +610,107 @@ class _WCombo extends _FormaWidget {
     closeDropdown() { if (this._closeDD) this._closeDD(); }
 }
 _FormaWidgets['combo'] = _WCombo;
+
+// ── select (검색 없는 단순 드롭다운 + popup 지원) ──
+class _WSelect extends _FormaWidget {
+    build(group) {
+        const el = this.el, form = this.form;
+        const hasPopup = !el.readOnly && el.popup;
+        const outerWrap = hasPopup ? document.createElement('div') : null;
+        if (outerWrap) outerWrap.className = 'fc-combo-popup-wrap';
+
+        const select = document.createElement('select');
+        select.className = 'forma-input fc-select';
+        if (el.readOnly) select.disabled = true;
+
+        // 기본 옵션
+        const defOpt = document.createElement('option');
+        defOpt.value = ''; defOpt.textContent = form.isSearch ? '전체' : '선택';
+        select.appendChild(defOpt);
+
+        this._select = select;
+        this._input = select;
+
+        if (el.options) {
+            el.options.forEach(o => this._addOption(o.value, o.label));
+        } else if (el.code) {
+            this._loadCode(el.code);
+        }
+
+        select.addEventListener('change', () => {
+            const v = select.value, old = select._prev || '';
+            select._prev = v;
+            this._fireChange(v, old);
+        });
+        select._prev = '';
+
+        // popup 지원
+        if (hasPopup) {
+            outerWrap.appendChild(select);
+            const popupBtn = document.createElement('button');
+            popupBtn.type = 'button'; popupBtn.className = 'fc-combo-popup-btn'; popupBtn.textContent = '🔍';
+            popupBtn.title = el.popup.title || '검색';
+            const openPopup = () => {
+                if (typeof FormaModal === 'undefined') return;
+                const modal = new FormaModal({
+                    title: el.popup.title || el.label || '검색',
+                    url: el.popup.url, width: el.popup.width || 800, height: el.popup.height || 600,
+                    okCallback: (result) => {
+                        if (!result) return;
+                        const code = result[el.popup.codeField] || '';
+                        const name = result[el.popup.nameField] || '';
+                        // 옵션에 없으면 추가
+                        if (!Array.from(select.options).find(o => o.value === code)) {
+                            this._addOption(code, name || code);
+                        }
+                        const old = select.value;
+                        select.value = code; select._prev = code;
+                        this._fireChange(code, old);
+                    }
+                });
+                modal.show({ currentValue: select.value });
+            };
+            popupBtn.addEventListener('click', (e) => { e.stopPropagation(); openPopup(); });
+            select.addEventListener('dblclick', (e) => { e.stopPropagation(); openPopup(); });
+            outerWrap.appendChild(popupBtn);
+            this._wrapWithFix(group, outerWrap);
+        } else {
+            this._wrapWithFix(group, select);
+        }
+    }
+    _addOption(value, label) {
+        const opt = document.createElement('option');
+        opt.value = value; opt.textContent = label;
+        this._select.appendChild(opt);
+    }
+    _loadCode(code, params) {
+        const fetcher = params
+            ? fetch('/api/codes/' + code + '?' + new URLSearchParams(params).toString()).then(r => r.json()).then(d => d.resultData || d)
+            : (typeof getCodeItems === 'function' ? getCodeItems(code) : Promise.resolve([]));
+        fetcher.then(items => {
+            if (!this._select) return;
+            (items || []).forEach(item => {
+                this._addOption(item.CODE || item.code || item.value || '', item.CODE_NM || item.codeName || item.label || '');
+            });
+        }).catch(() => {});
+    }
+    getValue() { return this._select ? this._select.value || null : null; }
+    setValue(value) { if (this._select) { this._select.value = String(value ?? ''); this._select._prev = this._select.value; } }
+    clear() { if (this._select) { this._select.value = ''; this._select._prev = ''; } }
+    setReadonly(readonly) { this.el.readOnly = readonly; if (this._select) this._select.disabled = readonly; }
+    validate() { const v = this._select ? this._select.value : null; return v !== null && v !== undefined && v !== ''; }
+    focus() { if (this._select) this._select.focus(); }
+    setOptions(options) {
+        if (!this._select) return;
+        const cur = this._select.value;
+        // 첫 번째(기본) 옵션 유지, 나머지 제거
+        while (this._select.options.length > 1) this._select.remove(1);
+        options.forEach(o => this._addOption(o.value, o.label));
+        this._select.value = cur; // 기존 값 복원 시도
+    }
+    setDisabled(disabled) { this.el.readOnly = disabled; if (this._select) this._select.disabled = disabled; }
+}
+_FormaWidgets['select'] = _WSelect;
 
 // ── date (커스텀 캘린더) ──
 class _WDate extends _FormaWidget {
@@ -738,15 +877,23 @@ class _WCodePopup extends _FormaWidget {
         if (!el.readOnly && el.popup) {
             btn.onclick = () => {
                 if (typeof FormaModal === 'undefined') return;
+                const showParam = Object.assign({ currentValue: codeInput.value }, this._popupParams || {});
                 const modal = new FormaModal({ title: el.label || '검색', url: el.popup.url, width: el.popup.width || 800, height: el.popup.height || 600,
-                    okCallback: (result) => { if (result) { const old = codeInput.value; codeInput.value = result[el.popup.codeField] || ''; nameSpan.textContent = result[el.popup.nameField] || ''; this._fireChange(codeInput.value, old); } }
+                    okCallback: (result) => {
+                        if (!result) return;
+                        const old = codeInput.value;
+                        codeInput.value = result[el.popup.codeField] || '';
+                        nameSpan.textContent = result[el.popup.nameField] || '';
+                        this._fireChange(codeInput.value, old);
+                    }
                 });
-                modal.show({ currentValue: codeInput.value });
+                modal.show(showParam);
             };
         }
         wrap.appendChild(btn); group.appendChild(wrap);
         this._codeInput = codeInput;
         this._nameSpan = nameSpan;
+        this._popupParams = {};
         this._bindStdEvents(codeInput);
     }
     getValue() { return this._codeInput ? this._codeInput.value || null : null; }
@@ -954,7 +1101,7 @@ class _WColorPicker extends _FormaWidget {
         const el = this.el;
         const wrap = document.createElement('span'); wrap.className = 'forma-color-wrap';
         const input = document.createElement('input'); input.type = 'color'; input.className = 'forma-color-input';
-        input.value = el.default || '#4a90d9';
+        input.value = el.default || getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4a90d9';
         if (el.readOnly) input.disabled = true;
         const label = document.createElement('span'); label.className = 'forma-color-label';
         label.textContent = input.value;
@@ -965,7 +1112,7 @@ class _WColorPicker extends _FormaWidget {
     }
     getValue() { return this._input ? this._input.value : null; }
     setValue(value) { if (this._input) { this._input.value = value || '#000000'; this._label.textContent = this._input.value; } }
-    clear() { this.setValue('#4a90d9'); }
+    clear() { this.setValue(getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#4a90d9'); }
     setReadonly(readonly) { this.el.readOnly = readonly; if (this._input) this._input.disabled = readonly; }
     validate() { return !!(this._input && this._input.value); }
     focus() { if (this._input) this._input.focus(); }
@@ -1110,7 +1257,7 @@ class _WMultiCombo extends _FormaWidget {
         const allCb = document.createElement('input'); allCb.type = 'checkbox';
         allWrap.appendChild(allCb); allWrap.appendChild(document.createTextNode(' 전체'));
         dropdown.appendChild(allWrap);
-        const hr = document.createElement('hr'); hr.style.cssText = 'margin:2px 0;border:none;border-top:1px solid #e0e0e0'; dropdown.appendChild(hr);
+        const hr = document.createElement('hr'); hr.style.cssText = 'margin:2px 0;border:none;border-top:1px solid var(--border-light)'; dropdown.appendChild(hr);
 
         const items = [], checkboxes = [];
         (el.options || []).forEach(opt => {
@@ -1162,7 +1309,7 @@ class _WMultiCombo extends _FormaWidget {
         mc.selectedValues.clear(); mc.checkboxes.length = 0; mc.items.length = 0;
         const dd = mc.dropdown; dd.innerHTML = '';
         const allWrap = document.createElement('label'); allWrap.className = 'forma-multicb-item forma-multicb-all'; mc.allCb.checked = false; allWrap.appendChild(mc.allCb); allWrap.appendChild(document.createTextNode(' 전체')); dd.appendChild(allWrap);
-        const hr = document.createElement('hr'); hr.style.cssText = 'margin:2px 0;border:none;border-top:1px solid #e0e0e0'; dd.appendChild(hr);
+        const hr = document.createElement('hr'); hr.style.cssText = 'margin:2px 0;border:none;border-top:1px solid var(--border-light)'; dd.appendChild(hr);
         options.forEach(opt => {
             const lbl = document.createElement('label'); lbl.className = 'forma-multicb-item';
             const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = opt.value; cb.dataset.label = opt.label;
@@ -1308,7 +1455,7 @@ class _WDisplay extends _FormaWidget {
         let label = value;
         if (el.options) { const opt = el.options.find(o => o.value === value); if (opt) label = opt.label; }
         if (el.badge && el.badgeColors) {
-            const color = el.badgeColors[value] || '#999';
+            const color = el.badgeColors[value] || 'var(--text-muted)';
             this._span.innerHTML = '';
             const b = document.createElement('span'); b.className = 'forma-badge'; b.style.background = color; b.textContent = label;
             this._span.appendChild(b);
@@ -1388,6 +1535,125 @@ class _WFile extends _FormaWidget {
 }
 _FormaWidgets['file'] = _WFile;
 
+// ── address (카카오 주소검색) ──
+class _WAddress extends _FormaWidget {
+    build(group) {
+        const el = this.el;
+        const wrap = document.createElement('div'); wrap.className = 'fc-address-wrap';
+
+        // 우편번호 + 검색 버튼
+        const row1 = document.createElement('div'); row1.className = 'fc-address-row';
+        const zipInput = document.createElement('input');
+        zipInput.type = 'text'; zipInput.className = 'forma-input fc-address-zip';
+        zipInput.placeholder = '우편번호'; zipInput.readOnly = true;
+        row1.appendChild(zipInput);
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'forma-btn forma-btn-sm fc-address-btn';
+        btn.textContent = '주소 검색';
+        row1.appendChild(btn);
+        wrap.appendChild(row1);
+
+        // 기본 주소
+        const addrInput = document.createElement('input');
+        addrInput.type = 'text'; addrInput.className = 'forma-input fc-address-addr';
+        addrInput.placeholder = '기본 주소'; addrInput.readOnly = true;
+        wrap.appendChild(addrInput);
+
+        // 상세 주소
+        const detailInput = document.createElement('input');
+        detailInput.type = 'text'; detailInput.className = 'forma-input fc-address-detail';
+        detailInput.placeholder = '상세 주소 입력';
+        if (el.readOnly) detailInput.readOnly = true;
+        wrap.appendChild(detailInput);
+
+        this._zipInput = zipInput;
+        this._addrInput = addrInput;
+        this._detailInput = detailInput;
+        this._input = zipInput;
+
+        // 카카오 주소 API 스크립트 동적 로드
+        const ensureKakaoScript = () => {
+            return new Promise((resolve) => {
+                if (window.daum && window.daum.Postcode) { resolve(); return; }
+                if (document.getElementById('_kakao_postcode_script')) {
+                    // 이미 로딩 중 — 로드 완료 대기
+                    const check = setInterval(() => {
+                        if (window.daum && window.daum.Postcode) { clearInterval(check); resolve(); }
+                    }, 100);
+                    return;
+                }
+                const script = document.createElement('script');
+                script.id = '_kakao_postcode_script';
+                script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+                script.onload = () => resolve();
+                document.head.appendChild(script);
+            });
+        };
+
+        const openSearch = () => {
+            if (el.readOnly) return;
+            ensureKakaoScript().then(() => {
+                new daum.Postcode({
+                    oncomplete: (data) => {
+                        const old = zipInput.value;
+                        zipInput.value = data.zonecode;
+                        addrInput.value = data.roadAddress || data.jibunAddress || data.address;
+                        detailInput.value = '';
+                        detailInput.focus();
+                        this._fireChange(this.getValue(), old);
+                    },
+                    width: '100%', height: '100%'
+                }).open();
+            });
+        };
+
+        btn.addEventListener('click', openSearch);
+        zipInput.addEventListener('click', openSearch);
+        addrInput.addEventListener('click', openSearch);
+        detailInput.addEventListener('blur', () => {
+            if (this.form._onBlur) this.form._onBlur(this.field, this.getValue());
+        });
+
+        group.appendChild(wrap);
+    }
+    getValue() {
+        return {
+            zipcode: this._zipInput ? this._zipInput.value || '' : '',
+            address: this._addrInput ? this._addrInput.value || '' : '',
+            detail: this._detailInput ? this._detailInput.value || '' : ''
+        };
+    }
+    setValue(value) {
+        if (!value || typeof value !== 'object') return;
+        if (this._zipInput) this._zipInput.value = value.zipcode || value.zip_code || '';
+        if (this._addrInput) this._addrInput.value = value.address || value.addr || '';
+        if (this._detailInput) this._detailInput.value = value.detail || value.addr_detail || '';
+    }
+    setValueFromData(obj) {
+        const f = this.field;
+        this.setValue({
+            zipcode: obj[f + '_zip'] || obj[f + '_zipcode'] || obj.zipcode || '',
+            address: obj[f + '_addr'] || obj[f + '_address'] || obj.address || '',
+            detail: obj[f + '_detail'] || obj[f + '_addr_detail'] || obj.addr_detail || ''
+        });
+    }
+    getDataKeys() {
+        return [this.field + '_zip', this.field + '_addr', this.field + '_detail'];
+    }
+    clear() {
+        if (this._zipInput) this._zipInput.value = '';
+        if (this._addrInput) this._addrInput.value = '';
+        if (this._detailInput) this._detailInput.value = '';
+    }
+    setReadonly(readonly) {
+        this.el.readOnly = readonly;
+        if (this._detailInput) this._detailInput.readOnly = readonly;
+    }
+    validate() { return !!(this._zipInput && this._zipInput.value && this._addrInput && this._addrInput.value); }
+    focus() { if (this._zipInput) this._zipInput.click(); }
+}
+_FormaWidgets['address'] = _WAddress;
+
 // ══════════════════════════════════════════════════════════════
 //  Section 5: FormaForm — 오케스트레이터
 // ══════════════════════════════════════════════════════════════
@@ -1411,7 +1677,9 @@ class FormaForm {
         this._onEnter = options.onEnter || null;
 
         for (const el of this.elements) { if (el.field) this._elemMap[el.field] = el; }
+        this._depGraph = {};  // parent → [child fields]
         this._build();
+        this._buildDepGraph();
     }
 
     _build() {
@@ -1471,28 +1739,93 @@ class FormaForm {
         this.container.appendChild(row);
     }
 
-    // ── 이벤트 헬퍼 ──
-    _fireChange(field, val, old) { const el = this._elemMap[field]; if (el && el.onChange) el.onChange(val, old); if (this._onChange) this._onChange(field, val, old); }
-
-    _handleDependents(parentField, parentValue) {
+    // ── 의존 그래프 빌드 (dependsOn 선언 기반) ──
+    _buildDepGraph() {
+        this._depGraph = {};
         for (const el of this.elements) {
-            if (el.dependsOn && el.dependsOn.field === parentField) {
-                const w = this._widgets[el.field];
-                if (!w || !(w instanceof _WCombo)) continue;
+            if (el.dependsOn && el.field) {
+                const parent = el.dependsOn.field;
+                if (!this._depGraph[parent]) this._depGraph[parent] = [];
+                this._depGraph[parent].push(el.field);
+            }
+        }
+    }
+
+    // BFS로 자식 → 손자 → … 순차 처리 (재귀 없음, 무한루프 불가)
+    _cascadeDependents(parentField, parentValue) {
+        const children = this._depGraph[parentField];
+        if (!children || children.length === 0) return;
+        this._cascading = true;
+
+        // BFS 큐: 직계 자식부터 시작
+        const queue = children.slice();
+        const visited = new Set();
+
+        while (queue.length > 0) {
+            const childField = queue.shift();
+            if (visited.has(childField)) continue;  // 순환 방지
+            visited.add(childField);
+
+            const el = this._elemMap[childField];
+            const w = this._widgets[childField];
+            if (!el || !w) continue;
+
+            const paramKey = el.dependsOn ? el.dependsOn.paramKey || 'parent_value' : 'parent_value';
+            // 부모가 직접 부모인지 확인 (BFS에서 손자는 부모값 '' 으로 초기화)
+            const isDirectChild = el.dependsOn && el.dependsOn.field === parentField;
+            const pVal = isDirectChild ? parentValue : '';
+
+            // combo
+            if (w instanceof _WCombo) {
                 const st = w._state; if (!st) continue;
-                if (!parentValue) {
-                    st.options = [st.options[0]];
-                    st.value = ''; st.label = st.options[0].label;
-                    st.displayText.textContent = st.label; st.hidden.value = '';
-                    this._fireChange(el.field, '', '');
-                } else {
-                    const params = {}; params[el.dependsOn.paramKey || 'parent_value'] = parentValue;
+                st.options = [st.options[0]];
+                st.value = ''; st.label = st.options[0].label;
+                st.displayText.textContent = st.label; st.hidden.value = '';
+                if (pVal && el.code) {
+                    const params = {}; params[paramKey] = pVal;
                     w._loadCode(el.code, params);
-                    st.value = ''; st.label = st.options[0].label;
-                    st.displayText.textContent = st.label; st.hidden.value = '';
+                }
+            }
+            // select
+            else if (w instanceof _WSelect) {
+                while (w._select.options.length > 1) w._select.remove(1);
+                w._select.value = ''; w._select._prev = '';
+                if (pVal && el.code) {
+                    const params = {}; params[paramKey] = pVal;
+                    w._loadCode(el.code, params);
+                }
+            }
+            // codePopup
+            else if (w instanceof _WCodePopup) {
+                w.clear();
+                w._popupParams = {};
+                if (pVal) w._popupParams[paramKey] = pVal;
+            }
+            // 그 외 (autocomplete 등)
+            else {
+                w.clear();
+            }
+
+            this._fireChange(childField, '', '');
+
+            // 이 자식의 자식들도 큐에 추가 (연쇄 초기화)
+            const grandchildren = this._depGraph[childField];
+            if (grandchildren) {
+                for (const gc of grandchildren) {
+                    if (!visited.has(gc)) queue.push(gc);
                 }
             }
         }
+        this._cascading = false;
+    }
+
+    // ── 이벤트 헬퍼 ──
+    _fireChange(field, val, old) {
+        const el = this._elemMap[field];
+        if (el && el.onChange) el.onChange(val, old);
+        if (this._onChange) this._onChange(field, val, old);
+        // dependsOn 자동 연쇄 — cascading 중이면 BFS가 이미 처리하므로 스킵
+        if (!this._cascading) this._cascadeDependents(field, val);
     }
 
     _closeAllDropdowns() {
@@ -1518,6 +1851,11 @@ class FormaForm {
                 const v = w.getValue();
                 result[el.field + '_from'] = v.from;
                 result[el.field + '_to'] = v.to;
+            } else if (type === 'address') {
+                const v = w.getValue();
+                result[el.field + '_zip'] = v.zipcode;
+                result[el.field + '_addr'] = v.address;
+                result[el.field + '_detail'] = v.detail;
             } else {
                 result[el.field] = w.getValue();
             }
@@ -1598,6 +1936,52 @@ class FormaForm {
 
     setOptions(field, options) {
         const w = this._widgets[field]; if (w) w.setOptions(options);
+    }
+
+    /**
+     * combo/select의 옵션을 서버 코드그룹에서 다시 로드 + 값 초기화.
+     * 부모-자식 연계 시 onChange에서 호출.
+     * @param {string} field - 대상 필드명
+     * @param {string} code - 코드그룹 (없으면 el.code 사용)
+     * @param {object} params - 서버 전달 파라미터 (예: { parent_cd: 'GRP_A' })
+     */
+    reloadCode(field, code, params) {
+        const w = this._widgets[field]; if (!w) return;
+        const el = this._elemMap[field];
+        const codeGroup = code || (el && el.code) || '';
+
+        if (w instanceof _WCombo) {
+            const st = w._state; if (!st) return;
+            st.options = [st.options[0]];
+            st.value = ''; st.label = st.options[0].label;
+            st.displayText.textContent = st.label; st.hidden.value = '';
+            if (codeGroup && params) w._loadCode(codeGroup, params);
+            else if (codeGroup) w._loadCode(codeGroup);
+        } else if (w instanceof _WSelect) {
+            while (w._select.options.length > 1) w._select.remove(1);
+            w._select.value = ''; w._select._prev = '';
+            if (codeGroup && params) w._loadCode(codeGroup, params);
+            else if (codeGroup) w._loadCode(codeGroup);
+        }
+    }
+
+    /**
+     * codePopup 팝업에 전달할 추가 파라미터 설정.
+     * 부모-자식 연계 시 부모 값을 팝업 검색 조건으로 전달.
+     * @param {string} field - codePopup 필드명
+     * @param {object} params - 팝업에 전달할 파라미터
+     */
+    setPopupParams(field, params) {
+        const w = this._widgets[field]; if (!w) return;
+        if (w._popupParams !== undefined) w._popupParams = params || {};
+    }
+
+    /**
+     * 필드 값 초기화. clear()는 전체, clearField()는 개별.
+     * @param {string} field - 대상 필드명
+     */
+    clearField(field) {
+        const w = this._widgets[field]; if (w) w.clear();
     }
 
     setRequired(field, required) {

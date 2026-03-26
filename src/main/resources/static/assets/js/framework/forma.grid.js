@@ -456,6 +456,13 @@ class FormaGrid {
         this._render(); if (this.paging) this._renderPaging();
     }
 
+    showLoading() {
+        const cols = this.columns.length + this._leadingCols();
+        this.tbody.innerHTML = '<tr><td colspan="' + cols + '" class="forma-grid-empty">' +
+            '<div class="forma-grid-loading"><div class="forma-loading-spinner"></div><div style="margin-top:8px">조회 중...</div></div></td></tr>';
+    }
+    hideLoading() { this._render(); }
+
     addRow(defaultData = {}) { const row = { ...defaultData, gstat: 'I', _checked: false }; this.rows.push(row); if (this._allRows) this._allRows.push(row); this._render(); }
     deleteRow() {
         const checked = this.rows.filter(r => r._checked);
@@ -1006,7 +1013,7 @@ class FormaGrid {
                                         if (typeof result === 'string') dtd.innerHTML = result;
                                         else dtd.textContent = '';
                                     } else if (cell.label) {
-                                        dtd.innerHTML = '<span style="color:#888;font-size:11px">' + cell.label + ':</span> ' + (cell.field ? (row[cell.field] ?? '') : (cell.value ?? ''));
+                                        dtd.innerHTML = '<span style="color:var(--text-muted);font-size:11px">' + cell.label + ':</span> ' + (cell.field ? (row[cell.field] ?? '') : (cell.value ?? ''));
                                     } else if (cell.field) {
                                         dtd.textContent = row[cell.field] ?? '';
                                     } else if (cell.value !== undefined) {
@@ -1153,7 +1160,10 @@ class FormaGrid {
 
     _renderEmpty() {
         const cols = this.columns.length + this._leadingCols();
-        this.tbody.innerHTML = '<tr><td colspan="' + cols + '" class="forma-grid-empty">데이터가 없습니다</td></tr>';
+        this.tbody.innerHTML = '<tr><td colspan="' + cols + '" class="forma-grid-empty">' +
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.3;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto">' +
+            '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>' +
+            '</svg>데이터가 없습니다</td></tr>';
     }
 
     // ── 셀 병합 (자동 rowspan) ──

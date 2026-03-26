@@ -5,29 +5,24 @@
     <title>폼 컨트롤 데모</title>
     <link rel="stylesheet" href="/assets/css/forma.css">
     <style>
-        .demo-section { margin-bottom: 16px; }
-        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
-        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
-        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
-        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
-        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
-        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; }
-        .ref-tbl tr:hover td { background: #f8fafc; }
+        .ref-tbl th { background: var(--bg-group); padding: 4px 8px; text-align: left; border: 1px solid var(--border-group); font-weight: 600; white-space: nowrap; color: var(--text); }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid var(--border-light); color: var(--text); }
+        .ref-tbl tr:hover td { background: var(--bg-alt); }
         details summary { outline: none; }
-        details summary::-webkit-details-marker { color: #4a90d9; }
+        details summary::-webkit-details-marker { color: var(--primary); }
     </style>
 </head>
 <body>
 <div class="forma-page" style="max-width:1200px">
     <div class="forma-page-header">
         <h1 class="forma-page-title">FormaForm API 레퍼런스 &amp; 데모</h1>
-        <div style="font-size:12px;color:#666;margin-top:4px">1,449줄 | 21개 위젯 | 19개 데모 섹션 | <a href="/pages/dev/GRID_DEMO.html">FormaGrid 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">1,449줄 | 23개 위젯 | 21개 데모 섹션 | <a href="/pages/dev/GRID_DEMO.html">FormaGrid 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
     </div>
     <div class="forma-content">
 
         <!-- API 레퍼런스 -->
-        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+        <div class="demo-section" style="background:var(--bg-card);border:1px solid var(--border-group);border-radius:6px;padding:16px;">
             <details open>
                 <summary style="font-weight:700;font-size:14px;cursor:pointer;margin-bottom:10px">생성자 옵션</summary>
                 <table class="ref-tbl">
@@ -43,7 +38,7 @@
             </details>
 
             <details>
-                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">위젯 타입 (21종)</summary>
+                <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">위젯 타입 (23종)</summary>
                 <table class="ref-tbl">
                     <tr><th>widget</th><th>설명</th><th>getValue() 반환</th><th>주요 속성</th></tr>
                     <tr><td>text</td><td>텍스트 입력 (기본)</td><td>String / Number(type='number')</td><td>placeholder, maxLength, type, min, max, step</td></tr>
@@ -51,8 +46,8 @@
                     <tr><td>password</td><td>비밀번호</td><td>String</td><td>placeholder, 눈 아이콘 토글</td></tr>
                     <tr><td>hidden</td><td>숨김 필드</td><td>String</td><td>—</td></tr>
                     <tr><td>number</td><td>숫자 (text type=number)</td><td>Number</td><td>min, max, step, suffix, prefix</td></tr>
-                    <tr><td>combo</td><td>검색 드롭다운</td><td>String (value)</td><td>options, code, dependsOn</td></tr>
-                    <tr><td>select</td><td>(combo와 동일)</td><td>String</td><td>—</td></tr>
+                    <tr><td>combo</td><td>검색 드롭다운 (+popup)</td><td>String (value)</td><td>options, code, popup, dependsOn</td></tr>
+                    <tr><td>select</td><td>단순 드롭다운 (+popup)</td><td>String (value)</td><td>options, code, popup, dependsOn</td></tr>
                     <tr><td>date</td><td>날짜 (캘린더)</td><td>'YYYY-MM-DD'</td><td>default: 'TODAY'</td></tr>
                     <tr><td>dateRange</td><td>기간 (캘린더+프리셋)</td><td>field_from, field_to 분리</td><td>default: 'THIS_MONTH', presets</td></tr>
                     <tr><td>time</td><td>시간</td><td>'HH:MM'</td><td>default: 'NOW', step</td></tr>
@@ -66,6 +61,7 @@
                     <tr><td>autocomplete</td><td>자동완성 검색</td><td>String (value)</td><td>options, fetchUrl</td></tr>
                     <tr><td>codePopup</td><td>코드 팝업</td><td>String (code)</td><td>popup: {url, codeField, nameField}</td></tr>
                     <tr><td>file</td><td>파일 업로드</td><td>File[]</td><td>accept, multiple, buttonLabel</td></tr>
+                    <tr><td>address</td><td>카카오 주소검색</td><td>{zipcode, address, detail}</td><td>getData()에서 field_zip, field_addr, field_detail 분리</td></tr>
                     <tr><td>display</td><td>읽기전용/뱃지</td><td>String</td><td>badge, badgeColors, options</td></tr>
                     <tr><td>divider</td><td>구분선/섹션</td><td>—</td><td>label, collapsible, collapsed</td></tr>
                 </table>
@@ -269,8 +265,8 @@
 
         <!-- 13. 의존 콤보 데모 -->
         <div class="demo-section">
-            <div class="demo-title">13. 의존 콤보 (dependsOn)</div>
-            <div class="demo-desc">상위 콤보(품목그룹) 변경 → 하위 콤보(품목) 옵션 갱신. (데모에서는 직접 옵션 교체)</div>
+            <div class="demo-title">13. 연계 콤보 (dependsOn 자동 + onChange 커스텀)</div>
+            <div class="demo-desc">dependsOn 선언 → 프레임워크가 자동으로 자식 초기화 + 코드 재로드. 3단 이상 체인도 BFS로 안전하게 연쇄 처리. onChange는 커스텀 로직에만 사용.</div>
             <div id="demo-depends"></div>
             <div class="demo-btn-row">
                 <button class="forma-btn forma-btn-primary" onclick="demoGetData('depends')">getData()</button>
@@ -358,6 +354,30 @@
                 <button class="forma-btn" onclick="demoClear('autocomplete')">clear()</button>
             </div>
             <div class="demo-output" id="out-autocomplete"></div>
+        </div>
+
+        <div class="demo-section">
+            <div class="demo-title">20. Select (단순 드롭다운 + Popup 코드헬프)</div>
+            <div class="demo-desc">검색 없는 네이티브 드롭다운. popup 옵션 설정 시 돋보기 버튼 클릭 또는 더블클릭으로 팝업 검색. combo도 동일하게 popup 지원.</div>
+            <div id="demo-select"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('selectDemo')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('selectDemo')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('selectDemo')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-selectDemo"></div>
+        </div>
+
+        <div class="demo-section">
+            <div class="demo-title">21. Address (카카오 주소검색)</div>
+            <div class="demo-desc">카카오 주소 API 연동. 우편번호 + 기본주소(자동) + 상세주소(직접입력). getData()에서 field_zip, field_addr, field_detail로 분리.</div>
+            <div id="demo-address"></div>
+            <div class="demo-btn-row">
+                <button class="forma-btn forma-btn-primary" onclick="demoGetData('addressDemo')">getData()</button>
+                <button class="forma-btn" onclick="demoSetData('addressDemo')">setData(샘플)</button>
+                <button class="forma-btn" onclick="demoClear('addressDemo')">clear()</button>
+            </div>
+            <div class="demo-output" id="out-addressDemo"></div>
         </div>
 
     </div>
@@ -569,8 +589,9 @@ const forms = {};
         ]
     });
 
-    // 13. 의존 콤보 (dependsOn)
-    // 데모에서는 onChange로 직접 옵션 교체 (서버 없이)
+    // 13. 연계 콤보 (dependsOn 선언 + onChange 커스텀)
+    // dependsOn: 부모 변경 → 자식 코드 재로드 + 연쇄 초기화 (프레임워크 자동)
+    // onChange: 숨기기/보이기, readOnly 등 커스텀 로직 (개발자 직접)
     const subItems = {
         GRP_A: [{ value: 'A-001', label: '철판' }, { value: 'A-002', label: '스텐판' }],
         GRP_B: [{ value: 'B-001', label: '볼트M8' }, { value: 'B-002', label: '너트M8' }, { value: 'B-003', label: '와셔M8' }],
@@ -580,9 +601,11 @@ const forms = {};
         columns: 3,
         labelWidth: 100,
         onChange: function(field, value) {
+            // dependsOn이 서버 코드 재로드를 자동으로 처리
+            // 여기서는 서버 없이 데모용 정적 옵션으로 대체
             if (field === 'item_grp') {
                 forms.depends.setOptions('item_cd', subItems[value] || []);
-                document.getElementById('out-depends').textContent = 'item_grp 변경 → item_cd 옵션 갱신: ' + JSON.stringify(subItems[value] || []);
+                document.getElementById('out-depends').textContent = 'item_grp 변경 → item_cd 자동 초기화 + 옵션 갱신';
             }
         },
         elements: [
@@ -591,7 +614,9 @@ const forms = {};
                 { value: 'GRP_B', label: '볼트류' },
                 { value: 'GRP_C', label: '도장류' },
             ]},
-            { field: 'item_cd', label: '품목', widget: 'combo', options: [] },
+            { field: 'item_cd', label: '품목', widget: 'combo', options: [],
+                dependsOn: { field: 'item_grp', paramKey: 'item_grp' }
+            },
             { field: 'item_nm', label: '품목명' },
         ]
     });
@@ -692,6 +717,46 @@ const forms = {};
         ]
     });
 
+    // 20. Select + Popup 코드헬프
+    forms.selectDemo = new FormaForm('#demo-select', {
+        columns: 3,
+        labelWidth: 100,
+        elements: [
+            { field: 'status', label: '상태(select)', widget: 'select', options: [
+                { value: 'DRAFT', label: '작성중' },
+                { value: 'CONFIRMED', label: '확정' },
+                { value: 'APPROVED', label: '승인' },
+                { value: 'REJECTED', label: '반려' },
+            ]},
+            { field: 'cust_type', label: '거래처유형', widget: 'select', options: [
+                { value: 'BUYER', label: '매입처' },
+                { value: 'SELLER', label: '매출처' },
+                { value: 'BOTH', label: '매입/매출' },
+            ], popup: {
+                url: '/pages/popup/CUS_P01.html', codeField: 'CUST_CD', nameField: 'CUST_NM',
+                title: '거래처유형 검색'
+            }},
+            { field: 'item_grp', label: '품목(combo+팝업)', widget: 'combo', options: [
+                { value: 'GRP_A', label: '판재류' },
+                { value: 'GRP_B', label: '볼트류' },
+                { value: 'GRP_C', label: '도장류' },
+            ], popup: {
+                url: '/pages/popup/ITM_P01.html', codeField: 'ITEM_CD', nameField: 'ITEM_NM',
+                title: '품목 검색'
+            }},
+        ]
+    });
+
+    // 21. Address (카카오 주소검색)
+    forms.addressDemo = new FormaForm('#demo-address', {
+        columns: 1,
+        labelWidth: 100,
+        elements: [
+            { field: 'company_addr', label: '회사 주소', widget: 'address', required: true },
+            { field: 'ship_addr', label: '배송지', widget: 'address' },
+        ]
+    });
+
     // 19. Autocomplete
     forms.autocomplete = new FormaForm('#demo-autocomplete', {
         columns: 3,
@@ -747,6 +812,13 @@ function demoSetData(key) {
     }
     else if (key === 'autocomplete') {
         forms.autocomplete.setData({ city: 'SEL', item: '철판 3.0T', cust: 'C001' });
+    } else if (key === 'selectDemo') {
+        forms.selectDemo.setData({ status: 'CONFIRMED', cust_type: 'BUYER', item_grp: 'GRP_B' });
+    } else if (key === 'addressDemo') {
+        forms.addressDemo.setData({
+            company_addr_zip: '06236', company_addr_addr: '서울특별시 강남구 테헤란로 152', company_addr_detail: '강남파이낸스센터 10층',
+            ship_addr_zip: '13529', ship_addr_addr: '경기도 성남시 분당구 판교역로 235', ship_addr_detail: '에이치스퀘어 N동'
+        });
     }
     if (key !== 'dirty') demoGetData(key);
 }

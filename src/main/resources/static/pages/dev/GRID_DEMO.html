@@ -5,29 +5,24 @@
     <title>그리드 에디터 데모</title>
     <link rel="stylesheet" href="/assets/css/forma.css">
     <style>
-        .demo-section { margin-bottom: 20px; }
-        .demo-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; padding: 4px 8px; background: #e8f0fe; border-radius: 3px; }
-        .demo-desc { font-size: 11px; color: #888; margin-bottom: 8px; padding-left: 8px; }
-        .demo-output { margin-top: 8px; padding: 8px 12px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 3px; font-size: 11px; font-family: monospace; white-space: pre-wrap; max-height: 160px; overflow-y: auto; }
-        .demo-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
         .ref-tbl { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 4px; }
-        .ref-tbl th { background: #f0f4f8; padding: 4px 8px; text-align: left; border: 1px solid #d8dde4; font-weight: 600; white-space: nowrap; }
-        .ref-tbl td { padding: 3px 8px; border: 1px solid #e8ecf0; white-space: nowrap; }
-        .ref-tbl tr:hover td { background: #f8fafc; }
+        .ref-tbl th { background: var(--bg-group); padding: 4px 8px; text-align: left; border: 1px solid var(--border-group); font-weight: 600; white-space: nowrap; color: var(--text); }
+        .ref-tbl td { padding: 3px 8px; border: 1px solid var(--border-light); white-space: nowrap; color: var(--text); }
+        .ref-tbl tr:hover td { background: var(--bg-alt); }
         details summary { outline: none; }
-        details summary::-webkit-details-marker { color: #4a90d9; }
+        details summary::-webkit-details-marker { color: var(--primary); }
     </style>
 </head>
 <body>
 <div class="forma-page" style="max-width:1400px">
     <div class="forma-page-header">
         <h1 class="forma-page-title">FormaGrid API 레퍼런스 &amp; 데모</h1>
-        <div style="font-size:12px;color:#666;margin-top:4px">1,838줄 | 19개 데모 섹션 | <a href="/pages/dev/FORM_DEMO.html">FormaForm 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">1,838줄 | 19개 데모 섹션 | <a href="/pages/dev/FORM_DEMO.html">FormaForm 데모 &rarr;</a> | <a href="/">홈 &rarr;</a></div>
     </div>
     <div class="forma-content">
 
         <!-- API 레퍼런스 -->
-        <div class="demo-section" style="background:#fff;border:1px solid #d0d8e0;border-radius:6px;padding:16px;">
+        <div class="demo-section" style="background:var(--bg-card);border:1px solid var(--border-group);border-radius:6px;padding:16px;">
             <details open>
                 <summary style="font-weight:700;font-size:14px;cursor:pointer;margin-bottom:10px">생성자 옵션 (Constructor Options)</summary>
                 <table class="ref-tbl">
@@ -123,7 +118,7 @@
 
             <details>
                 <summary style="font-weight:700;font-size:14px;cursor:pointer;margin:12px 0 10px">키보드 &amp; 마우스</summary>
-                <div style="font-size:11px;color:#555;line-height:2;padding:4px 0;">
+                <div style="font-size:11px;color:var(--text-sub);line-height:2;padding:4px 0;">
                     <b>Arrow</b> 셀 이동 &nbsp; <b>Tab/Shift+Tab</b> 다음/이전 셀 &nbsp; <b>Enter/F2</b> 편집 시작 &nbsp; <b>Escape</b> 편집 취소 &nbsp; <b>Delete</b> 셀 지우기 &nbsp;
                     <b>Space</b> 체크/스위치 토글 &nbsp; <b>Home/End</b> 행 처음/끝 &nbsp; <b>Ctrl+Home/End</b> 첫/마지막 행 &nbsp; <b>PageUp/Down</b> 20행 이동<br>
                     <b>Ctrl+C</b> 행 복사(TSV) &nbsp; <b>Ctrl+V</b> 붙여넣기 &nbsp; <b>Ctrl+Z</b> 실행취소 &nbsp; <b>Ctrl+Y</b> 다시실행<br>
@@ -356,13 +351,13 @@
         <div class="demo-section">
             <div class="demo-title">19. 스플릿 레이아웃 — 좌우 분할 (그리드 + 폼/탭)</div>
             <div class="demo-desc">좌측 그리드 | 우측 입력폼. 핸들 드래그로 너비 조정. ◀ 버튼으로 접기/펼치기. 중첩 가능. minSize: 200px.</div>
-            <div class="forma-split-h" id="split-demo-h" style="height:350px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
-                <div class="forma-split-panel" style="width:55%;background:#fff;">
+            <div class="forma-split-h" id="split-demo-h" style="height:350px;border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="width:55%;background:var(--bg-card);">
                     <div id="split-grid-left"></div>
                 </div>
                 <div class="forma-split-handle"></div>
-                <div class="forma-split-panel" style="flex:1;background:#fff;padding:8px;">
-                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid #e0e0e0">상세정보 (우측 패널)</div>
+                <div class="forma-split-panel" style="flex:1;background:var(--bg-card);padding:8px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;padding:4px 0;border-bottom:1px solid var(--border);color:var(--text)">상세정보 (우측 패널)</div>
                     <div id="split-form-right"></div>
                 </div>
             </div>
@@ -379,12 +374,12 @@
         <div class="demo-section">
             <div class="demo-title">20. 상하 분할 — 마스터 그리드 + 디테일 그리드</div>
             <div class="demo-desc">상단 그리드 | 하단 그리드. 핸들 드래그로 높이 조정. 접기/펼치기 지원.</div>
-            <div class="forma-split-v" id="split-demo-v" style="height:450px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
-                <div class="forma-split-panel" style="height:220px;background:#fff;">
+            <div class="forma-split-v" id="split-demo-v" style="height:450px;border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+                <div class="forma-split-panel" style="height:220px;background:var(--bg-card);">
                     <div id="split-grid-top"></div>
                 </div>
                 <div class="forma-split-handle"></div>
-                <div class="forma-split-panel" style="flex:1;background:#fff;">
+                <div class="forma-split-panel" style="flex:1;background:var(--bg-card);">
                     <div id="split-grid-bottom"></div>
                 </div>
             </div>
@@ -692,7 +687,7 @@ let splitH = null;
                 }
             },
             { field: 'email', label: '이메일', width: 200,
-                renderer: function(val) { return val ? '<a href="mailto:' + val + '" style="color:#4a90d9;text-decoration:none">' + val + '</a>' : ''; }
+                renderer: function(val) { return val ? '<a href="mailto:' + val + '" style="color:var(--primary);text-decoration:none">' + val + '</a>' : ''; }
             },
             { field: 'use_yn', label: '사용', width: 80, editor: 'check' },
         ]

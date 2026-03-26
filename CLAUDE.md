@@ -389,7 +389,8 @@ const form = new FormaForm('#area', {
 |--------|------|----------|
 | text | 텍스트 입력 (기본) | placeholder, readOnly, maxLength, type='number', min, max, step |
 | number | 숫자 입력 | (text에 type='number'), min, max, step, suffix, prefix |
-| combo | 드롭다운 | options: [{value, label}], code: 'CODE_GROUP', dependsOn |
+| combo | 검색 드롭다운 (+popup) | options, code, popup, dependsOn: {field, paramKey} |
+| select | 단순 드롭다운 (+popup) | options, code, popup: {url, codeField, nameField} |
 | date | 날짜 | readOnly |
 | dateRange | 기간 (from~to) | default: 'THIS_MONTH', 'TODAY', 'THIS_YEAR' |
 | codePopup | 코드 팝업 | popup: {url, codeField, nameField, width, height} |
@@ -405,6 +406,7 @@ const form = new FormaForm('#area', {
 | divider | 구분선/섹션 | label (텍스트), getData()에서 무시 |
 | display | 읽기전용 텍스트/뱃지 | badge: true, badgeColors: {값: 색상}, options |
 | password | 비밀번호 | 눈 아이콘으로 보기/숨기기 토글 |
+| address | 카카오 주소검색 | getData()에서 field_zip, field_addr, field_detail로 분리 |
 
 ### 공통 필드 속성
 | 속성 | 타입 | 설명 |
@@ -418,7 +420,8 @@ const form = new FormaForm('#area', {
 | suffix | String | 입력 뒤 표시 ('원', 'kg', '%') |
 | helpText | String | 필드 아래 도움말 텍스트 |
 | onChange | Function | 개별 필드 변경 콜백 (value, oldValue) |
-| dependsOn | Object | 의존 콤보 {field, paramKey} |
+| dependsOn | Object | 부모-자식 연계 {field, paramKey} — 부모 변경 시 자동 초기화+코드 재로드 |
+| onChange | Function | (value, oldValue) 개별 필드 변경 콜백 (커스텀 로직용) |
 
 ### API
 | 메서드 | 설명 |
@@ -431,7 +434,10 @@ const form = new FormaForm('#area', {
 | validate() | required 필드 검증 (false면 에러 표시 + 포커스) |
 | formReadonly(boolean) | 전체 읽기 전용 토글 |
 | showField(field) / hideField(field) | 필드 표시/숨김 |
-| setOptions(field, options) | 콤보/multiCombo 옵션 교체 |
+| setOptions(field, options) | 콤보/select/multiCombo 옵션 교체 |
+| reloadCode(field, code, params) | combo/select 옵션을 서버에서 재로드 + 값 초기화 |
+| setPopupParams(field, params) | codePopup 팝업에 전달할 파라미터 설정 |
+| clearField(field) | 개별 필드 값 초기화 |
 | setRequired(field, boolean) | 필수 여부 동적 변경 |
 | setReadonly(field, boolean) | 개별 필드 readOnly 변경 |
 | setDisabled(field, boolean) | 개별 필드 disabled 변경 |
