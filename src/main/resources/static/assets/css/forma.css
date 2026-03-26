@@ -454,12 +454,12 @@ select.forma-filter-input { padding-right: 16px; }
 .fc-combo-popup-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-hover); }
 
 /* Address (카카오 주소검색) */
-.fc-address-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.fc-address-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; align-self: stretch; }
 .fc-address-row { display: flex; gap: 4px; align-items: center; }
 .fc-address-zip { width: 100px !important; flex: unset !important; cursor: pointer; }
 .fc-address-btn { flex-shrink: 0; white-space: nowrap; }
-.fc-address-addr { cursor: pointer; background: var(--bg-alt) !important; height: 28px; }
-.fc-address-detail { flex: 1; height: 28px; }
+.fc-address-addr { cursor: pointer; background: var(--bg-alt) !important; min-height: 28px; height: 28px; }
+.fc-address-detail { flex: 1; min-height: 28px; height: 28px; }
 .forma-search-group .fc-date-wrap .forma-input { width: 120px; }
 .forma-search-group .fc-dr-container { flex: unset; }
 
