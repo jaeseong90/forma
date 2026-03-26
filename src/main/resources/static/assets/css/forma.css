@@ -29,7 +29,8 @@ body { font-family: 'Pretendard', -apple-system, sans-serif; font-size: 13px; co
 
 /* Layout */
 .forma-page { margin: 0; padding: 4px 6px; }
-.forma-page-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 2px solid var(--text); color: var(--text); }
+.forma-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 2px solid var(--text); }
+.forma-page-title { font-size: 14px; font-weight: 600; color: var(--text); margin: 0; padding: 0; border: none; }
 .forma-content { display: flex; flex-direction: column; gap: 4px; }
 .forma-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
 .forma-section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
