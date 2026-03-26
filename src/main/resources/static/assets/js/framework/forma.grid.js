@@ -299,6 +299,8 @@ class FormaGrid {
                     this._applyFrozenTh(th, ci);
                     // 헤더 우클릭 컨텍스트 메뉴
                     ((cci) => { th.oncontextmenu = (ev) => this._headerContextMenu(ev, cols[cci], cci); })(ci);
+                    // 컬럼 드래그 순서 변경
+                    if (!cols[ci].frozen) this._attachColDrag(th, ci);
                 }
                 tr.appendChild(th);
             }
@@ -2075,6 +2077,65 @@ class FormaGrid {
         this._updateSortIcons();
         this._render();
         if (this.paging) this._renderPaging();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  컬럼 드래그&드롭 순서 변경
+    // ══════════════════════════════════════════════════════════
+
+    _attachColDrag(th, colIdx) {
+        th.draggable = true;
+        th.style.cursor = 'grab';
+        th.addEventListener('dragstart', (e) => {
+            this._dragColIdx = colIdx;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(colIdx));
+            th.style.opacity = '0.5';
+        });
+        th.addEventListener('dragend', () => {
+            th.style.opacity = '';
+            this._clearColDropIndicators();
+        });
+        th.addEventListener('dragover', (e) => {
+            if (this._dragColIdx === undefined || this._dragColIdx === colIdx) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            // 드롭 위치 표시 (좌/우)
+            const rect = th.getBoundingClientRect();
+            const mid = rect.left + rect.width / 2;
+            this._clearColDropIndicators();
+            if (e.clientX < mid) {
+                th.style.borderLeft = '3px solid var(--primary)';
+            } else {
+                th.style.borderRight = '3px solid var(--primary)';
+            }
+        });
+        th.addEventListener('dragleave', () => {
+            th.style.borderLeft = '';
+            th.style.borderRight = '';
+        });
+        th.addEventListener('drop', (e) => {
+            e.preventDefault();
+            this._clearColDropIndicators();
+            const fromIdx = this._dragColIdx;
+            if (fromIdx === undefined || fromIdx === colIdx) return;
+            // 드롭 위치 결정
+            const rect = th.getBoundingClientRect();
+            const mid = rect.left + rect.width / 2;
+            let toIdx = e.clientX < mid ? colIdx : colIdx + 1;
+            if (fromIdx < toIdx) toIdx--;
+            if (fromIdx === toIdx) return;
+            // 컬럼 배열 이동
+            const [col] = this.columns.splice(fromIdx, 1);
+            this.columns.splice(toIdx, 0, col);
+            this._dragColIdx = undefined;
+            this._rebuild();
+            this._updateTableWidth();
+        });
+    }
+
+    _clearColDropIndicators() {
+        if (this._thead) this._thead.querySelectorAll('th').forEach(th => { th.style.borderLeft = ''; th.style.borderRight = ''; });
     }
 
     // ══════════════════════════════════════════════════════════

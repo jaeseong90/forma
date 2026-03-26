@@ -62,7 +62,8 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-grid-toolbar { padding: 6px 8px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; }
 .forma-grid-scroll { overflow-x: auto; position: relative; }
 .forma-grid { border-collapse: collapse; width: 100%; }
-.forma-grid th { background: var(--bg-header); padding: 6px 8px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-sub); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.forma-grid th { background: var(--bg-header); padding: 6px 8px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-sub); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity 0.15s; }
+.forma-grid th[draggable="true"]:active { cursor: grabbing; }
 .forma-grid td { padding: 4px 8px; border-bottom: 1px solid var(--border-light); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .forma-grid td.fg-wrap { white-space: pre-wrap; word-break: break-word; overflow: visible; text-overflow: unset; line-height: 1.4; vertical-align: top; }
 .forma-grid tbody tr { transition: background 0.1s; }
