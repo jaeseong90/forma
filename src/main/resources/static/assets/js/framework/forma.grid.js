@@ -8,6 +8,7 @@
 class FormaGrid {
     constructor(selector, options = {}) {
         this.container = typeof selector === 'string' ? document.querySelector(selector) : selector;
+        this.options = options;
         this.columns = options.columns || [];
         this.editable = options.editable || false;
         this.checkable = options.checkable || false;
@@ -275,10 +276,20 @@ class FormaGrid {
                 const cell = matrix[r][ci];
                 if (cell === 'covered' || cell === null) continue;
                 const th = document.createElement('th');
-                th.textContent = cell.text; th.style.textAlign = 'center';
+                th.style.textAlign = 'center';
+                // check 에디터 + headerCheck 옵션: 헤더에 전체 체크박스
+                const isLeaf = (r + cell.rowspan === depth);
+                if (isLeaf && cols[ci].editor === 'check' && cols[ci].headerCheck) {
+                    const hcb = document.createElement('input'); hcb.type = 'checkbox';
+                    ((field) => {
+                        hcb.onchange = () => { this.rows.forEach(row => { row[field] = hcb.checked ? 'Y' : 'N'; if (row.gstat !== 'I') row.gstat = 'U'; }); this._rebuild(); };
+                    })(cols[ci].field);
+                    th.appendChild(hcb);
+                } else {
+                    th.textContent = cell.text;
+                }
                 if (cell.colspan > 1) th.colSpan = cell.colspan;
                 if (cell.rowspan > 1) th.rowSpan = cell.rowspan;
-                const isLeaf = (r + cell.rowspan === depth);
                 if (isLeaf) {
                     if (cols[ci].width) th.style.width = cols[ci].width + 'px';
                     th.style.position = 'relative';
@@ -1414,7 +1425,10 @@ class FormaGrid {
         const cb = document.createElement('input'); cb.type = 'checkbox';
         cb.checked = row[col.field] === 'Y' || row[col.field] === true || row[col.field] === 1;
         cb.onclick = (e) => e.stopPropagation();
-        cb.onchange = () => { row[col.field] = cb.checked ? 'Y' : 'N'; if (row.gstat !== 'I') row.gstat = 'U'; const tr = this.tbody.children[rowIdx]; if (tr) tr.classList.add('forma-row-modified'); if (this.onCellChange) this.onCellChange(row, col.field, rowIdx); this._renderFooter(); };
+        cb.onchange = () => {
+            if (typeof this.options.beforeEditStart === 'function' && this.options.beforeEditStart(row, col.field, rowIdx) === false) { cb.checked = !cb.checked; return; }
+            row[col.field] = cb.checked ? 'Y' : 'N'; if (row.gstat !== 'I') row.gstat = 'U'; const tr = this.tbody.children[rowIdx]; if (tr) tr.classList.add('forma-row-modified'); if (this.onCellChange) this.onCellChange(row, col.field, rowIdx); this._renderFooter();
+        };
         if (!this.editable || col.readOnly) cb.disabled = true;
         td.appendChild(cb);
     }
@@ -1526,6 +1540,10 @@ class FormaGrid {
 
     _startEdit(rowIdx, col, td, row) {
         if (td.querySelector('input, select, textarea, .fg-combo-dd')) return;
+        // beforeEditStart 콜백: false 반환 시 편집 차단
+        if (typeof this.options.beforeEditStart === 'function') {
+            if (this.options.beforeEditStart(row, col.field, rowIdx) === false) return;
+        }
         this._editing = true;
         const editor = col.editor || 'text';
         if (editor === 'select') { this._startSelectEdit(rowIdx, col, td, row); return; }
