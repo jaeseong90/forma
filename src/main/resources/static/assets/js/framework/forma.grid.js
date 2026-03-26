@@ -156,14 +156,39 @@ class FormaGrid {
     }
 
     _updateTableWidth() {
-        // auto layout에서는 min-width로 수평 스크롤 보장
-        let total = 0;
-        if (this.detailGrid) total += 30;
-        if (this.reorderable) total += 28;
-        if (this.checkable) total += 36;
-        if (this.rowNum) total += 45;
-        for (const col of this.columns) { if (!col._hidden) total += (col.width || 100); }
-        this.table.style.minWidth = total + 'px';
+        // 고정 컬럼(체크박스, 행번호 등) 너비 합산
+        let fixedW = 0;
+        if (this.detailGrid) fixedW += 30;
+        if (this.reorderable) fixedW += 28;
+        if (this.checkable) fixedW += 36;
+        if (this.rowNum) fixedW += 45;
+        // 데이터 컬럼 원본 너비 합산
+        let colW = 0;
+        for (const col of this.columns) { if (!col._hidden) colW += (col.width || 100); }
+        const total = fixedW + colW;
+        const containerW = this._scrollWrap.clientWidth;
+        if (containerW > 0 && containerW >= total && colW > 0) {
+            // 컨테이너가 더 넓으면: fixed layout + 비례 배분으로 꽉 채움
+            this.table.style.tableLayout = 'fixed';
+            this.table.style.width = containerW + 'px';
+            this.table.style.minWidth = '';
+            const extra = containerW - total;
+            for (let i = 0; i < this.columns.length; i++) {
+                if (this.columns[i]._hidden) { if (this._cols[i]) this._cols[i].style.width = '0px'; continue; }
+                const base = this.columns[i].width || 100;
+                const expanded = base + Math.round(extra * base / colW);
+                if (this._cols[i]) this._cols[i].style.width = expanded + 'px';
+            }
+        } else {
+            // 컬럼 합이 더 넓으면: auto layout + min-width로 스크롤
+            this.table.style.tableLayout = '';
+            this.table.style.width = '';
+            this.table.style.minWidth = total + 'px';
+            for (let i = 0; i < this.columns.length; i++) {
+                const w = this.columns[i]._hidden ? '0' : String(this.columns[i].width || 100);
+                if (this._cols[i]) { this._cols[i].style.width = ''; this._cols[i].setAttribute('width', w); }
+            }
+        }
     }
 
     _updateColWidth(colIdx, width) {
