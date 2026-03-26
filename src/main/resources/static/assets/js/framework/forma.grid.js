@@ -486,7 +486,13 @@ class FormaGrid {
     getData() { return this.rows; }
     getCheckedData() { return this.rows.filter(r => r._checked); }
     getModifiedData() { return [...this.rows.filter(r => r.gstat === 'I' || r.gstat === 'U'), ...this._deleted]; }
+    getInsertedData() { return this.rows.filter(r => r.gstat === 'I'); }
+    getUpdatedData() { return this.rows.filter(r => r.gstat === 'U'); }
     getDeletedData() { return this._deleted; }
+    getRowCount() { return this.rows.length; }
+    getFieldValues(field) { return this.rows.map(r => r[field]); }
+    findRows(fn) { return this.rows.filter(fn); }
+    getCheckedOrSelected() { const c = this.getCheckedData(); return c.length > 0 ? c : (this.getSelectedItem() ? [this.getSelectedItem()] : []); }
 
     clearData() {
         this.rows = []; this._deleted = []; if (this.filterable) this._allRows = [];
