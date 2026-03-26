@@ -80,7 +80,7 @@ textarea.forma-input { height: auto; padding: 6px 8px; }
 .forma-search { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
 .forma-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
 .forma-form-row { display: flex; align-items: center; gap: 8px; }
-.forma-form-row label { font-size: 12px; font-weight: 500; color: var(--text-sub); min-width: 80px; white-space: nowrap; }
+.forma-form-row label { font-size: 12px; font-weight: 500; color: var(--text-sub); min-width: 80px; white-space: nowrap; text-align: right; }
 .forma-form-row label.required::after { content: ' *'; color: var(--danger); }
 .forma-form-row .forma-input { flex: 1; transition: border-color 0.15s; }
 .forma-form-row { transition: opacity 0.2s, max-height 0.2s; overflow: hidden; }
