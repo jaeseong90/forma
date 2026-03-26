@@ -458,8 +458,8 @@ select.forma-filter-input { padding-right: 16px; }
 .fc-address-row { display: flex; gap: 4px; align-items: center; }
 .fc-address-zip { width: 100px !important; flex: unset !important; cursor: pointer; }
 .fc-address-btn { flex-shrink: 0; white-space: nowrap; }
-.fc-address-addr { cursor: pointer; background: var(--bg-alt) !important; }
-.fc-address-detail { flex: 1; }
+.fc-address-addr { cursor: pointer; background: var(--bg-alt) !important; height: 28px; }
+.fc-address-detail { flex: 1; height: 28px; }
 .forma-search-group .fc-date-wrap .forma-input { width: 120px; }
 .forma-search-group .fc-dr-container { flex: unset; }
 

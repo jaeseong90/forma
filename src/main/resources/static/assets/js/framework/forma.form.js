@@ -524,7 +524,7 @@ class _WCombo extends _FormaWidget {
             else if (e.key === 'Enter') { if (state.hlIdx >= 0 && items[state.hlIdx]) items[state.hlIdx].click(); }
             else if (e.key === 'Escape') { closeDD(); display.focus(); }
         });
-        this._addDocListener('mousedown', (e) => { if (state.isOpen && !wrap.contains(e.target)) closeDD(); });
+        this._addDocListener('mousedown', (e) => { if (state.isOpen && !wrap.contains(e.target) && !(outerWrap && outerWrap.contains(e.target))) closeDD(); });
         this._closeDD = closeDD;
 
         // popup 지원: 돋보기 버튼 + 더블클릭
