@@ -325,7 +325,7 @@ select.forma-filter-input { padding-right: 16px; }
 .forma-menu-badge { font-size: 9px; color: var(--text-muted); margin-left: auto; }
 
 /* MDI 탭 */
-.forma-mdi-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--bg-header); overflow-x: auto; flex-shrink: 0; }
+.forma-mdi-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--bg-header); overflow-x: auto; overflow-y: hidden; flex-shrink: 0; }
 .forma-mdi-tab { display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; color: var(--text-sub); }
 .forma-mdi-tab:hover { background: var(--bg-hover); }
 .forma-mdi-tab.active { background: var(--bg-card); color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
