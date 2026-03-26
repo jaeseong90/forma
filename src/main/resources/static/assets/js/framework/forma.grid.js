@@ -283,7 +283,7 @@ class FormaGrid {
                 if (isLeaf && cols[ci].editor === 'check' && cols[ci].headerCheck) {
                     const hcb = document.createElement('input'); hcb.type = 'checkbox';
                     ((field) => {
-                        hcb.onchange = () => { this.rows.forEach(row => { row[field] = hcb.checked ? 'Y' : 'N'; if (row.gstat !== 'I') row.gstat = 'U'; }); this._rebuild(); };
+                        hcb.onchange = () => { this.rows.forEach(row => { row[field] = hcb.checked ? 'Y' : 'N'; if (row.gstat !== 'I') row.gstat = 'U'; }); this._render(); };
                     })(cols[ci].field);
                     th.appendChild(hcb);
                 } else {
